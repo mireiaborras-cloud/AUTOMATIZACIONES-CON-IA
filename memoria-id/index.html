@@ -2,207 +2,321 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0F2237">
 <title>Memoria I+D</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Newsreader:opsz,wght@6..72,500;6..72,600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <!--
   Memoria I+D · redacción asistida de memorias técnicas para convocatorias autonómicas de I+D (IVACE+i / AVI).
   Arquitectura inspirada en Doctoralia (F. Borrás Rocher, UMH, licencia MIT): corpus numerados, la IA redacta citando
   por índice y el código comprueba cada cita, cada cifra y cada regla del presupuesto antes de dar nada por bueno.
 
-  Contiene código adaptado de Doctoralia (https://github.com/fborrasumh/doctoralia).
+  Contiene código e identidad visual adaptados de Doctoralia (https://github.com/fborrasumh/doctoralia).
   Copyright (c) 2026 Fernando Borrás Rocher. Licencia MIT: el aviso de copyright y este permiso deben
   incluirse en todas las copias o partes sustanciales del software. Texto completo en THIRD_PARTY_LICENSE_doctoralia.txt.
 -->
 <style>
-/* Layout: barra superior de tinta con el recorrido en pestañas; columna central de trabajo (máx. 1120 px) con paneles planos. */
+/* Layout: barra de tinta con asistente de pasos numerados y barra de progreso; columna central de 1180 px con tarjetas
+   redondeadas; barra de navegación inferior fija. Identidad visual adaptada de Doctoralia / Forja (F. Borrás Rocher, MIT). */
 :root{
-  --bg:#f5f6f8; --surface:#ffffff; --sunk:#eceef2; --line:#d7dbe2; --ink:#16202c; --ink-2:#4a5566; --ink-3:#6b7585;
-  --brand:#123a5c; --brand-ink:#ffffff; --accent:#0b6bcb; --accent-soft:#e3effb;
-  --ok:#1f7a4d; --ok-soft:#e3f3ea; --warn:#9a5b00; --warn-soft:#fdf0d8; --bad:#b42318; --bad-soft:#fde7e5;
-  --f-ui:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-doc:"Newsreader",Georgia,"Times New Roman",serif;
-  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
-  --r:8px; color-scheme:light;
+  --tinta:#0F2237; --acero:#2E4B6B; --acero-claro:#7C93AC; --gris:#5D7691;
+  --papel:#F3F6FA; --blanco:#FFFFFF; --linea:#D8E0E9; --linea-2:#E8EEF4;
+  --brasa:#E4572E; --brasa-osc:#C9441F; --brasa-suave:#FDEBE4;
+  --forjado:#0E7C6B; --forjado-suave:#E0F3EE; --aviso:#8A3617; --ambar:#8A5A00; --ambar-suave:#FFF1D6;
+  --c-conv:#1F6FB2; --c-proy:#6B4FD8; --c-pres:#C98200; --c-arte:#0E8C7A; --c-gen:#E4572E; --c-res:#2E4B6B;
+  --sombra:0 1px 0 rgba(15,34,55,.05), 0 14px 34px -22px rgba(15,34,55,.45);
+  --sombra-alta:0 2px 0 rgba(15,34,55,.04), 0 22px 50px -24px rgba(15,34,55,.55);
+  --r:14px;
+  --display:"Bricolage Grotesque",Georgia,serif;
+  --texto:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  /* alias que usa el código de la app */
+  --bg:var(--papel); --surface:var(--blanco); --sunk:var(--papel); --line:var(--linea); --ink:var(--tinta); --ink-2:var(--acero); --ink-3:var(--gris);
+  --accent:var(--brasa); --ok:var(--forjado); --bad:var(--brasa); --warn:var(--ambar);
+  --f-ui:var(--texto); --f-doc:var(--texto); --f-mono:var(--mono);
+  color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f141b; --surface:#161d26; --sunk:#1d2631; --line:#2c3846; --ink:#e7ecf2; --ink-2:#b4bfcc; --ink-3:#8b97a6;
-  --brand:#0b2236; --brand-ink:#e7ecf2; --accent:#5aa9f0; --accent-soft:#16304a;
-  --ok:#5cc792; --ok-soft:#15301f; --warn:#e9b44c; --warn-soft:#33270f; --bad:#f2867c; --bad-soft:#3a1714; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0f141b; --surface:#161d26; --sunk:#1d2631; --line:#2c3846; --ink:#e7ecf2; --ink-2:#b4bfcc; --ink-3:#8b97a6;
-  --brand:#0b2236; --brand-ink:#e7ecf2; --accent:#5aa9f0; --accent-soft:#16304a;
-  --ok:#5cc792; --ok-soft:#15301f; --warn:#e9b44c; --warn-soft:#33270f; --bad:#f2867c; --bad-soft:#3a1714; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-ui)}
-h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
-h2{font-size:1.35rem;font-weight:700}
-h3{font-size:1.02rem;font-weight:600}
+body{background:var(--papel);color:var(--tinta);font:16px/1.55 var(--texto);-webkit-font-smoothing:antialiased;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.15}
 p{margin:0}
-a{color:var(--accent)}
-code,.mono{font-family:var(--f-mono);font-size:.86em}
+a{color:var(--acero)}
+code,.mono{font-family:var(--mono);font-size:.86em}
 button,input,select,textarea{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:focus-visible{outline:3px solid var(--brasa);outline-offset:2px;border-radius:6px}
+svg.i{width:1.15em;height:1.15em;vertical-align:-.2em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
 /* barra superior */
-.top{background:var(--brand);color:var(--brand-ink);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 0;position:sticky;top:0;z-index:20}
-.top-in{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
-.brandrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.brand{display:flex;align-items:baseline;gap:10px}
-.brand b{font-family:var(--f-doc);font-size:1.45rem;font-weight:600;letter-spacing:.01em}
-.brand span{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
-.spacer{flex:1}
-.topbtn{background:transparent;border:1px solid color-mix(in srgb,var(--brand-ink) 35%,transparent);color:var(--brand-ink);border-radius:999px;padding:5px 12px;font-size:.85rem;cursor:pointer}
-.topbtn:hover{background:color-mix(in srgb,var(--brand-ink) 12%,transparent)}
-.provpill{font-family:var(--f-mono);font-size:.75rem;opacity:.85}
-.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:thin}
-.tab{background:transparent;border:0;color:var(--brand-ink);opacity:.72;padding:8px 12px 10px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;font-size:.9rem;display:flex;gap:6px;align-items:center}
-.tab .n{font-family:var(--f-mono);font-size:.72rem;opacity:.8}
-.tab:hover{opacity:1}
-.tab[aria-selected="true"]{opacity:1;border-bottom-color:#7cc0ff;font-weight:600}
-.tab.hub{font-style:normal}
-.tabsep{width:1px;background:color-mix(in srgb,var(--brand-ink) 25%,transparent);margin:8px 6px}
-.dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.35}
-.dot.ok{background:#6fd39d;opacity:1}
+.top{position:sticky;top:0;z-index:40;background:var(--tinta);color:#EAF1F7;box-shadow:0 6px 24px -14px rgba(0,0,0,.6)}
+.tb-in{max-width:1180px;margin:0 auto;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:14px}
+.logo{background:none;border:0;color:#fff;font-family:var(--display);font-weight:800;font-size:23px;letter-spacing:-.03em;cursor:pointer;padding:2px 4px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.logo em{font-style:normal;color:var(--brasa)}
+.logo .anv{width:30px;height:30px;border-radius:9px;background:var(--brasa);display:grid;place-items:center;color:#fff}
+.logo .anv svg{width:17px;height:17px}
+.stepper{flex:1;display:flex;align-items:center;justify-content:center;min-width:0}
+.sdot{display:flex;align-items:center;gap:7px;background:none;border:0;color:#8FA7BE;font:600 13px var(--texto);padding:6px;cursor:pointer;border-radius:10px;white-space:nowrap}
+.sdot .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:2px solid #3E5C7D;font:700 12px var(--mono);color:#A9C0D4;transition:all .2s}
+.sdot .n svg{width:14px;height:14px}
+.sdot .n .ok{display:none}
+.sdot[data-state="done"] .n{background:var(--forjado);border-color:var(--forjado);color:#fff}
+.sdot[data-state="done"] .n .ok{display:block}.sdot[data-state="done"] .n .k{display:none}
+.sdot[data-state="now"]{color:#fff}
+.sdot[data-state="now"] .n{background:var(--brasa);border-color:var(--brasa);color:#fff;box-shadow:0 0 0 4px rgba(228,87,46,.25)}
+.sdot:hover{background:rgba(255,255,255,.06)}
+.sline{flex:0 1 26px;height:2px;background:#2F4A68;min-width:6px}
+.sline.on{background:var(--forjado)}
+.tb-tools{display:flex;gap:6px;align-items:center}
+.tb-btn{background:transparent;border:1px solid #3E5C7D;color:#C9D8E6;border-radius:9px;padding:6px 10px;font:600 13px var(--texto);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tb-btn:hover{border-color:var(--brasa);color:#fff}
+.tb-btn[aria-current="page"]{background:#fff;color:var(--tinta);border-color:#fff}
+.tb-sep{width:1px;height:24px;background:#2F4A68;margin:0 2px}
+.provpill{font:600 11px var(--mono);letter-spacing:.04em;color:#8FA7BE;max-width:16ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.progress{height:4px;background:#1E3550}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brasa),#F59E0B);transition:width .4s}
+.stepper{overflow-x:auto;scrollbar-width:none}.stepper::-webkit-scrollbar{display:none}
+@media(max-width:1440px){.tb-btn .lbl{display:none}.provpill{display:none}}
+@media(max-width:1240px){.sdot .lbl{display:none}.sdot[data-state="now"] .lbl{display:inline}}
+@media(max-width:720px){.tb-in{flex-wrap:wrap;gap:8px}.stepper{order:3;flex-basis:100%;justify-content:space-between}.sdot[data-state="now"] .lbl{display:none}.tb-tools{margin-left:auto}}
 
-/* contenido */
-main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 64px}
-.view{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-.vhead{display:flex;flex-direction:column;gap:6px}
-.vhead p{color:var(--ink-2);max-width:72ch}
-.eyebrow{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
-.panel.sunk{background:var(--sunk);border-color:transparent}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:18px}
-.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
-.field{display:flex;flex-direction:column;gap:5px;min-width:0}
-.field label,.lbl{font-size:.82rem;font-weight:600;color:var(--ink-2)}
-.hint{font-size:.8rem;color:var(--ink-3)}
-input[type=text],input[type=number],input[type=password],select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
-textarea{resize:vertical;min-height:84px;line-height:1.5}
-input[type=number]{font-variant-numeric:tabular-nums}
+/* pantallas */
+main{max-width:1180px;margin:0 auto;padding-block:26px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.view{display:flex;flex-direction:column;gap:18px}
+@media(prefers-reduced-motion:no-preference){.view:not([hidden]){animation:rise .35s cubic-bezier(.2,.7,.3,1) both}@keyframes rise{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}}
+.sh{display:flex;gap:18px;align-items:flex-start;margin:4px 0 4px}
+.sh-ico{width:64px;height:64px;border-radius:18px;background:var(--c,var(--brasa));color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 12px 24px -14px var(--c,var(--brasa))}
+.sh-ico svg{width:32px;height:32px}
+.sh-step{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--acero-claro);margin:4px 0}
+.sh h2{font-family:var(--display);font-weight:800;font-size:clamp(26px,3.6vw,38px);letter-spacing:-.025em;line-height:1.05;margin:0 0 6px}
+.sh-lede{margin:0;color:var(--gris);font-size:16.5px;max-width:70ch}
+@media(max-width:600px){.sh-ico{width:48px;height:48px;border-radius:14px}.sh-ico svg{width:24px;height:24px}}
+.eyebrow{font:600 11.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--acero-claro)}
+
+/* tarjetas y rejillas */
+.panel{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--r);box-shadow:var(--sombra);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel.sunk{background:var(--blanco)}
+.panel h3,.ttl{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
+.panel h3 .num{width:26px;height:26px;border-radius:8px;background:var(--tinta);color:#fff;font:700 13px var(--mono);display:grid;place-items:center;flex:none}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.btn{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:500;display:inline-flex;gap:6px;align-items:center}
-.btn:hover{border-color:var(--ink-3)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.primary:hover{filter:brightness(1.07)}
-.btn.danger{color:var(--bad)}
-.btn.small{padding:4px 9px;font-size:.82rem}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.chk{display:flex;gap:8px;align-items:flex-start;font-size:.9rem}
-.chk input{margin-top:4px}
-.drop{border:2px dashed var(--line);border-radius:var(--r);padding:22px;text-align:center;color:var(--ink-2);cursor:pointer;background:var(--sunk)}
-.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.spacer{flex:1}
+
+/* formularios */
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label,.lbl{font-size:13.5px;font-weight:600;color:var(--acero)}
+.hint{font-size:12.8px;color:var(--gris)}
+input[type=text],input[type=number],input[type=password],select,textarea{width:100%;min-width:0;padding:10px 12px;border:1.5px solid var(--linea);border-radius:10px;font-size:15px;color:var(--tinta);background:#fff;transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acero-claro);box-shadow:0 0 0 4px rgba(124,147,172,.18)}
+input::placeholder,textarea::placeholder{color:#9DB0C2}
+textarea{resize:vertical;min-height:96px;line-height:1.5}
+input[type=number]{font-variant-numeric:tabular-nums}
+.chk{display:flex;gap:9px;align-items:flex-start;font-size:14.5px}
+.chk input{margin-top:4px;accent-color:var(--brasa)}
+.drop{border:2px dashed var(--linea);border-radius:var(--r);padding:26px 18px;text-align:center;color:var(--acero);cursor:pointer;background:var(--papel);font-weight:600;transition:border-color .15s,background .15s}
+.drop:hover,.drop.over{border-color:var(--brasa);background:var(--brasa-suave)}
+.drop .di{width:44px;height:44px;border-radius:12px;background:var(--c-conv);color:#fff;display:grid;place-items:center;margin:0 auto 10px}
+.drop .di svg{width:22px;height:22px}
+
+/* botones */
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:11px;font-weight:600;font-size:15px;border:1.5px solid var(--linea);background:#fff;color:var(--acero);padding:10px 16px;cursor:pointer;transition:transform .08s,background .15s,border-color .15s;line-height:1.2}
+.btn:hover{border-color:var(--acero-claro);background:#F7FAFC}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--brasa);border-color:var(--brasa);color:#fff;box-shadow:0 8px 18px -10px var(--brasa)}
+.btn.primary:hover{background:var(--brasa-osc);border-color:var(--brasa-osc)}
+.btn.dark{background:var(--tinta);border-color:var(--tinta);color:#fff}
+.btn.word{background:#2B579A;border-color:#2B579A;color:#fff}
+.btn.word:hover{background:#1e3f7a}
+.btn.big{font-size:17px;padding:14px 24px;border-radius:13px}
+.btn.danger{color:var(--brasa)}
+.btn.small{padding:6px 11px;font-size:13.5px;border-radius:9px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
 
 /* tablas */
-.tw{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
-table{border-collapse:collapse;width:100%;font-size:.88rem}
-th{text-align:left;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600;background:var(--sunk);padding:7px 8px;white-space:nowrap}
-td{border-top:1px solid var(--line);padding:5px 8px;vertical-align:top}
-td input,td select{padding:5px 7px;font-size:.88rem}
+.tw{overflow-x:auto;border:1px solid var(--linea);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{background:var(--tinta);color:#fff;text-align:left;padding:9px 11px;font-size:12.5px;font-weight:700;white-space:nowrap}
+td{padding:7px 11px;border-bottom:1px solid var(--linea-2);vertical-align:top}
+tr:nth-child(even) td{background:#FAFCFE}
+td input,td select{padding:7px 9px;font-size:14px;border-radius:8px}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.tot td{font-weight:600;background:var(--sunk)}
+.tot td{font-weight:700;background:var(--papel)!important;border-top:2px solid var(--tinta)}
 
 /* estados */
-.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:.76rem;font-weight:600;white-space:nowrap}
-.pill.ok{background:var(--ok-soft);color:var(--ok)}
-.pill.warn{background:var(--warn-soft);color:var(--warn)}
-.pill.bad{background:var(--bad-soft);color:var(--bad)}
-.pill.neu{background:var(--sunk);color:var(--ink-2)}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700;white-space:nowrap;background:var(--linea-2);color:var(--gris)}
+.pill.ok{background:var(--forjado-suave);color:var(--forjado)}
+.pill.warn{background:var(--ambar-suave);color:var(--ambar)}
+.pill.bad{background:var(--brasa-suave);color:var(--brasa)}
+.pill.neu{background:var(--linea-2);color:var(--gris)}
 .checks{display:flex;flex-direction:column}
-.ck{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:10px 0;border-top:1px solid var(--line)}
+.ck{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;padding:10px 0;border-top:1px solid var(--linea-2);align-items:center}
 .ck:first-child{border-top:0}
-.ck .t{font-weight:600}
-.ck .d{grid-column:2;color:var(--ink-2);font-size:.86rem}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.stat{background:var(--sunk);border-radius:6px;padding:10px 12px}
-.stat b{display:block;font-size:1.3rem;font-variant-numeric:tabular-nums}
-.stat span{font-size:.78rem;color:var(--ink-3)}
+.ck .t{font-weight:600;font-size:14.5px}
+.ck .d{grid-column:2;color:var(--gris);font-size:13.5px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.stat{background:var(--blanco);border:1px solid var(--linea);border-radius:12px;padding:12px 14px;box-shadow:var(--sombra)}
+.stat b{display:block;font:800 26px var(--display);letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--gris)}
+.note{font-size:14px;background:var(--papel);border-left:4px solid var(--forjado);border-radius:8px;padding:11px 14px;color:var(--acero)}
+.note.warn{background:#FFF8E6;border:1px solid #F3DDA0;border-left-width:1px;border-radius:12px;color:#6B4E00}
 
 /* fragmentos y papers */
 .frags{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto;padding-right:4px}
-.frag{font-size:.84rem;color:var(--ink-2);border-left:3px solid var(--line);padding:2px 0 2px 10px}
-.frag b{font-family:var(--f-mono);color:var(--accent);font-size:.78rem;margin-right:6px}
-.paper{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.frag{font-size:13.5px;color:var(--acero);border-left:3px solid var(--linea);padding:3px 0 3px 10px}
+.frag b{display:inline-block;font:700 11px var(--mono);border-radius:5px;padding:1px 6px;margin-right:6px;background:#E6F0FA;color:var(--c-conv)}
+.paper{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:12px 0;border-top:1px solid var(--linea-2)}
 .paper:first-child{border-top:0}
-.paper .meta{font-size:.8rem;color:var(--ink-3)}
-.paper .ab{font-size:.84rem;color:var(--ink-2);grid-column:2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.paper input{accent-color:var(--forjado);margin-top:5px}
+.paper .meta{font-size:12.8px;color:var(--gris)}
+.paper .ab{font-size:13.5px;color:var(--acero);grid-column:2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
-/* progreso */
-.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
-.ph{border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:.82rem;color:var(--ink-3);background:var(--surface)}
-.ph b{display:block;font-family:var(--f-mono);font-size:.72rem}
-.ph.active{border-color:var(--accent);color:var(--ink);background:var(--accent-soft)}
-.ph.done{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
-.log{background:var(--sunk);border-radius:6px;padding:10px 12px;font-family:var(--f-mono);font-size:.76rem;max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-word}
-.log .ok{color:var(--ok)} .log .warn{color:var(--warn)} .log .err{color:var(--bad)}
-.live{font-family:var(--f-mono);font-size:.8rem;color:var(--ink-2)}
+/* generación */
+.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.ph{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--linea);border-radius:12px;padding:10px 12px;font-size:13.5px;font-weight:600;color:var(--gris);transition:border-color .2s}
+.ph b{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;flex:none;font:700 13px var(--mono);background:var(--papel);color:var(--acero)}
+.ph.active{border-color:#F59E0B;color:var(--tinta)}
+.ph.active b{background:var(--brasa);color:#fff;animation:pulse 1s infinite alternate}
+.ph.done{color:var(--tinta)}
+.ph.done b{background:var(--forjado);color:#fff}
+@keyframes pulse{from{transform:scale(1);box-shadow:0 0 0 0 rgba(228,87,46,.5)}to{transform:scale(1.06);box-shadow:0 0 0 8px rgba(228,87,46,0)}}
+@media(prefers-reduced-motion:reduce){.ph.active b{animation:none}}
+.log{background:var(--tinta);color:#C3D3E2;border-radius:12px;padding:12px 14px;font:12.3px/1.6 var(--mono);max-height:320px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.log:empty::before{content:"El registro de la generación aparecerá aquí.";color:#7C93AC}
+.log .ok{color:#6FD3B5} .log .warn{color:#F5B661} .log .err{color:#FF9B7E}
+.live{font:12.5px var(--mono);color:var(--gris)}
+
+/* portada */
+.hero{background:var(--tinta);color:#EAF1F7;border-radius:22px;padding:40px 36px;position:relative;overflow:hidden;box-shadow:var(--sombra-alta)}
+.hero::before{content:"";position:absolute;right:-80px;top:-80px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(228,87,46,.55),transparent 65%)}
+.hero::after{content:"";position:absolute;left:30%;bottom:-140px;width:420px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(14,140,122,.35),transparent 65%)}
+.hero>*{position:relative;z-index:1}
+.hero .eyebrow{color:#8FA7BE;margin:0 0 14px;display:block}
+.hero h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,5.4vw,58px);line-height:.98;letter-spacing:-.035em;margin:0 0 16px;max-width:17ch}
+.hero h1 em{font-style:normal;color:var(--brasa)}
+.hero .lede{max-width:62ch;font-size:18px;color:#C3D3E2;margin:0 0 24px}
+.hero .btn:not(.primary){background:transparent;color:#fff;border-color:#4A6787}
+.hero .btn:not(.primary):hover{border-color:#fff}
+.draft{margin-top:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:14.5px}
+@media(max-width:600px){.hero{padding:28px 20px;border-radius:18px}}
+.sec-title{font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:-.02em;margin:14px 0 0}
+.sec-sub{color:var(--gris);margin:0}
+.journey{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.jstop{background:#fff;border:1px solid var(--linea);border-radius:14px;padding:16px;position:relative;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.jstop:hover{transform:translateY(-3px);box-shadow:var(--sombra-alta)}
+.jstop .ji{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;background:var(--c);margin-bottom:10px}
+.jstop .ji svg{width:20px;height:20px}
+.jstop b{display:block;font-size:15px;margin-bottom:2px}
+.jstop span{display:block;font-size:13px;color:var(--gris);line-height:1.45}
+.jstop .jn{position:absolute;top:12px;right:14px;font:700 12px var(--mono);color:var(--acero-claro)}
+@media(max-width:1000px){.journey{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.journey{grid-template-columns:1fr}}
+.parts{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.part{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--linea);border-radius:12px;padding:12px 14px}
+.part .pi{width:34px;height:34px;border-radius:10px;background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c);display:grid;place-items:center;flex:none}
+.part b{display:block;font-size:14.5px}
+.part span{display:block;font-size:12.8px;color:var(--gris);line-height:1.4}
 
 /* documento */
-.doc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(18px,4vw,48px);font-family:var(--f-doc);font-size:1.08rem;line-height:1.65}
-.doc .dtitle{font-size:1.9rem;font-weight:600;margin-bottom:4px}
-.doc .dsub{font-family:var(--f-ui);font-size:.85rem;color:var(--ink-3);margin-bottom:24px}
-.sec{border-top:1px solid var(--line);padding-top:18px;margin-top:22px;display:flex;flex-direction:column;gap:10px}
-.sec h3{font-family:var(--f-doc);font-size:1.3rem;font-weight:600}
+.res-head{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.res-head h2{font-family:var(--display);font-weight:800;font-size:clamp(24px,3vw,32px);letter-spacing:-.02em;margin:0;flex:1;min-width:240px;line-height:1.1}
+.doc{background:#fff;border:1px solid var(--linea);border-radius:18px;box-shadow:var(--sombra-alta);padding:40px 44px;max-width:920px;margin:0 auto;width:100%;font-size:16px;line-height:1.65}
+@media(max-width:700px){.doc{padding:22px 16px}}
+.doc-h{border-bottom:3px solid var(--tinta);padding-bottom:18px;margin-bottom:8px}
+.doc-kind{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--brasa);margin:0 0 6px}
+.doc .dtitle{font-family:var(--display);font-weight:800;font-size:clamp(26px,3.4vw,36px);letter-spacing:-.025em;line-height:1.05;margin:0 0 12px}
+.doc .dsub{display:flex;flex-wrap:wrap;gap:6px}
+.doc .dsub span{font-size:12.8px;font-weight:600;background:var(--papel);color:var(--acero);border-radius:999px;padding:4px 11px}
+.sec{padding-top:22px;display:flex;flex-direction:column;gap:10px}
+.sec h3{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.sec h3 .num{width:28px;height:28px;border-radius:8px;background:var(--tinta);color:#fff;font:700 13px var(--mono);display:grid;place-items:center;flex:none}
 .sec .body p{margin:0 0 .8em;max-width:75ch}
-.sec .tools{font-family:var(--f-ui);font-size:.8rem;display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--ink-3)}
-.sec textarea{font-family:var(--f-doc);font-size:1rem;min-height:220px}
-.refs{font-size:.92rem}
+.sec .tools{font-size:12.8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;color:var(--gris)}
+.sec textarea{font-size:15px;min-height:220px}
+.refs{font-size:14.5px;padding-left:1.3em}
 .refs li{margin-bottom:6px}
 .gantt{overflow-x:auto}
 .gantt svg{display:block;min-width:560px}
-
-/* matriz */
 .mx td.c{text-align:center}
-.mx .on{color:var(--ok);font-weight:700}
+.mx .on{color:var(--forjado);font-weight:700}
+
+/* navegación inferior */
+.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:35;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--linea);padding-bottom:env(safe-area-inset-bottom,0px)}
+.bn-in{max-width:1180px;margin:0 auto;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:12px}
+.bn-hint{flex:1;text-align:center;font-size:14px;color:var(--gris)}
+@media(max-width:600px){.bn-hint{display:none}.bn-in{justify-content:space-between}}
 
 /* modales */
-.modal{position:fixed;inset:0;background:rgba(10,16,24,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
-.modal[hidden]{display:none!important}
-.mbox{background:var(--surface);border-radius:10px;max-width:620px;width:100%;max-height:90vh;overflow:auto;padding:22px;display:flex;flex-direction:column;gap:14px;border:1px solid var(--line)}
-.mbox pre{background:var(--sunk);padding:10px;border-radius:6px;font-size:.78rem;white-space:pre-wrap;max-height:220px;overflow:auto}
-.toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:6px;font-size:.88rem;z-index:60;max-width:90vw}
-.note{font-size:.84rem;color:var(--ink-2);background:var(--sunk);border-radius:6px;padding:10px 12px}
-.note.warn{background:var(--warn-soft);color:var(--warn)}
-.foot{max-width:1120px;margin:0 auto;padding-top:24px;font-size:.78rem;color:var(--ink-3)}
-@media (max-width:640px){.brand span{display:none}.panel{padding:14px}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(15,34,55,.55);display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;overflow:auto}
+.mbox{background:#fff;border-radius:18px;max-width:640px;width:100%;box-shadow:var(--sombra-alta);overflow:hidden;display:flex;flex-direction:column}
+.mhead{display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--tinta);color:#fff}
+.mhead h3{font-family:var(--display);font-size:22px;margin:0;flex:1}
+.mhead button{background:transparent;border:1px solid #4A6787;color:#fff;border-radius:9px;padding:6px 10px;cursor:pointer}
+.mbody{padding:18px 20px 22px;display:flex;flex-direction:column;gap:14px}
+.mbody pre{background:var(--papel);padding:10px 12px;border-radius:10px;font:12px var(--mono);white-space:pre-wrap;max-height:220px;overflow:auto;margin:0}
+.glos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.glos{grid-template-columns:1fr}}
+.glos div{background:var(--papel);border-radius:12px;padding:12px 14px}
+.glos b{display:block;font-family:var(--display);font-size:16px;margin-bottom:2px}
+.glos span{font-size:13.8px;color:var(--acero)}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tinta);color:#fff;padding:11px 18px;border-radius:12px;font-size:14.5px;font-weight:600;z-index:70;max-width:90vw;text-align:center;box-shadow:var(--sombra-alta)}
+.foot{max-width:1180px;margin:0 auto;padding-top:28px;font-size:13px;color:#6E8299;border-top:1px solid var(--linea);margin-top:28px}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></symbol><symbol id="i-conv" viewBox="0 0 24 24"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 20 7H4z"/></symbol><symbol id="i-proy" viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/></symbol><symbol id="i-pres" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h8"/></symbol><symbol id="i-arte" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></symbol><symbol id="i-gen" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol><symbol id="i-cum" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-ag" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol><symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol><symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-left" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol><symbol id="i-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></symbol><symbol id="i-quote" viewBox="0 0 24 24"><path d="M10 11H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v6c0 2-1 3-3 4"/><path d="M19 11h-4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v6c0 2-1 3-3 4"/></symbol><symbol id="i-hash" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></symbol></defs></svg>
 <header class="top">
-  <div class="top-in">
-    <div class="brandrow">
-      <div class="brand"><b>Memoria I+D</b><span>IVACE+i · AVI</span></div>
-      <div class="spacer"></div>
-      <span class="provpill" id="provPill">modo demostración</span>
-      <button class="topbtn" id="btnIA" type="button">IA</button>
-      <button class="topbtn" id="btnEjemplo" type="button">Cargar ejemplo</button>
-      <button class="topbtn" id="btnHelp" type="button">Ayuda</button>
+  <div class="tb-in">
+    <button class="logo tab" data-v="inicio" type="button" aria-label="Inicio"><span class="anv"><svg class="i"><use href="#i-doc"/></svg></span>Memoria<em>I+D</em></button>
+    <nav class="stepper" aria-label="Recorrido"><button class="sdot tab" data-v="conv" type="button"><span class="n"><span class="k">1</span><svg class="i ok"><use href="#i-check"/></svg></span><span class="lbl">Convocatoria</span></button><span class="sline" data-line="1"></span><button class="sdot tab" data-v="proy" type="button"><span class="n"><span class="k">2</span><svg class="i ok"><use href="#i-check"/></svg></span><span class="lbl">Proyecto</span></button><span class="sline" data-line="2"></span><button class="sdot tab" data-v="pres" type="button"><span class="n"><span class="k">3</span><svg class="i ok"><use href="#i-check"/></svg></span><span class="lbl">Presupuesto</span></button><span class="sline" data-line="3"></span><button class="sdot tab" data-v="arte" type="button"><span class="n"><span class="k">4</span><svg class="i ok"><use href="#i-check"/></svg></span><span class="lbl">Estado del arte</span></button><span class="sline" data-line="4"></span><button class="sdot tab" data-v="gen" type="button"><span class="n"><span class="k">5</span><svg class="i ok"><use href="#i-check"/></svg></span><span class="lbl">Generar</span></button></nav>
+    <div class="tb-tools">
+      <button class="tb-btn tab" data-v="mem" type="button" title="Memoria" aria-label="Memoria"><svg class="i"><use href="#i-doc"/></svg><span class="lbl">Memoria</span></button>
+      <button class="tb-btn tab" data-v="cum" type="button" title="Cumplimiento" aria-label="Cumplimiento"><svg class="i"><use href="#i-cum"/></svg><span class="lbl">Cumplimiento</span></button>
+      <button class="tb-btn tab" data-v="ag" type="button" title="Agentes y prompts" aria-label="Agentes y prompts"><svg class="i"><use href="#i-ag"/></svg><span class="lbl">Agentes</span></button>
+      <span class="tb-sep"></span>
+      <span class="provpill" id="provPill">demostración</span>
+      <button class="tb-btn" id="btnIA" type="button" title="Proveedor de IA"><svg class="i"><use href="#i-key"/></svg><span class="lbl">IA</span></button>
+      <button class="tb-btn" id="btnHelp" type="button" aria-label="Ayuda"><svg class="i"><use href="#i-help"/></svg></button>
     </div>
-    <nav class="tabs" role="tablist" aria-label="Recorrido">
-      <button class="tab" data-v="conv" role="tab"><span class="n">1</span>Convocatoria <i class="dot" id="d-conv"></i></button>
-      <button class="tab" data-v="proy" role="tab"><span class="n">2</span>Proyecto <i class="dot" id="d-proy"></i></button>
-      <button class="tab" data-v="pres" role="tab"><span class="n">3</span>Presupuesto y plan <i class="dot" id="d-pres"></i></button>
-      <button class="tab" data-v="arte" role="tab"><span class="n">4</span>Estado del arte <i class="dot" id="d-arte"></i></button>
-      <button class="tab" data-v="gen" role="tab"><span class="n">5</span>Generar</button>
-      <span class="tabsep"></span>
-      <button class="tab hub" data-v="mem" role="tab">Memoria</button>
-      <button class="tab hub" data-v="cum" role="tab">Cumplimiento</button>
-      <button class="tab hub" data-v="ag" role="tab">Agentes y prompts</button>
-    </nav>
   </div>
+  <div class="progress"><span id="progBar"></span></div>
 </header>
 
 <main>
+<!-- INICIO -->
+<section class="view" id="v-inicio" hidden>
+  <div class="hero">
+    <span class="eyebrow">IVACE+i · AVI · Comunitat Valenciana</span>
+    <h1>Memorias de I+D con <em>requisitos verificados</em></h1>
+    <p class="lede">Sube las bases de la convocatoria, describe tu proyecto y su presupuesto, y obtén un borrador de memoria técnica que solo cita artículos de las bases y papers reales. El código comprueba cada cita, cada cifra y cada regla del presupuesto.</p>
+    <div class="row"><button class="btn primary big" id="btnEmpezar" type="button">Empezar <svg class="i"><use href="#i-right"/></svg></button><button class="btn big" id="btnEjemplo" type="button"><svg class="i"><use href="#i-play"/></svg> Probar con el ejemplo</button></div>
+    <div class="draft" id="draftBox" hidden></div>
+  </div>
+  <h2 class="sec-title">El recorrido</h2>
+  <p class="sec-sub">Cinco pasos. Puedes volver a cualquiera desde la barra superior.</p>
+  <div class="journey">
+    <button class="jstop tab" data-v="conv" type="button" style="--c:var(--c-conv)"><span class="jn">1</span><div class="ji"><svg class="i"><use href="#i-conv"/></svg></div><b>Convocatoria</b><span>Bases troceadas en fragmentos [B]; criterios y apartados verificados literalmente.</span></button>
+    <button class="jstop tab" data-v="proy" type="button" style="--c:var(--c-proy)"><span class="jn">2</span><div class="ji"><svg class="i"><use href="#i-proy"/></svg></div><b>Proyecto</b><span>Idea, objetivos y entidades: la única fuente de nombres y cifras.</span></button>
+    <button class="jstop tab" data-v="pres" type="button" style="--c:var(--c-pres)"><span class="jn">3</span><div class="ji"><svg class="i"><use href="#i-pres"/></svg></div><b>Presupuesto y plan</b><span>Reglas del programa comprobadas por código y cronograma.</span></button>
+    <button class="jstop tab" data-v="arte" type="button" style="--c:var(--c-arte)"><span class="jn">4</span><div class="ji"><svg class="i"><use href="#i-arte"/></svg></div><b>Estado del arte</b><span>Seis bases académicas, deduplicación por DOI y corpus [P] revisado.</span></button>
+    <button class="jstop tab" data-v="gen" type="button" style="--c:var(--c-gen)"><span class="jn">5</span><div class="ji"><svg class="i"><use href="#i-gen"/></svg></div><b>Generar</b><span>Redacción por secciones, evaluación con los criterios y mejora.</span></button>
+  </div>
+  <h2 class="sec-title">Qué comprueba el código</h2>
+  <div class="parts">
+    <div class="part" style="--c:var(--c-conv)"><div class="pi"><svg class="i"><use href="#i-conv"/></svg></div><div><b>Requisitos literales</b><span>Cada criterio extraído debe aparecer, letra a letra, en las bases.</span></div></div>
+    <div class="part" style="--c:var(--c-arte)"><div class="pi"><svg class="i"><use href="#i-quote"/></svg></div><div><b>Citas ancladas</b><span>Solo [B n] y [P n] existentes; el resto se elimina y se cuenta.</span></div></div>
+    <div class="part" style="--c:var(--c-gen)"><div class="pi"><svg class="i"><use href="#i-hash"/></svg></div><div><b>Cifras con respaldo</b><span>Se señalan los números que no están en tus datos, las bases o los papers.</span></div></div>
+    <div class="part" style="--c:var(--c-pres)"><div class="pi"><svg class="i"><use href="#i-pres"/></svg></div><div><b>Presupuesto</b><span>€/hora, gestión, difusión, indirectos, topes y reparto en consorcio.</span></div></div>
+    <div class="part" style="--c:var(--c-proy)"><div class="pi"><svg class="i"><use href="#i-cum"/></svg></div><div><b>Cobertura</b><span>Todos los apartados obligatorios y todos los criterios tienen sección.</span></div></div>
+    <div class="part" style="--c:var(--c-res)"><div class="pi"><svg class="i"><use href="#i-gen"/></svg></div><div><b>Mejora con control</b><span>Una reescritura solo se queda si la nota total re-evaluada sube.</span></div></div>
+  </div>
+</section>
+
 <!-- 1 · CONVOCATORIA -->
 <section class="view" id="v-conv" hidden>
-  <div class="vhead"><span class="eyebrow">Paso 1</span><h2>Convocatoria</h2>
-    <p>Elige el programa y sube las bases y el modelo de memoria técnica. El texto se trocea en fragmentos numerados [B1], [B2]…: los agentes solo pueden citar requisitos que estén ahí, y el código comprueba que cada requisito extraído aparece literalmente en las bases.</p></div>
+  <div class="sh"><div class="sh-ico" style="--c:var(--c-conv)"><svg class="i"><use href="#i-conv"/></svg></div><div><p class="sh-step">Paso 1</p><h2>Convocatoria</h2><p class="sh-lede">Elige el programa y sube las bases y el modelo de memoria técnica. El texto se trocea en fragmentos numerados [B1], [B2]…: los agentes solo pueden citar requisitos que estén ahí, y el código comprueba que cada requisito extraído aparece literalmente en las bases.</p></div></div>
   <div class="grid2">
     <div class="panel">
       <div class="field"><label for="selPreset">Programa</label><select id="selPreset"></select><span class="hint" id="presetFuente"></span></div>
@@ -211,7 +325,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
       <p class="hint">Valores tomados de las fichas públicas de la última convocatoria. Ajústalos a las bases vigentes antes de presentar.</p>
     </div>
     <div class="panel">
-      <div class="drop" id="dropBases" tabindex="0" role="button" aria-label="Subir bases o modelo de memoria">Arrastra aquí las bases (DOGV), el modelo de memoria técnica o la ficha<br><span class="hint">PDF, DOCX, TXT o MD · varios archivos</span></div>
+      <div class="drop" id="dropBases" tabindex="0" role="button" aria-label="Subir bases o modelo de memoria"><div class="di"><svg class="i"><use href="#i-upload"/></svg></div>Arrastra aquí las bases (DOGV), el modelo de memoria técnica o la ficha<br><span class="hint">PDF, DOCX, TXT o MD · varios archivos</span></div>
       <input type="file" id="fileBases" multiple accept=".pdf,.docx,.txt,.md" hidden>
       <div class="field"><label for="pasteBases">…o pega el texto</label><textarea id="pasteBases" placeholder="Pega aquí artículos de las bases, criterios de valoración o el índice de la memoria técnica"></textarea></div>
       <div class="row"><button class="btn" id="btnPaste" type="button">Añadir texto pegado</button><button class="btn danger" id="btnClearBases" type="button">Vaciar</button></div>
@@ -230,8 +344,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
 
 <!-- 2 · PROYECTO -->
 <section class="view" id="v-proy" hidden>
-  <div class="vhead"><span class="eyebrow">Paso 2</span><h2>Proyecto</h2>
-    <p>Todo lo que escribas aquí es la única fuente admitida para nombres, cifras, plazos y compromisos. Si el redactor menciona una cifra que no está en estos datos, en las bases o en los papers, se marca en Cumplimiento.</p></div>
+  <div class="sh"><div class="sh-ico" style="--c:var(--c-proy)"><svg class="i"><use href="#i-proy"/></svg></div><div><p class="sh-step">Paso 2</p><h2>Proyecto</h2><p class="sh-lede">Todo lo que escribas aquí es la única fuente admitida para nombres, cifras, plazos y compromisos. Si el redactor menciona una cifra que no está en estos datos, en las bases o en los papers, se marca en Cumplimiento.</p></div></div>
   <div class="grid2">
     <div class="panel">
       <div class="field"><label for="p_titulo">Título del proyecto</label><input type="text" id="p_titulo" data-bind="proj.titulo"></div>
@@ -259,8 +372,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
 
 <!-- 3 · PRESUPUESTO -->
 <section class="view" id="v-pres" hidden>
-  <div class="vhead"><span class="eyebrow">Paso 3</span><h2>Presupuesto y plan de trabajo</h2>
-    <p>Las cuentas y los límites los calcula el código con las reglas del programa elegido. El redactor recibe estas cifras ya cerradas y no puede inventar otras.</p></div>
+  <div class="sh"><div class="sh-ico" style="--c:var(--c-pres)"><svg class="i"><use href="#i-pres"/></svg></div><div><p class="sh-step">Paso 3</p><h2>Presupuesto y plan de trabajo</h2><p class="sh-lede">Las cuentas y los límites los calcula el código con las reglas del programa elegido. El redactor recibe estas cifras ya cerradas y no puede inventar otras.</p></div></div>
   <div class="panel">
     <div class="row"><h3>Personal propio</h3><div class="spacer"></div><button class="btn small" id="addPer" type="button">Añadir perfil</button></div>
     <div class="tw"><table><thead><tr><th>Perfil</th><th>Entidad</th><th>Dedicación</th><th class="num">Horas</th><th class="num">€/hora</th><th class="num">Coste</th><th></th></tr></thead><tbody id="tbPer"></tbody></table></div>
@@ -295,8 +407,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
 
 <!-- 4 · ESTADO DEL ARTE -->
 <section class="view" id="v-arte" hidden>
-  <div class="vhead"><span class="eyebrow">Paso 4</span><h2>Estado del arte</h2>
-    <p>Se buscan papers en bases académicas abiertas, se fusionan duplicados por DOI y se ordenan. Revisa la lista y desmarca lo que no encaje: los seleccionados forman el corpus [P1]…[PN] que el redactor puede citar.</p></div>
+  <div class="sh"><div class="sh-ico" style="--c:var(--c-arte)"><svg class="i"><use href="#i-arte"/></svg></div><div><p class="sh-step">Paso 4</p><h2>Estado del arte</h2><p class="sh-lede">Se buscan papers en bases académicas abiertas, se fusionan duplicados por DOI y se ordenan. Revisa la lista y desmarca lo que no encaje: los seleccionados forman el corpus [P1]…[PN] que el redactor puede citar.</p></div></div>
   <div class="panel">
     <div class="grid3" id="srcBox"></div>
     <div class="grid3">
@@ -306,7 +417,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
       <div class="field"><label for="a_email">Correo para las APIs (opcional)</label><input type="text" id="a_email" placeholder="mejora el acceso a CrossRef y OpenAlex"></div>
     </div>
     <div class="field"><label for="a_queries">Consultas (una por línea). Si lo dejas vacío, las propone la IA</label><textarea id="a_queries" data-bind="arte.queries" style="min-height:70px"></textarea></div>
-    <div class="row"><button class="btn primary" id="btnBuscar" type="button">Buscar estado del arte</button><button class="btn" id="btnParar2" type="button" disabled>Parar</button><span class="live" id="arteStatus"></span></div>
+    <div class="row"><button class="btn primary" id="btnBuscar" type="button"><svg class="i"><use href="#i-arte"/></svg> Buscar estado del arte</button><button class="btn" id="btnParar2" type="button" disabled>Parar</button><span class="live" id="arteStatus"></span></div>
   </div>
   <div class="panel">
     <div class="row"><h3>Papers recuperados</h3><span class="pill neu" id="papCount">0</span><div class="spacer"></div><span class="hint" id="corpusInfo"></span></div>
@@ -316,8 +427,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
 
 <!-- 5 · GENERAR -->
 <section class="view" id="v-gen" hidden>
-  <div class="vhead"><span class="eyebrow">Paso 5</span><h2>Generar la memoria</h2>
-    <p>La cadena analiza la convocatoria, fija la estructura, redacta sección a sección validando citas y cifras, evalúa con los criterios de la convocatoria y mejora la sección más floja solo si la nota total sube.</p></div>
+  <div class="sh"><div class="sh-ico" style="--c:var(--c-gen)"><svg class="i"><use href="#i-gen"/></svg></div><div><p class="sh-step">Paso 5</p><h2>Generar la memoria</h2><p class="sh-lede">La cadena analiza la convocatoria, fija la estructura, redacta sección a sección validando citas y cifras, evalúa con los criterios de la convocatoria y mejora la sección más floja solo si la nota total sube.</p></div></div>
   <div class="grid2">
     <div class="panel">
       <div class="grid3">
@@ -328,7 +438,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
       </div>
       <label class="chk"><input type="checkbox" id="g_eval" data-bind="opt.evalua" data-bool> <span>Evaluar con los criterios de la convocatoria (autoevaluación del modelo, no calibrada)</span></label>
       <label class="chk"><input type="checkbox" id="g_res" data-bind="opt.resumen" data-bool> <span>Redactar un resumen ejecutivo si la estructura no lo incluye</span></label>
-      <div class="row"><button class="btn primary" id="btnGen" type="button">Generar memoria</button><button class="btn" id="btnParar" type="button" disabled>Parar</button></div>
+      <div class="row"><button class="btn primary big" id="btnGen" type="button"><svg class="i"><use href="#i-gen"/></svg> Generar memoria</button><button class="btn" id="btnParar" type="button" disabled>Parar</button></div>
       <div class="live" id="liveCost"></div>
     </div>
     <div class="panel sunk" id="readyBox"></div>
@@ -341,57 +451,52 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
 
 <!-- MEMORIA -->
 <section class="view" id="v-mem" hidden>
-  <div class="row"><div class="vhead"><span class="eyebrow">Resultado</span><h2>Memoria técnica</h2></div><div class="spacer"></div>
-    <button class="btn" id="exDocx" type="button">Word (.docx)</button><button class="btn" id="exMd" type="button">Markdown</button><button class="btn" id="exJson" type="button">Traza JSON</button><button class="btn" id="exCopy" type="button">Copiar texto</button></div>
+  <div class="res-head"><div class="sh-ico" style="--c:var(--c-res)"><svg class="i"><use href="#i-doc"/></svg></div><h2>Memoria técnica</h2><div class="row"><button class="btn word" id="exDocx" type="button"><svg class="i"><use href="#i-download"/></svg> Word (.docx)</button><button class="btn" id="exMd" type="button">Markdown</button><button class="btn" id="exJson" type="button">Traza JSON</button><button class="btn" id="exCopy" type="button">Copiar texto</button></div></div>
   <div id="memBox"></div>
 </section>
 
 <!-- CUMPLIMIENTO -->
 <section class="view" id="v-cum" hidden>
-  <div class="vhead"><span class="eyebrow">Auditoría</span><h2>Cumplimiento</h2>
-    <p>Todo lo que aparece aquí lo calcula el código, salvo la evaluación simulada, que es un juicio del modelo y se marca como tal.</p></div>
+  <div class="sh"><div class="sh-ico" style="--c:var(--c-res)"><svg class="i"><use href="#i-cum"/></svg></div><div><p class="sh-step">Auditoría</p><h2>Cumplimiento</h2><p class="sh-lede">Todo lo que aparece aquí lo calcula el código, salvo la evaluación simulada, que es un juicio del modelo y se marca como tal.</p></div></div>
   <div id="cumBox"></div>
 </section>
 
 <!-- AGENTES -->
 <section class="view" id="v-ag" hidden>
-  <div class="vhead"><span class="eyebrow">Configuración</span><h2>Agentes y prompts</h2>
-    <p>Cada agente tiene su prompt y su tope de tokens. Las variables entre llaves dobles se rellenan al ejecutar. Los cambios se guardan en este navegador.</p></div>
+  <div class="sh"><div class="sh-ico" style="--c:var(--c-res)"><svg class="i"><use href="#i-ag"/></svg></div><div><p class="sh-step">Configuración</p><h2>Agentes y prompts</h2><p class="sh-lede">Cada agente tiene su prompt y su tope de tokens. Las variables entre llaves dobles se rellenan al ejecutar. Los cambios se guardan en este navegador.</p></div></div>
   <div id="agBox"></div>
 </section>
-<div class="foot">Memoria I+D v<span id="ver"></span> · Funciona en tu navegador: las claves y los borradores se guardan solo aquí. Arquitectura basada en Doctoralia (F. Borrás Rocher, UMH, licencia MIT). Revisa siempre la memoria y las bases oficiales antes de presentar.</div>
+<div class="foot">Memoria I+D v<span id="ver"></span> · Funciona en tu navegador: las claves y los borradores se guardan solo aquí. Arquitectura e identidad visual basadas en Doctoralia (F. Borrás Rocher, UMH, licencia MIT). Revisa siempre la memoria y las bases oficiales antes de presentar.</div>
 </main>
 
+<nav class="bottomnav" aria-label="Navegación"><div class="bn-in"><button class="btn" id="navBack" type="button"><svg class="i"><use href="#i-left"/></svg> Atrás</button><span class="bn-hint" id="navHint"></span><button class="btn dark" id="navNext" type="button"><span id="navNextTxt">Empezar</span> <svg class="i"><use href="#i-right"/></svg></button></div></nav>
 <!-- modal IA -->
 <div class="modal" id="mIA" hidden>
-  <div class="mbox" role="dialog" aria-labelledby="mIAt">
-    <h3 id="mIAt">Proveedor de IA</h3>
+  <div class="mbox" role="dialog" aria-labelledby="mIAt"><div class="mhead"><h3 id="mIAt">Proveedor de IA</h3><button type="button" data-close aria-label="Cerrar">✕</button></div><div class="mbody">
     <div class="field"><label for="selProv">Proveedor</label><select id="selProv"><option value="demo">Demostración (sin clave, respuestas simuladas)</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option></select></div>
     <div class="field" id="keyField"><label for="apiKey">Clave de API</label><div class="row"><input type="password" id="apiKey" autocomplete="off" style="flex:1"><button class="btn small" id="btnEye" type="button">Ver</button></div><span class="hint">Se guarda solo en este navegador y se envía solo a tu proveedor.</span></div>
     <div class="field" id="modelField"><label for="modelo">Modelo</label><input type="text" id="modelo" list="modelos"><datalist id="modelos"></datalist><div class="row"><button class="btn small" id="btnModelos" type="button">Ver modelos de mi clave</button><span class="hint" id="iaEstado"></span></div></div>
     <div class="grid3"><div class="field"><label for="priceIn">Precio entrada ($/M tokens)</label><input type="text" id="priceIn" placeholder="p. ej. 0,40"></div><div class="field"><label for="priceOut">Precio salida ($/M tokens)</label><input type="text" id="priceOut" placeholder="p. ej. 1,60"></div></div>
     <div class="row"><div class="spacer"></div><button class="btn primary" data-close type="button">Listo</button></div>
-  </div>
+  </div></div>
 </div>
 <!-- modal envío -->
 <div class="modal" id="mEnvio" hidden>
-  <div class="mbox" role="dialog" aria-labelledby="mEt">
-    <h3 id="mEt">Antes del primer envío</h3>
+  <div class="mbox" role="dialog" aria-labelledby="mEt"><div class="mhead"><h3 id="mEt">Antes del primer envío</h3></div><div class="mbody">
     <p>Se enviarán a <b id="envProv"></b> los datos del proyecto (con correos, DNI/NIE y teléfonos enmascarados), fragmentos de la convocatoria y títulos y resúmenes de los papers. Si el proyecto es confidencial, comprueba que tu organización permite usar este proveedor.</p>
     <pre id="envMuestra"></pre>
     <div class="row"><div class="spacer"></div><button class="btn" id="envNo" type="button">Cancelar</button><button class="btn primary" id="envSi" type="button">Enviar y continuar</button></div>
-  </div>
+  </div></div>
 </div>
 <!-- modal ayuda -->
 <div class="modal" id="mHelp" hidden>
-  <div class="mbox" role="dialog" aria-labelledby="mHt">
-    <h3 id="mHt">Cómo funciona</h3>
+  <div class="mbox" role="dialog" aria-labelledby="mHt"><div class="mhead"><h3 id="mHt">Cómo funciona</h3><button type="button" data-close aria-label="Cerrar">✕</button></div><div class="mbody">
     <p><b>La IA propone, el código comprueba.</b> Hay tres fuentes numeradas: fragmentos de la convocatoria [B], papers [P] y los datos del proyecto que tú escribes. El redactor solo puede citar [B] y [P] por número; el código elimina las citas que no existen, avisa de cifras que no están en ninguna fuente y comprueba el presupuesto con las reglas del programa.</p>
     <p><b>Recorrido.</b> 1) Sube las bases o usa la estructura genérica del programa. 2) Describe el proyecto y las entidades. 3) Rellena presupuesto y paquetes de trabajo. 4) Busca y revisa el estado del arte. 5) Genera. Después revisa Memoria y Cumplimiento.</p>
     <p><b>Límites.</b> Una cita válida prueba que el paper o el artículo existe en el corpus, no que diga lo que afirma la frase. La evaluación simulada es una opinión del modelo. Las reglas de presupuesto vienen de fichas de convocatorias anteriores: confírmalas con las bases vigentes.</p>
     <p><b>Modo demostración.</b> Sin clave, la app responde con textos simulados para que veas el recorrido completo. El ejemplo y sus referencias son ficticios y están marcados.</p>
     <div class="row"><div class="spacer"></div><button class="btn primary" data-close type="button">Cerrar</button></div>
-  </div>
+  </div></div>
 </div>
 <div class="toast" id="toast" hidden></div>
 <script>
@@ -1205,19 +1310,30 @@ function cargaEjemplo() {
 <script>
 'use strict';
 /* ══ Interfaz ══ */
-const VIEWS = ['conv', 'proy', 'pres', 'arte', 'gen', 'mem', 'cum', 'ag'];
-const RENDER = {conv: renderConv, proy: renderProy, pres: renderPres, arte: renderArte, gen: renderGen, mem: renderMem, cum: renderCum, ag: renderAg};
+const VIEWS = ['inicio', 'conv', 'proy', 'pres', 'arte', 'gen', 'mem', 'cum', 'ag'];
+const PASOS = ['conv', 'proy', 'pres', 'arte', 'gen'];
+const NAV = {inicio: ['Empezar', 'conv', 'Sube las bases o empieza con la estructura genérica del programa'], conv: ['Siguiente: Proyecto', 'proy', 'Las bases se trocean en fragmentos [B] que el código verifica'], proy: ['Siguiente: Presupuesto', 'pres', 'Estos datos son la única fuente de nombres y cifras'], pres: ['Siguiente: Estado del arte', 'arte', 'Las reglas del programa se comprueban mientras escribes'], arte: ['Siguiente: Generar', 'gen', 'Los papers marcados forman el corpus [P]'], gen: ['Ver la memoria', 'mem', 'La mejora solo se conserva si la nota total sube'], mem: ['Ver cumplimiento', 'cum', 'Edita o reescribe cualquier sección'], cum: ['Volver al inicio', 'inicio', 'Todo lo calcula el código salvo la evaluación simulada'], ag: ['Volver al inicio', 'inicio', 'Los cambios en los prompts se guardan en este navegador']};
+const ORDEN = ['inicio', 'conv', 'proy', 'pres', 'arte', 'gen', 'mem', 'cum'];
+const RENDER = {inicio: renderInicio, conv: renderConv, proy: renderProy, pres: renderPres, arte: renderArte, gen: renderGen, mem: renderMem, cum: renderCum, ag: renderAg};
 let VIEW = 'conv';
 function showView(v) {
-  if (!VIEWS.includes(v)) v = 'conv'; VIEW = v;
-  VIEWS.forEach(x => { $('v-' + x).hidden = x !== v; }); $$('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.v === v ? 'true' : 'false'));
+  if (!VIEWS.includes(v)) v = 'inicio'; VIEW = v;
+  VIEWS.forEach(x => { $('v-' + x).hidden = x !== v; }); $$('.tb-btn.tab').forEach(t => { if (t.dataset.v === v) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current'); });
+  const ip = PASOS.indexOf(v); $('progBar').style.width = ip < 0 ? (v === 'inicio' ? '0%' : '100%') : ((ip + 1) / PASOS.length * 100) + '%';
+  const N = NAV[v]; $('navNextTxt').textContent = N[0]; $('navHint').textContent = N[2]; $('navBack').hidden = v === 'inicio'; pintaDots();
   RENDER[v](); try { if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v); } catch {}
   window.scrollTo({top: 0});
 }
 const renderAll = () => { pintaBinds(); RENDER[VIEW](); pintaDots(); pintaProv(); };
 function pintaDots() {
-  const ok = {conv: !!S.call, proy: !!(S.proj.titulo && S.proj.idea), pres: S.budget.per.length > 0 && !checksPresupuesto().some(c => c.estado === 'bad'), arte: corpusSel().length >= 3};
-  Object.entries(ok).forEach(([k, v]) => $('d-' + k)?.classList.toggle('ok', v));
+  const ok = {conv: !!S.call, proy: !!(S.proj.titulo && S.proj.idea), pres: S.budget.per.length > 0 && !checksPresupuesto().some(c => c.estado === 'bad'), arte: corpusSel().length >= 3, gen: !!(S.run && S.run.secs?.length && !S.run.parcial)};
+  $$('.sdot').forEach(b => b.dataset.state = b.dataset.v === VIEW ? 'now' : ok[b.dataset.v] ? 'done' : '');
+  $$('.sline').forEach(l => l.classList.toggle('on', !!ok[PASOS[+l.dataset.line - 1]]));
+}
+function renderInicio() {
+  const r = S.run, d = $('draftBox');
+  if (r && r.secs?.length) { d.hidden = false; d.innerHTML = `<span><b>${esc(S.proj.acronimo || S.proj.titulo || 'Memoria')}</b> · ${r.parcial ? 'borrador parcial' : 'memoria generada'} el ${new Date(r.ts).toLocaleDateString('es-ES')}</span><span class="spacer"></span><button class="btn small tab" data-v="mem" type="button">Abrir la memoria</button>`; }
+  else d.hidden = true;
 }
 const f1 = x => Number(x).toLocaleString('es-ES', {minimumFractionDigits: 1, maximumFractionDigits: 1});
 const pill = (estado, txt) => `<span class="pill ${estado}">${esc(txt)}</span>`;
@@ -1353,14 +1469,14 @@ function renderMem() {
   const fecha = new Date(r.ts).toLocaleDateString('es-ES', {day: 'numeric', month: 'long', year: 'numeric'});
   $('memBox').innerHTML = `${r.parcial ? '<div class="note warn">Borrador parcial: la generación se detuvo antes de terminar.</div>' : ''}${r.ejemplo ? '<div class="note warn">Ejemplo con datos, bases y referencias ficticias.</div>' : ''}
   <article class="doc">
-    <div class="dtitle">${esc(S.proj.titulo || 'Memoria técnica')}</div>
-    <div class="dsub">${esc(S.proj.acronimo || '')} · ${esc(PRESETS[r.preset]?.nombre || '')} · ${fecha} · ${esc(PROV[r.prov]?.n || '')} ${esc(r.model || '')}</div>
-    ${r.resumen ? `<section class="sec"><h3>Resumen ejecutivo</h3><div class="body">${parrafos(r.resumen)}</div></section>` : ''}
-    ${r.secs.map((s, i) => `<section class="sec" id="sec${i}"><h3>${esc(s.titulo)}</h3>
+    <header class="doc-h"><p class="doc-kind">Memoria técnica · ${esc((PRESETS[r.preset]?.nombre || '').split(' · ')[0])}</p><div class="dtitle">${esc(S.proj.titulo || 'Memoria técnica')}</div>
+    <div class="dsub">${S.proj.acronimo ? `<span>${esc(S.proj.acronimo)}</span>` : ''}<span>${fecha}</span><span>${esc(PROV[r.prov]?.n || '')} · ${esc(r.model || '')}</span><span>${r.refs.length} referencias</span><span>${fmtN(r.metr?.palabras || 0)} palabras</span></div></header>
+    ${r.resumen ? `<section class="sec"><h3><span class="num">R</span>Resumen ejecutivo</h3><div class="body">${parrafos(r.resumen)}</div></section>` : ''}
+    ${r.secs.map((s, i) => `<section class="sec" id="sec${i}"><h3><span class="num">${i + 1}</span>${esc(s.titulo)}</h3>
       <div class="tools">${pill(s.limite && wc(s.final) > s.limite ? 'bad' : 'neu', `${wc(s.final)} palabras${s.limite ? ` / máx. ${s.limite}` : ''}`)}${s.criterios.map(c => pill('neu', c)).join('')}${s.bRefs.length ? `<span>Bases: ${s.bRefs.map(n => 'B' + n).join(', ')}</span>` : ''}${s.editado ? pill('warn', 'editada a mano') : ''}<span class="spacer"></span><button class="btn small" data-edit="${i}" type="button">Editar</button><button class="btn small" data-regen="${i}" type="button">Reescribir con indicaciones</button></div>
       <div class="body" id="sb${i}">${parrafos(s.final)}</div></section>`).join('')}
-    ${S.wps.length ? `<section class="sec"><h3>Cronograma</h3><div class="gantt">${ganttSvg(S.wps, S.proj.meses)}</div></section>` : ''}
-    <section class="sec"><h3>Referencias</h3>${r.refs.length ? `<ol class="refs">${r.refs.map(x => `<li>${esc(refLine(x, r.cite).replace(/^\[\d+\]\s*/, ''))}</li>`).join('')}</ol>` : '<p class="hint">La memoria no cita ningún paper del corpus.</p>'}</section>
+    ${S.wps.length ? `<section class="sec"><h3><span class="num">C</span>Cronograma</h3><div class="gantt">${ganttSvg(S.wps, S.proj.meses)}</div></section>` : ''}
+    <section class="sec"><h3><span class="num">R</span>Referencias</h3>${r.refs.length ? `<ol class="refs">${r.refs.map(x => `<li>${esc(refLine(x, r.cite).replace(/^\[\d+\]\s*/, ''))}</li>`).join('')}</ol>` : '<p class="hint">La memoria no cita ningún paper del corpus.</p>'}</section>
   </article>`;
   $$('[data-edit]').forEach(b => b.onclick = () => editaSeccion(+b.dataset.edit));
   $$('[data-regen]').forEach(b => b.onclick = () => regeneraSeccion(+b.dataset.regen));
@@ -1427,7 +1543,7 @@ function renderAg() {
 }
 
 /* ── IA y aviso de envío ── */
-function pintaProv() { const p = getProv(); $('provPill').textContent = p === 'demo' ? 'modo demostración' : `${PROV[p].n} · ${getMod()}`; }
+function pintaProv() { const p = getProv(); $('provPill').textContent = p === 'demo' ? 'demostración' : `${PROV[p].n} · ${getMod()}`; }
 function cargaIA() { const pv = getProv(); $('selProv').value = pv; const d = pv === 'demo'; $('keyField').hidden = d; $('modelField').hidden = d; $('apiKey').value = getKey(pv); $('modelo').value = getMod(pv); $('priceIn').value = LS.get('priceIn'); $('priceOut').value = LS.get('priceOut'); $('iaEstado').textContent = ''; let ml = []; try { ml = JSON.parse(LS.get('models_' + pv) || '[]'); } catch {} $('modelos').innerHTML = [...new Set([PROV[pv].m, ...ml])].map(m => `<option value="${esc(m)}">`).join(''); }
 function abreIA() { cargaIA(); $('mIA').hidden = false; }
 $('selProv').onchange = () => { LS.set('prov', $('selProv').value); cargaIA(); pintaProv(); };
@@ -1517,14 +1633,17 @@ $('btnParar').onclick = $('btnParar2').onclick = () => { PARAR = true; log('⏹ 
 $('btnIA').onclick = abreIA;
 $('btnHelp').onclick = () => $('mHelp').hidden = false;
 $('btnEjemplo').onclick = cargaEjemplo;
+$('btnEmpezar').onclick = () => showView('conv');
+$('navNext').onclick = () => { if (VIEW === 'gen' && !S.run?.secs?.length) { generar(); return; } showView(NAV[VIEW][1]); };
+$('navBack').onclick = () => { const i = ORDEN.indexOf(VIEW); showView(i > 0 ? ORDEN[i - 1] : 'inicio'); };
 window.addEventListener('hashchange', () => showView(location.hash.slice(1)));
 window.addEventListener('pagehide', () => { try { kv('readwrite', s => s.put(JSON.parse(JSON.stringify(S)), 'main')); } catch {} });
 $('ver').textContent = VERSION;
 (async () => {
-  const st = await cargaEstado();
+  const st = await cargaEstado(), h0 = location.hash.slice(1);
   if (st && typeof st === 'object') { S = {...estadoInicial(), ...st, proj: {...estadoInicial().proj, ...(st.proj || {})}, arte: {...estadoInicial().arte, ...(st.arte || {})}, opt: {...estadoInicial().opt, ...(st.opt || {})}, budget: {...estadoInicial().budget, ...(st.budget || {})}}; }
   else if (getProv() === 'demo') cargaEjemplo();
-  pintaBinds(); pintaProv(); showView(location.hash.slice(1) || 'conv'); pintaDots();
+  pintaBinds(); pintaProv(); showView(h0 || 'inicio'); pintaDots();
 })();
 </script>
 </body>

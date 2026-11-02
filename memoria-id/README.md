@@ -32,6 +32,6 @@ La IA propone y el código comprueba: citas fuera de rango o inventadas se elimi
 
 ## Créditos
 
-La arquitectura (corpus numerado, citación por índice y validación determinista, capa de red para las bases académicas y generación de .docx sin librerías) se basa en [Doctoralia](https://github.com/fborrasumh/doctoralia), de Fernando Borrás Rocher (UMH), publicado con licencia MIT.
+La arquitectura (corpus numerado, citación por índice y validación determinista, capa de red para las bases académicas y generación de .docx sin librerías) y la identidad visual se basan en [Doctoralia](https://github.com/fborrasumh/doctoralia), de Fernando Borrás Rocher (UMH), publicado con licencia MIT.
 
 El fichero `THIRD_PARTY_LICENSE_doctoralia.txt` contiene la licencia MIT original de Doctoralia y debe acompañar a `index.html` si lo publicas o distribuyes.
