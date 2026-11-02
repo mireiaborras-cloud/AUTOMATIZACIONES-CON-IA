@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Memoria I+D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Newsreader:opsz,wght@6..72,500;6..72,600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<!--
+  Memoria I+D · redacción asistida de memorias técnicas para convocatorias autonómicas de I+D (IVACE+i / AVI).
+  Arquitectura inspirada en Doctoralia (F. Borrás Rocher, UMH, licencia MIT): corpus numerados, la IA redacta citando
+  por índice y el código comprueba cada cita, cada cifra y cada regla del presupuesto antes de dar nada por bueno.
+
+  Contiene código adaptado de Doctoralia (https://github.com/fborrasumh/doctoralia).
+  Copyright (c) 2026 Fernando Borrás Rocher. Licencia MIT: el aviso de copyright y este permiso deben
+  incluirse en todas las copias o partes sustanciales del software. Texto completo en THIRD_PARTY_LICENSE_doctoralia.txt.
+-->
+<style>
+/* Layout: barra superior de tinta con el recorrido en pestañas; columna central de trabajo (máx. 1120 px) con paneles planos. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --sunk:#eceef2; --line:#d7dbe2; --ink:#16202c; --ink-2:#4a5566; --ink-3:#6b7585;
+  --brand:#123a5c; --brand-ink:#ffffff; --accent:#0b6bcb; --accent-soft:#e3effb;
+  --ok:#1f7a4d; --ok-soft:#e3f3ea; --warn:#9a5b00; --warn-soft:#fdf0d8; --bad:#b42318; --bad-soft:#fde7e5;
+  --f-ui:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-doc:"Newsreader",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --r:8px; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f141b; --surface:#161d26; --sunk:#1d2631; --line:#2c3846; --ink:#e7ecf2; --ink-2:#b4bfcc; --ink-3:#8b97a6;
+  --brand:#0b2236; --brand-ink:#e7ecf2; --accent:#5aa9f0; --accent-soft:#16304a;
+  --ok:#5cc792; --ok-soft:#15301f; --warn:#e9b44c; --warn-soft:#33270f; --bad:#f2867c; --bad-soft:#3a1714; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --surface:#161d26; --sunk:#1d2631; --line:#2c3846; --ink:#e7ecf2; --ink-2:#b4bfcc; --ink-3:#8b97a6;
+  --brand:#0b2236; --brand-ink:#e7ecf2; --accent:#5aa9f0; --accent-soft:#16304a;
+  --ok:#5cc792; --ok-soft:#15301f; --warn:#e9b44c; --warn-soft:#33270f; --bad:#f2867c; --bad-soft:#3a1714; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-ui)}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
+h2{font-size:1.35rem;font-weight:700}
+h3{font-size:1.02rem;font-weight:600}
+p{margin:0}
+a{color:var(--accent)}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* barra superior */
+.top{background:var(--brand);color:var(--brand-ink);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 0;position:sticky;top:0;z-index:20}
+.top-in{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.brandrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-family:var(--f-doc);font-size:1.45rem;font-weight:600;letter-spacing:.01em}
+.brand span{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+.spacer{flex:1}
+.topbtn{background:transparent;border:1px solid color-mix(in srgb,var(--brand-ink) 35%,transparent);color:var(--brand-ink);border-radius:999px;padding:5px 12px;font-size:.85rem;cursor:pointer}
+.topbtn:hover{background:color-mix(in srgb,var(--brand-ink) 12%,transparent)}
+.provpill{font-family:var(--f-mono);font-size:.75rem;opacity:.85}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:thin}
+.tab{background:transparent;border:0;color:var(--brand-ink);opacity:.72;padding:8px 12px 10px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;font-size:.9rem;display:flex;gap:6px;align-items:center}
+.tab .n{font-family:var(--f-mono);font-size:.72rem;opacity:.8}
+.tab:hover{opacity:1}
+.tab[aria-selected="true"]{opacity:1;border-bottom-color:#7cc0ff;font-weight:600}
+.tab.hub{font-style:normal}
+.tabsep{width:1px;background:color-mix(in srgb,var(--brand-ink) 25%,transparent);margin:8px 6px}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.35}
+.dot.ok{background:#6fd39d;opacity:1}
+
+/* contenido */
+main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 64px}
+.view{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.vhead{display:flex;flex-direction:column;gap:6px}
+.vhead p{color:var(--ink-2);max-width:72ch}
+.eyebrow{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel.sunk{background:var(--sunk);border-color:transparent}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label,.lbl{font-size:.82rem;font-weight:600;color:var(--ink-2)}
+.hint{font-size:.8rem;color:var(--ink-3)}
+input[type=text],input[type=number],input[type=password],select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:84px;line-height:1.5}
+input[type=number]{font-variant-numeric:tabular-nums}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:500;display:inline-flex;gap:6px;align-items:center}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--bad)}
+.btn.small{padding:4px 9px;font-size:.82rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:.9rem}
+.chk input{margin-top:4px}
+.drop{border:2px dashed var(--line);border-radius:var(--r);padding:22px;text-align:center;color:var(--ink-2);cursor:pointer;background:var(--sunk)}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+
+/* tablas */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th{text-align:left;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600;background:var(--sunk);padding:7px 8px;white-space:nowrap}
+td{border-top:1px solid var(--line);padding:5px 8px;vertical-align:top}
+td input,td select{padding:5px 7px;font-size:.88rem}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tot td{font-weight:600;background:var(--sunk)}
+
+/* estados */
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:.76rem;font-weight:600;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.neu{background:var(--sunk);color:var(--ink-2)}
+.checks{display:flex;flex-direction:column}
+.ck{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:10px 0;border-top:1px solid var(--line)}
+.ck:first-child{border-top:0}
+.ck .t{font-weight:600}
+.ck .d{grid-column:2;color:var(--ink-2);font-size:.86rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--sunk);border-radius:6px;padding:10px 12px}
+.stat b{display:block;font-size:1.3rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.78rem;color:var(--ink-3)}
+
+/* fragmentos y papers */
+.frags{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto;padding-right:4px}
+.frag{font-size:.84rem;color:var(--ink-2);border-left:3px solid var(--line);padding:2px 0 2px 10px}
+.frag b{font-family:var(--f-mono);color:var(--accent);font-size:.78rem;margin-right:6px}
+.paper{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.paper:first-child{border-top:0}
+.paper .meta{font-size:.8rem;color:var(--ink-3)}
+.paper .ab{font-size:.84rem;color:var(--ink-2);grid-column:2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* progreso */
+.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.ph{border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:.82rem;color:var(--ink-3);background:var(--surface)}
+.ph b{display:block;font-family:var(--f-mono);font-size:.72rem}
+.ph.active{border-color:var(--accent);color:var(--ink);background:var(--accent-soft)}
+.ph.done{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
+.log{background:var(--sunk);border-radius:6px;padding:10px 12px;font-family:var(--f-mono);font-size:.76rem;max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.log .ok{color:var(--ok)} .log .warn{color:var(--warn)} .log .err{color:var(--bad)}
+.live{font-family:var(--f-mono);font-size:.8rem;color:var(--ink-2)}
+
+/* documento */
+.doc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(18px,4vw,48px);font-family:var(--f-doc);font-size:1.08rem;line-height:1.65}
+.doc .dtitle{font-size:1.9rem;font-weight:600;margin-bottom:4px}
+.doc .dsub{font-family:var(--f-ui);font-size:.85rem;color:var(--ink-3);margin-bottom:24px}
+.sec{border-top:1px solid var(--line);padding-top:18px;margin-top:22px;display:flex;flex-direction:column;gap:10px}
+.sec h3{font-family:var(--f-doc);font-size:1.3rem;font-weight:600}
+.sec .body p{margin:0 0 .8em;max-width:75ch}
+.sec .tools{font-family:var(--f-ui);font-size:.8rem;display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--ink-3)}
+.sec textarea{font-family:var(--f-doc);font-size:1rem;min-height:220px}
+.refs{font-size:.92rem}
+.refs li{margin-bottom:6px}
+.gantt{overflow-x:auto}
+.gantt svg{display:block;min-width:560px}
+
+/* matriz */
+.mx td.c{text-align:center}
+.mx .on{color:var(--ok);font-weight:700}
+
+/* modales */
+.modal{position:fixed;inset:0;background:rgba(10,16,24,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal[hidden]{display:none!important}
+.mbox{background:var(--surface);border-radius:10px;max-width:620px;width:100%;max-height:90vh;overflow:auto;padding:22px;display:flex;flex-direction:column;gap:14px;border:1px solid var(--line)}
+.mbox pre{background:var(--sunk);padding:10px;border-radius:6px;font-size:.78rem;white-space:pre-wrap;max-height:220px;overflow:auto}
+.toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:6px;font-size:.88rem;z-index:60;max-width:90vw}
+.note{font-size:.84rem;color:var(--ink-2);background:var(--sunk);border-radius:6px;padding:10px 12px}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.foot{max-width:1120px;margin:0 auto;padding-top:24px;font-size:.78rem;color:var(--ink-3)}
+@media (max-width:640px){.brand span{display:none}.panel{padding:14px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brandrow">
+      <div class="brand"><b>Memoria I+D</b><span>IVACE+i · AVI</span></div>
+      <div class="spacer"></div>
+      <span class="provpill" id="provPill">modo demostración</span>
+      <button class="topbtn" id="btnIA" type="button">IA</button>
+      <button class="topbtn" id="btnEjemplo" type="button">Cargar ejemplo</button>
+      <button class="topbtn" id="btnHelp" type="button">Ayuda</button>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Recorrido">
+      <button class="tab" data-v="conv" role="tab"><span class="n">1</span>Convocatoria <i class="dot" id="d-conv"></i></button>
+      <button class="tab" data-v="proy" role="tab"><span class="n">2</span>Proyecto <i class="dot" id="d-proy"></i></button>
+      <button class="tab" data-v="pres" role="tab"><span class="n">3</span>Presupuesto y plan <i class="dot" id="d-pres"></i></button>
+      <button class="tab" data-v="arte" role="tab"><span class="n">4</span>Estado del arte <i class="dot" id="d-arte"></i></button>
+      <button class="tab" data-v="gen" role="tab"><span class="n">5</span>Generar</button>
+      <span class="tabsep"></span>
+      <button class="tab hub" data-v="mem" role="tab">Memoria</button>
+      <button class="tab hub" data-v="cum" role="tab">Cumplimiento</button>
+      <button class="tab hub" data-v="ag" role="tab">Agentes y prompts</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- 1 · CONVOCATORIA -->
+<section class="view" id="v-conv" hidden>
+  <div class="vhead"><span class="eyebrow">Paso 1</span><h2>Convocatoria</h2>
+    <p>Elige el programa y sube las bases y el modelo de memoria técnica. El texto se trocea en fragmentos numerados [B1], [B2]…: los agentes solo pueden citar requisitos que estén ahí, y el código comprueba que cada requisito extraído aparece literalmente en las bases.</p></div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="field"><label for="selPreset">Programa</label><select id="selPreset"></select><span class="hint" id="presetFuente"></span></div>
+      <div class="lbl">Reglas de presupuesto que se comprobarán</div>
+      <div class="grid3" id="rulesBox"></div>
+      <p class="hint">Valores tomados de las fichas públicas de la última convocatoria. Ajústalos a las bases vigentes antes de presentar.</p>
+    </div>
+    <div class="panel">
+      <div class="drop" id="dropBases" tabindex="0" role="button" aria-label="Subir bases o modelo de memoria">Arrastra aquí las bases (DOGV), el modelo de memoria técnica o la ficha<br><span class="hint">PDF, DOCX, TXT o MD · varios archivos</span></div>
+      <input type="file" id="fileBases" multiple accept=".pdf,.docx,.txt,.md" hidden>
+      <div class="field"><label for="pasteBases">…o pega el texto</label><textarea id="pasteBases" placeholder="Pega aquí artículos de las bases, criterios de valoración o el índice de la memoria técnica"></textarea></div>
+      <div class="row"><button class="btn" id="btnPaste" type="button">Añadir texto pegado</button><button class="btn danger" id="btnClearBases" type="button">Vaciar</button></div>
+      <div id="basesFiles" class="hint"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="row"><h3>Fragmentos de la convocatoria</h3><span class="pill neu" id="fragCount">0</span><div class="spacer"></div><button class="btn primary" id="btnAnaliza" type="button">Analizar convocatoria</button></div>
+    <div class="frags" id="fragList"></div>
+  </div>
+  <div class="panel" id="callPanel">
+    <div class="row"><h3>Estructura y criterios que se usarán</h3><span id="callOrigen"></span></div>
+    <div id="callBox"></div>
+  </div>
+</section>
+
+<!-- 2 · PROYECTO -->
+<section class="view" id="v-proy" hidden>
+  <div class="vhead"><span class="eyebrow">Paso 2</span><h2>Proyecto</h2>
+    <p>Todo lo que escribas aquí es la única fuente admitida para nombres, cifras, plazos y compromisos. Si el redactor menciona una cifra que no está en estos datos, en las bases o en los papers, se marca en Cumplimiento.</p></div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="field"><label for="p_titulo">Título del proyecto</label><input type="text" id="p_titulo" data-bind="proj.titulo"></div>
+      <div class="grid3">
+        <div class="field"><label for="p_acronimo">Acrónimo</label><input type="text" id="p_acronimo" data-bind="proj.acronimo"></div>
+        <div class="field"><label for="p_meses">Duración (meses)</label><input type="number" id="p_meses" min="1" max="60" data-bind="proj.meses" data-num></div>
+        <div class="field"><label for="p_trl">TRL inicial → final</label><div class="row"><input type="number" id="p_trlIni" min="1" max="9" data-bind="proj.trlIni" data-num style="width:4.5em"><span>→</span><input type="number" id="p_trlFin" min="1" max="9" data-bind="proj.trlFin" data-num style="width:4.5em"></div></div>
+      </div>
+      <div class="field"><label for="p_idea">Idea y problema que resuelve</label><textarea id="p_idea" data-bind="proj.idea" style="min-height:130px"></textarea></div>
+      <div class="field"><label for="p_objetivos">Objetivos (uno por línea; el primero, el general)</label><textarea id="p_objetivos" data-bind="proj.objetivos"></textarea></div>
+    </div>
+    <div class="panel">
+      <div class="field"><label for="p_novedad">Qué aporta frente a lo que ya existe</label><textarea id="p_novedad" data-bind="proj.novedad"></textarea></div>
+      <div class="field"><label for="p_resultados">Resultados esperados y cómo se transfieren a las empresas</label><textarea id="p_resultados" data-bind="proj.resultados"></textarea></div>
+      <div class="field"><label for="p_s3">Prioridad S3-CV y retos del CEI con los que se alinea</label><input type="text" id="p_s3" data-bind="proj.s3"></div>
+      <div class="field"><label for="p_kw">Palabras clave para buscar el estado del arte (en inglés funciona mejor)</label><input type="text" id="p_kw" data-bind="proj.kw"></div>
+      <div class="field"><label for="p_instr">Indicaciones para el redactor</label><textarea id="p_instr" data-bind="proj.instr" placeholder="Tono, énfasis, aspectos que el evaluador valora especialmente…"></textarea></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="row"><h3>Entidades</h3><span class="hint">Centro solicitante, empresas colaboradoras o socios del consorcio</span><div class="spacer"></div><button class="btn small" id="addEnt" type="button">Añadir entidad</button></div>
+    <div class="tw"><table><thead><tr><th>Nombre</th><th>Tipo</th><th>Papel en el proyecto</th><th></th></tr></thead><tbody id="tbEnt"></tbody></table></div>
+  </div>
+</section>
+
+<!-- 3 · PRESUPUESTO -->
+<section class="view" id="v-pres" hidden>
+  <div class="vhead"><span class="eyebrow">Paso 3</span><h2>Presupuesto y plan de trabajo</h2>
+    <p>Las cuentas y los límites los calcula el código con las reglas del programa elegido. El redactor recibe estas cifras ya cerradas y no puede inventar otras.</p></div>
+  <div class="panel">
+    <div class="row"><h3>Personal propio</h3><div class="spacer"></div><button class="btn small" id="addPer" type="button">Añadir perfil</button></div>
+    <div class="tw"><table><thead><tr><th>Perfil</th><th>Entidad</th><th>Dedicación</th><th class="num">Horas</th><th class="num">€/hora</th><th class="num">Coste</th><th></th></tr></thead><tbody id="tbPer"></tbody></table></div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="row"><h3>Servicios externos</h3><div class="spacer"></div><button class="btn small" id="addExt" type="button">Añadir</button></div>
+      <div class="tw"><table><thead><tr><th>Concepto</th><th>Entidad</th><th class="num">Importe €</th><th></th></tr></thead><tbody id="tbExt"></tbody></table></div>
+    </div>
+    <div class="panel">
+      <div class="row"><h3>Otros gastos directos</h3><div class="spacer"></div><button class="btn small" id="addOtr" type="button">Añadir</button></div>
+      <div class="tw"><table><thead><tr><th>Concepto</th><th>Entidad</th><th class="num">Importe €</th><th></th></tr></thead><tbody id="tbOtr"></tbody></table></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Resumen</h3>
+      <div class="field" style="max-width:220px"><label for="b_ind">Costes indirectos (% sobre directos)</label><input type="number" id="b_ind" min="0" max="100" step="0.5" data-bind="budget.indirectPct" data-num></div>
+      <div class="tw"><table><tbody id="tbSum"></tbody></table></div>
+    </div>
+    <div class="panel">
+      <h3>Comprobaciones del presupuesto</h3>
+      <div class="checks" id="budgetChecks"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="row"><h3>Paquetes de trabajo</h3><div class="spacer"></div><button class="btn small" id="addWp" type="button">Añadir paquete</button></div>
+    <div class="tw"><table><thead><tr><th>Paquete</th><th class="num">Mes inicio</th><th class="num">Mes fin</th><th>Responsable</th><th>Entregable o hito</th><th></th></tr></thead><tbody id="tbWp"></tbody></table></div>
+    <div class="gantt" id="ganttBox"></div>
+  </div>
+</section>
+
+<!-- 4 · ESTADO DEL ARTE -->
+<section class="view" id="v-arte" hidden>
+  <div class="vhead"><span class="eyebrow">Paso 4</span><h2>Estado del arte</h2>
+    <p>Se buscan papers en bases académicas abiertas, se fusionan duplicados por DOI y se ordenan. Revisa la lista y desmarca lo que no encaje: los seleccionados forman el corpus [P1]…[PN] que el redactor puede citar.</p></div>
+  <div class="panel">
+    <div class="grid3" id="srcBox"></div>
+    <div class="grid3">
+      <div class="field"><label for="a_from">Desde el año</label><input type="number" id="a_from" data-bind="arte.yfrom" data-num></div>
+      <div class="field"><label for="a_to">Hasta el año</label><input type="number" id="a_to" data-bind="arte.yto" data-num></div>
+      <div class="field"><label for="a_top">Papers en el corpus</label><input type="number" id="a_top" min="5" max="40" data-bind="arte.topP" data-num></div>
+      <div class="field"><label for="a_email">Correo para las APIs (opcional)</label><input type="text" id="a_email" placeholder="mejora el acceso a CrossRef y OpenAlex"></div>
+    </div>
+    <div class="field"><label for="a_queries">Consultas (una por línea). Si lo dejas vacío, las propone la IA</label><textarea id="a_queries" data-bind="arte.queries" style="min-height:70px"></textarea></div>
+    <div class="row"><button class="btn primary" id="btnBuscar" type="button">Buscar estado del arte</button><button class="btn" id="btnParar2" type="button" disabled>Parar</button><span class="live" id="arteStatus"></span></div>
+  </div>
+  <div class="panel">
+    <div class="row"><h3>Papers recuperados</h3><span class="pill neu" id="papCount">0</span><div class="spacer"></div><span class="hint" id="corpusInfo"></span></div>
+    <div id="papList"></div>
+  </div>
+</section>
+
+<!-- 5 · GENERAR -->
+<section class="view" id="v-gen" hidden>
+  <div class="vhead"><span class="eyebrow">Paso 5</span><h2>Generar la memoria</h2>
+    <p>La cadena analiza la convocatoria, fija la estructura, redacta sección a sección validando citas y cifras, evalúa con los criterios de la convocatoria y mejora la sección más floja solo si la nota total sube.</p></div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="grid3">
+        <div class="field"><label for="g_lang">Idioma de la memoria</label><select id="g_lang" data-bind="opt.lang"><option value="Spanish">Castellano</option><option value="Valencian (Catalan as used in the Comunitat Valenciana)">Valencià</option><option value="English">English</option></select></div>
+        <div class="field"><label for="g_cite">Estilo de referencias</label><select id="g_cite" data-bind="opt.cite"><option>IEEE</option><option>APA 7</option></select></div>
+        <div class="field"><label for="g_pal">Extensión total (palabras)</label><input type="number" id="g_pal" min="800" step="100" data-bind="opt.palabras" data-num placeholder="automática"></div>
+        <div class="field"><label for="g_iter">Rondas de mejora</label><select id="g_iter" data-bind="opt.iter" data-num><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+      </div>
+      <label class="chk"><input type="checkbox" id="g_eval" data-bind="opt.evalua" data-bool> <span>Evaluar con los criterios de la convocatoria (autoevaluación del modelo, no calibrada)</span></label>
+      <label class="chk"><input type="checkbox" id="g_res" data-bind="opt.resumen" data-bool> <span>Redactar un resumen ejecutivo si la estructura no lo incluye</span></label>
+      <div class="row"><button class="btn primary" id="btnGen" type="button">Generar memoria</button><button class="btn" id="btnParar" type="button" disabled>Parar</button></div>
+      <div class="live" id="liveCost"></div>
+    </div>
+    <div class="panel sunk" id="readyBox"></div>
+  </div>
+  <div class="panel">
+    <div class="phases" id="phases"></div>
+    <div class="log" id="logPanel" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- MEMORIA -->
+<section class="view" id="v-mem" hidden>
+  <div class="row"><div class="vhead"><span class="eyebrow">Resultado</span><h2>Memoria técnica</h2></div><div class="spacer"></div>
+    <button class="btn" id="exDocx" type="button">Word (.docx)</button><button class="btn" id="exMd" type="button">Markdown</button><button class="btn" id="exJson" type="button">Traza JSON</button><button class="btn" id="exCopy" type="button">Copiar texto</button></div>
+  <div id="memBox"></div>
+</section>
+
+<!-- CUMPLIMIENTO -->
+<section class="view" id="v-cum" hidden>
+  <div class="vhead"><span class="eyebrow">Auditoría</span><h2>Cumplimiento</h2>
+    <p>Todo lo que aparece aquí lo calcula el código, salvo la evaluación simulada, que es un juicio del modelo y se marca como tal.</p></div>
+  <div id="cumBox"></div>
+</section>
+
+<!-- AGENTES -->
+<section class="view" id="v-ag" hidden>
+  <div class="vhead"><span class="eyebrow">Configuración</span><h2>Agentes y prompts</h2>
+    <p>Cada agente tiene su prompt y su tope de tokens. Las variables entre llaves dobles se rellenan al ejecutar. Los cambios se guardan en este navegador.</p></div>
+  <div id="agBox"></div>
+</section>
+<div class="foot">Memoria I+D v<span id="ver"></span> · Funciona en tu navegador: las claves y los borradores se guardan solo aquí. Arquitectura basada en Doctoralia (F. Borrás Rocher, UMH, licencia MIT). Revisa siempre la memoria y las bases oficiales antes de presentar.</div>
+</main>
+
+<!-- modal IA -->
+<div class="modal" id="mIA" hidden>
+  <div class="mbox" role="dialog" aria-labelledby="mIAt">
+    <h3 id="mIAt">Proveedor de IA</h3>
+    <div class="field"><label for="selProv">Proveedor</label><select id="selProv"><option value="demo">Demostración (sin clave, respuestas simuladas)</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option></select></div>
+    <div class="field" id="keyField"><label for="apiKey">Clave de API</label><div class="row"><input type="password" id="apiKey" autocomplete="off" style="flex:1"><button class="btn small" id="btnEye" type="button">Ver</button></div><span class="hint">Se guarda solo en este navegador y se envía solo a tu proveedor.</span></div>
+    <div class="field" id="modelField"><label for="modelo">Modelo</label><input type="text" id="modelo" list="modelos"><datalist id="modelos"></datalist><div class="row"><button class="btn small" id="btnModelos" type="button">Ver modelos de mi clave</button><span class="hint" id="iaEstado"></span></div></div>
+    <div class="grid3"><div class="field"><label for="priceIn">Precio entrada ($/M tokens)</label><input type="text" id="priceIn" placeholder="p. ej. 0,40"></div><div class="field"><label for="priceOut">Precio salida ($/M tokens)</label><input type="text" id="priceOut" placeholder="p. ej. 1,60"></div></div>
+    <div class="row"><div class="spacer"></div><button class="btn primary" data-close type="button">Listo</button></div>
+  </div>
+</div>
+<!-- modal envío -->
+<div class="modal" id="mEnvio" hidden>
+  <div class="mbox" role="dialog" aria-labelledby="mEt">
+    <h3 id="mEt">Antes del primer envío</h3>
+    <p>Se enviarán a <b id="envProv"></b> los datos del proyecto (con correos, DNI/NIE y teléfonos enmascarados), fragmentos de la convocatoria y títulos y resúmenes de los papers. Si el proyecto es confidencial, comprueba que tu organización permite usar este proveedor.</p>
+    <pre id="envMuestra"></pre>
+    <div class="row"><div class="spacer"></div><button class="btn" id="envNo" type="button">Cancelar</button><button class="btn primary" id="envSi" type="button">Enviar y continuar</button></div>
+  </div>
+</div>
+<!-- modal ayuda -->
+<div class="modal" id="mHelp" hidden>
+  <div class="mbox" role="dialog" aria-labelledby="mHt">
+    <h3 id="mHt">Cómo funciona</h3>
+    <p><b>La IA propone, el código comprueba.</b> Hay tres fuentes numeradas: fragmentos de la convocatoria [B], papers [P] y los datos del proyecto que tú escribes. El redactor solo puede citar [B] y [P] por número; el código elimina las citas que no existen, avisa de cifras que no están en ninguna fuente y comprueba el presupuesto con las reglas del programa.</p>
+    <p><b>Recorrido.</b> 1) Sube las bases o usa la estructura genérica del programa. 2) Describe el proyecto y las entidades. 3) Rellena presupuesto y paquetes de trabajo. 4) Busca y revisa el estado del arte. 5) Genera. Después revisa Memoria y Cumplimiento.</p>
+    <p><b>Límites.</b> Una cita válida prueba que el paper o el artículo existe en el corpus, no que diga lo que afirma la frase. La evaluación simulada es una opinión del modelo. Las reglas de presupuesto vienen de fichas de convocatorias anteriores: confírmalas con las bases vigentes.</p>
+    <p><b>Modo demostración.</b> Sin clave, la app responde con textos simulados para que veas el recorrido completo. El ejemplo y sus referencias son ficticios y están marcados.</p>
+    <div class="row"><div class="spacer"></div><button class="btn primary" data-close type="button">Cerrar</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script>
+'use strict';
+/* ══════════════════════════════════════════════════════════════════════════════════════════════
+   Memoria I+D · núcleo. Principio heredado de Doctoralia: la IA propone, el código comprueba.
+   ══════════════════════════════════════════════════════════════════════════════════════════════ */
+const APP = 'memoriaid', VERSION = '0.1.0';
+
+/* ── utilidades ── */
+const $ = id => document.getElementById(id), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+const wc = s => (String(s || '').match(/[\p{L}\p{N}]+/gu) || []).length;
+const num = v => { const x = parseFloat(String(v ?? '').replace(/\./g, '').replace(',', '.')); return isFinite(x) ? x : 0; };
+const numIn = v => { const x = parseFloat(String(v ?? '').replace(',', '.')); return isFinite(x) ? x : 0; };
+const eur = n => (Math.round(n * 100) / 100).toLocaleString('es-ES', {style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: 'always'});
+const eur0 = n => Math.round(n).toLocaleString('es-ES', {useGrouping: 'always'}) + ' €';
+const pct = (x, d = 0) => (x * 100).toLocaleString('es-ES', {maximumFractionDigits: d, minimumFractionDigits: d}) + ' %';
+let _toastT;
+function toast(m, ms = 4200) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(_toastT); _toastT = setTimeout(() => t.hidden = true, ms); }
+function dl(nombre, contenido, tipo) { const b = contenido instanceof Blob ? contenido : new Blob([contenido], {type: tipo}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = nombre; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 2500); }
+const LS = {
+  get(k, d = '') { try { const v = localStorage.getItem(APP + '_' + k); return v == null ? d : v; } catch { return d; } },
+  set(k, v) { try { v === '' || v == null ? localStorage.removeItem(APP + '_' + k) : localStorage.setItem(APP + '_' + k, v); } catch {} }
+};
+function cargaLib(url, global) {
+  if (window[global]) return Promise.resolve(window[global]);
+  return new Promise((ok, ko) => { const s = document.createElement('script'); s.src = url; s.onload = () => ok(window[global]); s.onerror = () => ko(new Error('No se pudo cargar una librería. ¿Hay conexión a internet?')); document.head.appendChild(s); });
+}
+/* datos personales: se enmascaran antes de enviar nada a un proveedor externo */
+const PII = [['CORREO', /[\w.+-]+@[\w-]+\.[\w.-]+/g], ['ID', /\b\d{8}[A-HJ-NP-TV-Z]\b|\b[XYZ]\d{7}[A-Z]\b/gi], ['TELÉFONO', /(?:\+\d{2}\s?)?\b[6-9]\d{2}[\s.-]?\d{3}[\s.-]?\d{3}\b/g]];
+const scrub = txt => { let t = String(txt ?? ''); PII.forEach(([tag, rx]) => { t = t.replace(rx, `[${tag}]`); }); return t; };
+
+/* ── estado (IndexedDB, con guardado diferido) ── */
+const yNow = new Date().getFullYear();
+const estadoInicial = () => ({
+  preset: 'ivace_cctt', rules: null, bases: [], frags: [], call: null,
+  proj: {titulo: '', acronimo: '', meses: 18, trlIni: 3, trlFin: 5, idea: '', objetivos: '', novedad: '', resultados: '', s3: '', kw: '', instr: ''},
+  ents: [{nombre: '', tipo: 'Centro tecnológico', rol: 'Solicitante'}],
+  budget: {per: [], ext: [], otr: [], indirectPct: 25},
+  wps: [],
+  arte: {srcs: {oa: true, cr: true, ss: true, ep: true, pm: false, ax: true}, yfrom: yNow - 8, yto: yNow, topP: 20, queries: ''},
+  papers: [], opt: {lang: 'Spanish', cite: 'IEEE', iter: 2, evalua: true, resumen: true}, run: null, ejemplo: false
+});
+let S = estadoInicial();
+const dbP = new Promise((ok, ko) => { try { const r = indexedDB.open(APP, 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); } catch (e) { ko(e); } });
+const kv = async (mode, fn) => { const d = await dbP; return new Promise((ok, ko) => { const tx = d.transaction('kv', mode), q = fn(tx.objectStore('kv')); tx.oncomplete = () => ok(q && q.result); tx.onerror = () => ko(tx.error); }); };
+let _g;
+function guarda() { clearTimeout(_g); _g = setTimeout(() => kv('readwrite', s => s.put(JSON.parse(JSON.stringify(S)), 'main')).catch(() => {}), 400); }
+const guardaYa = () => { clearTimeout(_g); return kv('readwrite', s => s.put(JSON.parse(JSON.stringify(S)), 'main')).catch(() => {}); };
+async function cargaEstado() { try { return await kv('readonly', s => s.get('main')); } catch { return null; } }
+
+/* ── registro y consumo ── */
+const LOGS = [];
+function log(msg, type = 'info') {
+  const ts = new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+  LOGS.push({ts, msg, type}); if (LOGS.length > 800) LOGS.shift();
+  const p = $('logPanel'); if (p) { const d = document.createElement('div'); d.className = type; d.textContent = `[${ts}] ${msg}`; p.appendChild(d); p.scrollTop = p.scrollHeight; }
+}
+const USO = {by: {}, in: 0, out: 0, calls: 0, agente: null};
+function usoReset() { USO.by = {}; USO.in = USO.out = USO.calls = 0; pintaCoste(); }
+function reportaUso(i, o) { const k = USO.agente || 'otro', a = USO.by[k] || (USO.by[k] = {in: 0, out: 0, calls: 0}); a.in += i || 0; a.out += o || 0; a.calls++; USO.in += i || 0; USO.out += o || 0; USO.calls++; pintaCoste(); }
+const precio = () => { const i = numIn(LS.get('priceIn')), o = numIn(LS.get('priceOut')); return i > 0 || o > 0 ? {in: i, out: o} : null; };
+const coste = (ti, to) => { const p = precio(); return p ? ti * p.in / 1e6 + to * p.out / 1e6 : null; };
+function pintaCoste() { const el = $('liveCost'); if (!el) return; const c = coste(USO.in, USO.out); el.textContent = `${(USO.in + USO.out).toLocaleString('es-ES')} tokens · ${USO.calls} llamadas · coste: ${c == null ? (getProv() === 'demo' ? '0 (demostración)' : 'escribe tus precios en «IA»') : '$' + c.toFixed(4)}`; }
+
+/* ══ Proveedores de IA (OpenAI, Gemini, Claude) + modo demostración ══ */
+const PROV = {
+  demo: {n: 'Demostración', m: 'simulado', k: ''},
+  openai: {n: 'OpenAI', m: 'gpt-4.1-mini', k: 'key_openai'},
+  gemini: {n: 'Google Gemini', m: 'gemini-2.5-flash', k: 'key_gemini'},
+  anthropic: {n: 'Anthropic Claude', m: 'claude-haiku-4-5-20251001', k: 'key_anthropic'}
+};
+const getProv = () => PROV[LS.get('prov')] ? LS.get('prov') : 'demo';
+const getKey = (p = getProv()) => PROV[p].k ? LS.get(PROV[p].k) : '';
+const getMod = (p = getProv()) => LS.get('model_' + p) || PROV[p].m;
+const parseJ = tx => { tx = String(tx || '').trim().replace(/^```(?:json)?\s*|\s*```$/g, '').trim(); try { return JSON.parse(tx); } catch { const m = tx.match(/\{[\s\S]*\}/); if (m) try { return JSON.parse(m[0]); } catch {} } return null; };
+const sysDe = msgs => msgs.filter(m => m.role === 'system').map(m => m.content).join('\n\n');
+function agrupa(msgs, rolA) { const o = []; for (const m of msgs.filter(m => m.role !== 'system')) { const r = m.role === 'assistant' ? rolA : 'user'; if (o.length && o.at(-1).role === r) o.at(-1).text += '\n\n' + m.content; else o.push({role: r, text: m.content}); } return o; }
+function httpErr(st, tx, pv, mod) {
+  if (st === 401 || st === 403 || (pv === 'gemini' && st === 400 && /API key|API_KEY/i.test(tx))) return new Error(`${PROV[pv].n} no reconoce tu clave. Revísala en el botón «IA».`);
+  if (st === 404 || /model_not_found|does not exist/i.test(tx)) return new Error(`Tu clave no tiene acceso al modelo «${mod}». Elige otro en el botón «IA».`);
+  if (st === 429 && /quota|billing|credit|RESOURCE_EXHAUSTED/i.test(tx)) return new Error(`Tu cuenta de ${PROV[pv].n} no tiene saldo o ha alcanzado su límite.`);
+  return new Error(`${PROV[pv].n} ${st}: ${String(tx).slice(0, 180)}`);
+}
+async function conReintentos(fn, pv) {
+  for (let k = 0; k < 5; k++) {
+    let r; try { r = await fn(); } catch { if (k >= 2) throw new Error(`No hay conexión con ${PROV[pv].n}.`); await sleep(1500); continue; }
+    if (r.ok) return r;
+    if (r.status === 429 || r.status >= 500) { const tx = await r.clone().text(); if (r.status === 429 && /quota|billing|credit/i.test(tx)) return r; await sleep(2 ** (k + 1) * 1000); continue; }
+    return r;
+  }
+  throw new Error(`${PROV[pv].n} no responde ahora mismo. Inténtalo de nuevo en un momento.`);
+}
+async function llm(msgs, {json = false, max = 2500, temp = 0.4} = {}) {
+  const pv = getProv(), key = getKey(pv), mod = getMod(pv);
+  if (!key) throw new Error('Falta tu clave de IA. Pulsa el botón «IA», arriba.');
+  if (pv === 'openai') {
+    const razona = /^(gpt-[56]|o\d)/.test(mod), o = {json, reasoning: razona, comp: razona, temp: !razona};
+    const mm = msgs.map(m => ({role: m.role, content: m.content}));
+    for (let k = 0; k < 6; k++) {
+      const body = {model: mod, messages: mm};
+      if (o.json) body.response_format = {type: 'json_object'};
+      if (o.comp) body.max_completion_tokens = max * (o.reasoning ? 2 : 1); else body.max_tokens = max;
+      if (o.reasoning) body.reasoning_effort = 'low';
+      if (o.temp) body.temperature = temp;
+      const r = await conReintentos(() => fetch('https://api.openai.com/v1/chat/completions', {method: 'POST', headers: {'Content-Type': 'application/json', Authorization: 'Bearer ' + key}, body: JSON.stringify(body)}), pv);
+      if (r.ok) { const j = await r.json(); reportaUso(j.usage?.prompt_tokens, j.usage?.completion_tokens); return j.choices?.[0]?.message?.content || ''; }
+      const tx = await r.text();
+      if (r.status === 400) {
+        if (/reasoning_effort/i.test(tx) && o.reasoning) { o.reasoning = false; continue; }
+        if (/max_completion_tokens/i.test(tx) && o.comp) { o.comp = false; continue; }
+        if (/max_tokens/i.test(tx) && !o.comp) { o.comp = true; continue; }
+        if (/temperature/i.test(tx) && o.temp) { o.temp = false; continue; }
+        if (/response_format|json/i.test(tx) && o.json) { o.json = false; mm.at(-1).content += '\nResponde SOLO con JSON válido.'; continue; }
+      }
+      throw httpErr(r.status, tx, pv, mod);
+    }
+    throw new Error('OpenAI no responde ahora mismo.');
+  }
+  if (pv === 'gemini') {
+    const sys = sysDe(msgs), cont = agrupa(msgs, 'model').map(m => ({role: m.role, parts: [{text: m.text}]}));
+    const body = {contents: cont, generationConfig: {maxOutputTokens: max * 2, temperature: temp}};
+    if (sys) body.systemInstruction = {parts: [{text: sys}]};
+    if (json) body.generationConfig.responseMimeType = 'application/json';
+    const r = await conReintentos(() => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(mod)}:generateContent`, {method: 'POST', headers: {'Content-Type': 'application/json', 'x-goog-api-key': key}, body: JSON.stringify(body)}), pv);
+    const tx = await r.text(); if (!r.ok) throw httpErr(r.status, tx, pv, mod);
+    const j = JSON.parse(tx); reportaUso(j.usageMetadata?.promptTokenCount, (j.usageMetadata?.candidatesTokenCount || 0) + (j.usageMetadata?.thoughtsTokenCount || 0));
+    return (j.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
+  }
+  const sys = sysDe(msgs), mm = agrupa(msgs, 'assistant').map(m => ({role: m.role, content: m.text}));
+  if (json) mm.at(-1).content += '\n\nResponde SOLO con un objeto JSON válido, sin texto alrededor.';
+  const r = await conReintentos(() => fetch('https://api.anthropic.com/v1/messages', {method: 'POST', headers: {'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'}, body: JSON.stringify({model: mod, max_tokens: max, system: sys, messages: mm})}), pv);
+  const tx = await r.text(); if (!r.ok) throw httpErr(r.status, tx, pv, mod);
+  const jc = JSON.parse(tx); reportaUso(jc.usage?.input_tokens, jc.usage?.output_tokens);
+  return (jc.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+}
+async function listaModelos(pv = getProv()) {
+  const key = getKey(pv); if (!key) throw new Error('Primero pega tu clave.'); let r;
+  try {
+    if (pv === 'openai') r = await fetch('https://api.openai.com/v1/models', {headers: {Authorization: 'Bearer ' + key}});
+    else if (pv === 'gemini') r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=100', {headers: {'x-goog-api-key': key}});
+    else r = await fetch('https://api.anthropic.com/v1/models?limit=100', {headers: {'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'}});
+  } catch { throw new Error(`No hay conexión con ${PROV[pv].n}.`); }
+  const tx = await r.text(); if (!r.ok) throw httpErr(r.status, tx, pv, ''); const j = JSON.parse(tx);
+  if (pv === 'openai') return (j.data || []).map(m => m.id).filter(id => /^(gpt-|o\d)/.test(id) && !/(audio|realtime|transcribe|tts|image|embedding|moderation|search)/i.test(id)).sort();
+  if (pv === 'gemini') return (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name.replace(/^models\//, '')).sort();
+  return (j.data || []).map(m => m.id).sort();
+}
+
+/* ── agentes ── */
+const AGENTS = [
+  {id: 'lector', fase: 1, role: 'Lector de bases: extrae apartados, criterios y requisitos citando [B n] y una frase literal', def: 3500},
+  {id: 'scout', fase: 2, role: 'Explorador: consultas para el estado del arte', def: 600},
+  {id: 'architect', fase: 3, role: 'Arquitecto: secciones, palabras y criterios que cubre cada una', def: 1500},
+  {id: 'crafter', fase: 4, role: 'Redactor: una sección cada vez, citando [P n] y [B n]', def: 3000},
+  {id: 'evaluador', fase: 5, role: 'Evaluador: puntúa con los criterios de la convocatoria (no calibrado)', def: 2000},
+  {id: 'mejora', fase: 5, role: 'Mejorador: reescribe la sección más floja según el evaluador', def: 3000},
+  {id: 'resumen', fase: 6, role: 'Resumen ejecutivo', def: 900}
+];
+const DEFAULT_PROMPTS = {
+  lector: `Analiza estos fragmentos numerados de una convocatoria de ayudas de I+D y extrae lo que necesita quien redacta la memoria técnica.
+
+FRAGMENTOS:
+{{frags}}
+
+Devuelve SOLO un JSON con esta forma:
+{"apartados":[{"titulo":"…","descripcion":"qué debe contener","limite_palabras":0,"refs":[n],"cita":"frase copiada literalmente del fragmento"}],
+ "criterios":[{"id":"C1","nombre":"…","puntos":0,"umbral":0,"descripcion":"…","refs":[n],"cita":"frase literal"}],
+ "requisitos":[{"texto":"requisito en una frase","refs":[n],"cita":"frase literal"}]}
+
+Reglas:
+- "refs" son los números de los fragmentos [B n] de donde sale cada elemento. No inventes números de fragmento.
+- "cita" debe ser una frase copiada letra a letra del fragmento (8 a 30 palabras). El sistema la buscará en el texto.
+- Si un límite de extensión viene en páginas, conviértelo a palabras con 450 palabras por página y dilo en la descripción.
+- Si no hay umbral o puntos, pon 0. No inventes criterios que no estén en los fragmentos.`,
+  scout: `Propón {{maxQ}} consultas de búsqueda bibliográfica (en inglés, de 3 a 7 palabras) para el estado del arte de este proyecto de I+D:
+{{proyecto}}
+Devuelve SOLO un JSON: {"queries":["…"]}`,
+  architect: `Organiza la memoria técnica de este proyecto.
+
+APARTADOS QUE PIDE LA CONVOCATORIA:
+{{apartados}}
+
+CRITERIOS DE EVALUACIÓN (id, nombre, puntos):
+{{criterios}}
+
+EXTENSIÓN TOTAL ORIENTATIVA: {{palabras}} palabras.
+
+Devuelve SOLO un JSON: {"secciones":[{"titulo":"título exacto del apartado","palabras":0,"criterios":["C1"],"estado_arte":true}]}
+Reglas: respeta los títulos y el orden de los apartados; reparte las palabras según el peso de los criterios que cubre cada sección y nunca por encima del límite del apartado; marca "estado_arte": true en las secciones que deben apoyarse en bibliografía; cada criterio debe quedar cubierto por al menos una sección.`,
+  crafter: `Redacta la sección «{{seccion}}» de la memoria técnica del proyecto {{acronimo}}.
+Extensión: unas {{palabras}} palabras. Criterios de evaluación que debe convencer: {{criterios}}.
+{{guia}}
+
+DATOS DEL PROYECTO (única fuente admisible para nombres, cifras, plazos, horas e importes):
+{{datos}}
+
+FRAGMENTOS DE LA CONVOCATORIA:
+{{bases}}
+
+CORPUS DE ESTADO DEL ARTE:
+{{papers}}
+
+Reglas de citación inviolables:
+- Para apoyar una afirmación sobre la literatura o la tecnología usa [P n] con 1 ≤ n ≤ {{np}}. Puedes agrupar: [P2, P5].
+- Para mostrar que cumples un requisito o un criterio de la convocatoria usa [B n] con 1 ≤ n ≤ {{nb}}.
+- No escribas autores entre corchetes, no inventes referencias y no uses ninguna cifra que no esté en los datos, las bases o el corpus.
+- Escribe prosa continua con párrafos; sin título de sección; sin viñetas salvo que la sección sea un listado de objetivos o tareas.{{instr}}`,
+  evaluador: `Eres evaluador de una agencia de I+D. Evalúa esta memoria técnica con los criterios oficiales.
+
+CRITERIOS:
+{{criterios}}
+
+MEMORIA:
+{{memoria}}
+
+Devuelve SOLO un JSON: {"evaluacion":[{"id":"C1","puntos":0,"fortalezas":"una frase","debilidades":"una frase concreta","seccion_a_mejorar":"título exacto de la sección"}]}
+Sé exigente: puntúa por debajo del máximo si falta concreción, evidencia o cuantificación.`,
+  mejora: `Reescribe la sección «{{seccion}}» para resolver esta debilidad señalada por el evaluador en el criterio «{{criterio}}»: {{debilidad}}
+
+Mantén la extensión (unas {{palabras}} palabras), conserva todas las citas válidas y sigue las mismas reglas: [P n] con 1 ≤ n ≤ {{np}}, [B n] con 1 ≤ n ≤ {{nb}}, ninguna cifra fuera de los datos del proyecto.
+
+DATOS DEL PROYECTO:
+{{datos}}
+
+CORPUS:
+{{papers}}
+
+TEXTO ACTUAL:
+{{texto}}`,
+  resumen: `Escribe un resumen ejecutivo de {{palabras}} palabras como máximo de esta memoria, sin citas ni cifras nuevas:
+{{memoria}}`
+};
+const promptDe = id => LS.get('prompt_' + id) || DEFAULT_PROMPTS[id] || '';
+const tokensDe = id => parseInt(LS.get('tok_' + id)) || AGENTS.find(a => a.id === id)?.def || 1500;
+const rell = (tpl, v) => String(tpl).replace(/\{\{(\w+)\}\}/g, (m, k) => k in v ? String(v[k]) : m);
+let PARAR = false;
+const PARADO = () => new Error('__STOP__');
+async function ag(id, msgs, {json = false, temp = 0.4, max, ctx = {}} = {}) {
+  if (PARAR) throw PARADO();
+  USO.agente = id;
+  let out;
+  if (getProv() === 'demo') { await sleep(250); out = DEMO[id] ? DEMO[id](ctx) : ''; reportaUso(Math.round(JSON.stringify(msgs).length / 4), Math.round(String(typeof out === 'string' ? out : JSON.stringify(out)).length / 4)); if (json && typeof out === 'string') out = parseJ(out); }
+  else {
+    const m = max || tokensDe(id);
+    if (json) { for (let k = 0; k < 2 && !out; k++) { const j = parseJ(await llm(msgs, {json: true, max: m, temp})); if (j && typeof j === 'object') out = j; } if (!out) throw new Error(`El agente ${id} no devolvió JSON válido.`); }
+    else { out = await llm(msgs, {max: m, temp}); if (!String(out || '').trim()) out = await llm(msgs, {max: m * 2, temp}); }
+  }
+  if (PARAR) throw PARADO();
+  return out;
+}
+
+/* ══ Programas: reglas de presupuesto y estructura genérica ══ */
+const APARTADOS_GEN = {
+  ivace_cctt: [
+    ['Resumen del proyecto', 'Qué se investiga, para qué y con qué empresas', false],
+    ['Antecedentes y estado del arte', 'Situación de la tecnología y carencias que justifican el proyecto', true],
+    ['Objetivos', 'Objetivo general y objetivos específicos medibles', false],
+    ['Novedad y carácter innovador', 'Avance frente al estado del arte y salto de TRL', true],
+    ['Metodología y plan de trabajo', 'Paquetes de trabajo, tareas, hitos y entregables', false],
+    ['Colaboración con empresas y transferencia de resultados', 'Papel de las empresas, difusión y explotación de resultados', false],
+    ['Impacto en la Comunitat Valenciana y alineación con la S3-CV', 'Impacto económico, social y ambiental; prioridades S3', false],
+    ['Equipo y capacidades del centro', 'Personal asignado y experiencia previa', false],
+    ['Presupuesto y justificación de los costes', 'Coherencia entre tareas, horas y gastos', false],
+    ['Riesgos y plan de contingencia', 'Riesgos técnicos y de ejecución con su mitigación', false]
+  ],
+  avi_step: [
+    ['Resumen del proyecto', 'Objetivo estratégico y consorcio', false],
+    ['Reto estratégico y alineación con el CEI y la S3-CV', 'Reto que aborda y su encaje en las prioridades', false],
+    ['Estado del arte y carácter innovador', 'Situación tecnológica y avance que propone', true],
+    ['Objetivos', 'Objetivo general y específicos medibles', false],
+    ['Consorcio y complementariedad de los socios', 'Papel y capacidades de cada entidad', false],
+    ['Metodología y plan de trabajo', 'Paquetes, tareas, hitos y entregables por anualidad', false],
+    ['Impacto económico, social y ambiental', 'Efecto tractor, empleo, sostenibilidad (DNSH)', true],
+    ['Explotación y transferencia de resultados', 'Plan de explotación y propiedad de resultados', false],
+    ['Presupuesto y justificación de los costes', 'Reparto por socio y anualidad', false],
+    ['Riesgos y plan de contingencia', 'Riesgos y mitigación', false]
+  ]
+};
+APARTADOS_GEN.custom = APARTADOS_GEN.ivace_cctt;
+const CRITERIOS_GEN = [
+  {id: 'C1', nombre: 'Calidad científico-técnica y novedad', puntos: 25},
+  {id: 'C2', nombre: 'Metodología, plan de trabajo y viabilidad', puntos: 20},
+  {id: 'C3', nombre: 'Capacidad del equipo y colaboración con empresas', puntos: 20},
+  {id: 'C4', nombre: 'Impacto y transferencia en la Comunitat Valenciana', puntos: 25},
+  {id: 'C5', nombre: 'Adecuación del presupuesto', puntos: 10}
+];
+const PRESETS = {
+  ivace_cctt: {nombre: 'IVACE+i · Centros tecnológicos: I+D no económica en colaboración con empresas',
+    fuente: 'Reglas de la ficha IVACE de la convocatoria 2025 (DOGV 10058). Comprueba la convocatoria vigente.',
+    rules: {maxHora: 50, minHorasPersona: 50, gestionMaxPct: 10, difusionMaxPct: 10, otrosMaxPctTotal: 15, otrosMaxPctPersonal: 0, indirectMaxPct: 25, maxPorEntidad: 200000, minTotal: 0, minEntidades: 1, minPctEntidad: 0, maxPctEntidad: 100, minPctEmpresas: 0}},
+  avi_step: {nombre: 'AVI · Proyectos estratégicos en cooperación (STEP)',
+    fuente: 'Reglas del resumen de la convocatoria AVI 2026 (anexo IV). Comprueba las bases vigentes.',
+    rules: {maxHora: 50, minHorasPersona: 0, gestionMaxPct: 0, difusionMaxPct: 0, otrosMaxPctTotal: 0, otrosMaxPctPersonal: 40, indirectMaxPct: 5, maxPorEntidad: 500000, minTotal: 500000, minEntidades: 2, minPctEntidad: 15, maxPctEntidad: 70, minPctEmpresas: 60}},
+  custom: {nombre: 'Otra convocatoria (reglas editables)', fuente: 'Escribe las reglas de las bases. 0 = sin límite.',
+    rules: {maxHora: 0, minHorasPersona: 0, gestionMaxPct: 0, difusionMaxPct: 0, otrosMaxPctTotal: 0, otrosMaxPctPersonal: 0, indirectMaxPct: 0, maxPorEntidad: 0, minTotal: 0, minEntidades: 1, minPctEntidad: 0, maxPctEntidad: 100, minPctEmpresas: 0}}
+};
+const RULE_LABELS = {maxHora: ['Coste máximo por hora', '€/h'], minHorasPersona: ['Mínimo de horas por persona', 'h'], gestionMaxPct: ['Gestión y coordinación máx.', '% personal'], difusionMaxPct: ['Difusión y transferencia máx.', '% personal'], otrosMaxPctTotal: ['Otros gastos directos máx.', '% total'], otrosMaxPctPersonal: ['Otros gastos máx.', '% personal'], indirectMaxPct: ['Costes indirectos máx.', '% directos'], maxPorEntidad: ['Coste máximo por entidad', '€'], minTotal: ['Presupuesto mínimo del proyecto', '€'], minEntidades: ['Entidades mínimas', ''], minPctEntidad: ['Participación mínima por entidad', '%'], maxPctEntidad: ['Participación máxima por entidad', '%'], minPctEmpresas: ['Ejecución mínima por empresas', '%']};
+const rules = () => S.rules || PRESETS[S.preset].rules;
+const callGenerica = () => ({origen: 'generico', apartados: APARTADOS_GEN[S.preset].map(([t, d, a]) => ({titulo: t, descripcion: d, limite_palabras: 0, refs: [], estado_arte: a, verificado: null})), criterios: CRITERIOS_GEN.map(c => ({...c, umbral: 0, descripcion: '', refs: [], verificado: null})), requisitos: []});
+
+/* ══ Presupuesto: cuentas y reglas (todo por código) ══ */
+function presupuesto() {
+  const b = S.budget, coste = r => numIn(r.horas) * numIn(r.eur);
+  const per = b.per.reduce((a, r) => a + coste(r), 0), ext = b.ext.reduce((a, r) => a + numIn(r.importe), 0), otr = b.otr.reduce((a, r) => a + numIn(r.importe), 0);
+  const dir = per + ext + otr, ind = dir * numIn(b.indirectPct) / 100, tot = dir + ind;
+  const porEnt = {};
+  const addE = (e, v) => { const k = e || S.ents[0]?.nombre || '—'; porEnt[k] = (porEnt[k] || 0) + v; };
+  b.per.forEach(r => addE(r.ent, coste(r) * (1 + numIn(b.indirectPct) / 100))); b.ext.forEach(r => addE(r.ent, numIn(r.importe) * (1 + numIn(b.indirectPct) / 100))); b.otr.forEach(r => addE(r.ent, numIn(r.importe) * (1 + numIn(b.indirectPct) / 100)));
+  const gest = b.per.filter(r => r.tipo === 'gestion').reduce((a, r) => a + coste(r), 0), dif = b.per.filter(r => r.tipo === 'difusion').reduce((a, r) => a + coste(r), 0);
+  const horas = b.per.reduce((a, r) => a + numIn(r.horas), 0);
+  return {per, ext, otr, dir, ind, tot, porEnt, gest, dif, horas, coste};
+}
+function checksPresupuesto() {
+  const R = rules(), P = presupuesto(), out = [], add = (estado, t, d) => out.push({estado, t, d});
+  if (!S.budget.per.length) { add('warn', 'Sin personal', 'Añade al menos un perfil con horas y coste por hora.'); return out; }
+  if (R.maxHora) { const mal = S.budget.per.filter(r => numIn(r.eur) > R.maxHora); add(mal.length ? 'bad' : 'ok', `Coste por hora ≤ ${R.maxHora} €/h`, mal.length ? `Superan el límite: ${mal.map(r => r.perfil || '¿perfil?').join(', ')}` : 'Todos los perfiles cumplen.'); }
+  if (R.minHorasPersona) { const mal = S.budget.per.filter(r => numIn(r.horas) > 0 && numIn(r.horas) < R.minHorasPersona); add(mal.length ? 'bad' : 'ok', `Mínimo ${R.minHorasPersona} h por persona`, mal.length ? `Por debajo: ${mal.map(r => r.perfil || '¿perfil?').join(', ')}` : 'Todos los perfiles cumplen.'); }
+  if (R.gestionMaxPct && P.per) { const x = P.gest / P.per; add(x * 100 > R.gestionMaxPct ? 'bad' : 'ok', `Gestión y coordinación ≤ ${R.gestionMaxPct} % del personal`, `${pct(x, 1)} (${eur(P.gest)})`); }
+  if (R.difusionMaxPct && P.per) { const x = P.dif / P.per; add(x * 100 > R.difusionMaxPct ? 'bad' : 'ok', `Difusión y transferencia ≤ ${R.difusionMaxPct} % del personal`, `${pct(x, 1)} (${eur(P.dif)})`); }
+  if (R.otrosMaxPctTotal && P.tot) { const x = P.otr / P.tot; add(x * 100 > R.otrosMaxPctTotal ? 'bad' : 'ok', `Otros gastos directos ≤ ${R.otrosMaxPctTotal} % del total`, `${pct(x, 1)} (${eur(P.otr)})`); }
+  if (R.otrosMaxPctPersonal && P.per) { const x = P.otr / P.per; add(x * 100 > R.otrosMaxPctPersonal ? 'bad' : 'ok', `Otros gastos ≤ ${R.otrosMaxPctPersonal} % del personal`, `${pct(x, 1)} (${eur(P.otr)})`); }
+  if (R.indirectMaxPct) add(numIn(S.budget.indirectPct) > R.indirectMaxPct ? 'bad' : 'ok', `Indirectos ≤ ${R.indirectMaxPct} % de los directos`, `Aplicado: ${numIn(S.budget.indirectPct)} %`);
+  if (R.maxPorEntidad) { const mal = Object.entries(P.porEnt).filter(([, v]) => v > R.maxPorEntidad); add(mal.length ? 'bad' : 'ok', `Máximo ${eur0(R.maxPorEntidad)} por entidad`, mal.length ? mal.map(([k, v]) => `${k}: ${eur(v)}`).join('; ') : Object.entries(P.porEnt).map(([k, v]) => `${k}: ${eur(v)}`).join('; ')); }
+  if (R.minTotal) add(P.tot < R.minTotal ? 'bad' : 'ok', `Presupuesto mínimo ${eur0(R.minTotal)}`, `Total: ${eur(P.tot)}`);
+  const ents = Object.keys(P.porEnt);
+  if (R.minEntidades > 1) add(ents.length < R.minEntidades ? 'bad' : 'ok', `Al menos ${R.minEntidades} entidades con presupuesto`, `${ents.length} con gasto asignado`);
+  if ((R.minPctEntidad || R.maxPctEntidad < 100) && P.tot && ents.length > 1) { const mal = ents.filter(k => { const x = P.porEnt[k] / P.tot * 100; return x < R.minPctEntidad || x > R.maxPctEntidad; }); add(mal.length ? 'bad' : 'ok', `Cada entidad entre ${R.minPctEntidad} % y ${R.maxPctEntidad} %`, ents.map(k => `${k}: ${pct(P.porEnt[k] / P.tot, 1)}`).join('; ')); }
+  if (R.minPctEmpresas && P.tot) { const emp = new Set(S.ents.filter(e => e.tipo === 'Empresa').map(e => e.nombre)), x = ents.filter(k => emp.has(k)).reduce((a, k) => a + P.porEnt[k], 0) / P.tot; add(x * 100 < R.minPctEmpresas ? 'bad' : 'ok', `Empresas ejecutan ≥ ${R.minPctEmpresas} %`, `Empresas: ${pct(x, 1)}`); }
+  return out;
+}
+function checksPlan() {
+  const out = [], M = numIn(S.proj.meses), add = (estado, t, d) => out.push({estado, t, d});
+  if (!S.wps.length) { add('warn', 'Sin paquetes de trabajo', 'El redactor no podrá describir un plan concreto.'); return out; }
+  const mal = S.wps.filter(w => numIn(w.ini) < 1 || numIn(w.fin) < numIn(w.ini) || (M && numIn(w.fin) > M));
+  add(mal.length ? 'bad' : 'ok', `Paquetes dentro de los ${M || '?'} meses`, mal.length ? 'Revisa: ' + mal.map(w => w.nombre || '¿paquete?').join(', ') : `${S.wps.length} paquetes coherentes.`);
+  const sinEnt = S.wps.filter(w => !(w.entregable || '').trim()); add(sinEnt.length ? 'warn' : 'ok', 'Cada paquete con entregable o hito', sinEnt.length ? `Sin entregable: ${sinEnt.map(w => w.nombre).join(', ')}` : 'Todos tienen entregable.');
+  if (M) { const cub = new Set(); S.wps.forEach(w => { for (let m = numIn(w.ini); m <= Math.min(numIn(w.fin), M); m++) cub.add(m); }); add(cub.size < M ? 'warn' : 'ok', 'Meses cubiertos por el plan', `${cub.size} de ${M}`); }
+  return out;
+}
+
+/* ══ Bases: lectura de archivos y fragmentación numerada ══ */
+async function extraeTexto(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'pdf') {
+    const lib = await cargaLib('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js', 'pdfjsLib');
+    lib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const pdf = await lib.getDocument({data: await file.arrayBuffer()}).promise; let out = '';
+    for (let i = 1; i <= pdf.numPages; i++) { const c = await (await pdf.getPage(i)).getTextContent(); let line = ''; c.items.forEach(it => { line += it.str; if (it.hasEOL) { out += line + '\n'; line = ''; } else line += ' '; }); out += line + '\n'; }
+    return out.replace(/[ \t]+\n/g, '\n').replace(/ {2,}/g, ' ');
+  }
+  if (ext === 'docx') { const m = await cargaLib('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js', 'mammoth'); return (await m.extractRawText({arrayBuffer: await file.arrayBuffer()})).value; }
+  return await file.text();
+}
+const HEAD_RE = /^\s*((art[íi]culo|article|anexo|annex|base|cap[íi]tulo|t[íi]tulo|disposici[óo]n)\s+[\w.ºª]+|\d{1,2}(\.\d{1,2}){0,3}\.?\s+[A-ZÁÉÍÓÚÑÀÈÒ][^\n]{2,90}$)/i;
+function fragmenta(text) {
+  const lines = String(text).replace(/\r/g, '').split('\n').map(l => l.trim());
+  const blocks = []; let cur = [];
+  const push = () => { const t = cur.join('\n').trim(); if (t) blocks.push(t); cur = []; };
+  lines.forEach(l => { if (!l) { if (cur.length && cur.join(' ').length > 900) push(); else cur.push(''); return; } if (HEAD_RE.test(l) && cur.join(' ').trim().length > 120) push(); cur.push(l); });
+  push();
+  const out = [];
+  blocks.forEach(b => {
+    const t = b.replace(/\n{2,}/g, '\n').trim();
+    if (t.length <= 1400) { out.push(t); return; }
+    let acc = ''; t.split(/(?<=[.;:])\s+(?=[A-ZÁÉÍÓÚÑ0-9a-z(])/).forEach(s => { if ((acc + ' ' + s).length > 1100 && acc.length > 300) { out.push(acc.trim()); acc = s; } else acc += ' ' + s; }); if (acc.trim()) out.push(acc.trim());
+  });
+  const merged = []; out.forEach(t => { if (merged.length && merged.at(-1).length < 180) merged[merged.length - 1] += '\n' + t; else merged.push(t); });
+  return merged;
+}
+function rehaceFrags() { S.frags = []; S.bases.forEach(b => fragmenta(b.text).forEach(t => S.frags.push({n: S.frags.length + 1, text: t, src: b.nombre}))); }
+const basesTodo = () => S.frags.map(f => f.text).join('\n');
+const KW_BASES = ['criterio', 'valoraci', 'puntuaci', 'puntos', 'memoria', 'apartado', 'extensi', 'pagina', 'umbral', 'subvencionable', 'requisito', 'beneficiari', 'duraci', 'plazo', 'gasto', 'evaluaci', 'contenido', 'transferencia', 'difusi', 'empresa'];
+function fragsParaLector(maxChars = 48000) {
+  const all = S.frags; if (all.reduce((a, f) => a + f.text.length, 0) <= maxChars) return all;
+  const sc = all.map(f => { const n = norm(f.text); return {f, s: KW_BASES.reduce((a, k) => a + (n.split(k).length - 1), 0)}; }).sort((a, b) => b.s - a.s);
+  const sel = []; let c = 0; for (const x of sc) { if (c + x.f.text.length > maxChars) continue; sel.push(x.f); c += x.f.text.length; }
+  return sel.sort((a, b) => a.n - b.n);
+}
+/* ¿aparece la frase (ignorando mayúsculas, tildes y puntuación) en el texto? */
+const contiene = (texto, frase) => { const q = norm(frase); return q.length >= 12 && norm(texto).includes(q); };
+
+/* ══ Estado del arte: seis fuentes, red común, deduplicación por DOI y ranking (adaptado de Doctoralia) ══ */
+const FUENTES = [{id: 'oa', name: 'OpenAlex'}, {id: 'cr', name: 'CrossRef'}, {id: 'ss', name: 'Semantic Scholar'}, {id: 'ep', name: 'Europe PMC'}, {id: 'pm', name: 'PubMed'}, {id: 'ax', name: 'arXiv'}];
+const SRC_GAP = {'api.semanticscholar.org': 1500, 'eutils.ncbi.nlm.nih.gov': 380, 'api.openalex.org': 150, 'api.crossref.org': 150, 'www.ebi.ac.uk': 120, 'api.datacite.org': 200};
+const _hostNext = {}, SRC_STATE = {};
+async function _throttle(host, gap) { const now = Date.now(), tt = Math.max(now, _hostNext[host] || 0); _hostNext[host] = tt + gap; if (tt > now) await sleep(tt - now); }
+async function fetchSrc(url, {tries = 3, timeout = 20000} = {}) {
+  const host = new URL(url).host; let lastErr;
+  for (let a = 0; a < tries; a++) {
+    if (PARAR) throw PARADO();
+    await _throttle(host, SRC_GAP[host] || 0);
+    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), timeout);
+    try {
+      const r = await fetch(url, {signal: ctl.signal}); clearTimeout(to);
+      if (r.ok) return r;
+      const e = new Error('HTTP ' + r.status); e.status = r.status;
+      if (r.status !== 429 && r.status < 500) throw e;
+      const ra = parseFloat(r.headers.get('Retry-After')); lastErr = e; _hostNext[host] = Date.now() + (isFinite(ra) ? ra * 1000 : 2000 * 2 ** a);
+    } catch (e) {
+      clearTimeout(to); if (e.message === '__STOP__') throw e;
+      if (e.status && e.status !== 429 && e.status < 500) throw e;
+      lastErr = e.name === 'AbortError' ? new Error('tiempo de espera agotado') : (e.status ? e : new Error('sin respuesta (red, CORS o límite de peticiones)'));
+      _hostNext[host] = Date.now() + 2000 * 2 ** a;
+    }
+  }
+  throw lastErr;
+}
+function srcFail(name, msg) { const st = SRC_STATE[name] || (SRC_STATE[name] = {fails: 0}); st.fails++; if (st.fails >= 2 && !st.down) { st.down = true; log(`⚠ ${name}: ${msg}. Se omiten sus consultas restantes.`, 'warn'); } else if (!st.down) log(`⚠ ${name}: ${msg}`, 'warn'); }
+const srcDown = n => !!SRC_STATE[n]?.down;
+const normDOI = d => d ? String(d).toLowerCase().replace(/^https?:\/\/(dx\.)?doi\.org\//, '').replace(/^doi:/, '').trim() : '';
+const normTitle = x => norm(x);
+const desInvierte = idx => { const pos = []; Object.entries(idx || {}).forEach(([w, ps]) => ps.forEach(p => pos.push([p, w]))); return pos.sort((a, b) => a[0] - b[0]).map(x => x[1]).join(' '); };
+const mail = () => (LS.get('email') || '').trim();
+async function searchOA(q, max, yr) {
+  const p = new URLSearchParams({search: q, per_page: Math.min(max, 50), select: 'title,abstract_inverted_index,publication_year,authorships,primary_location,cited_by_count,doi,open_access,is_retracted', filter: `publication_year:${yr.from}-${yr.to}`}); if (mail()) p.set('mailto', mail());
+  return (((await (await fetchSrc(`https://api.openalex.org/works?${p}`)).json()).results) || []).map(w => ({title: w.title || '', authors: (w.authorships || []).slice(0, 5).map(a => a.author?.display_name || ''), year: String(w.publication_year || ''), journal: w.primary_location?.source?.display_name || '', abstract: desInvierte(w.abstract_inverted_index).slice(0, 900), citations: w.cited_by_count || 0, doi: normDOI(w.doi), url: w.doi || '', source: 'OpenAlex', oa: w.open_access?.oa_status || '', retracted: !!w.is_retracted}));
+}
+async function searchCR(q, max, yr) {
+  const p = new URLSearchParams({query: q, rows: Math.min(max, 50), select: 'DOI,title,author,published,container-title,abstract,is-referenced-by-count', filter: `from-pub-date:${yr.from},until-pub-date:${yr.to}`}); if (mail()) p.set('mailto', mail());
+  return ((((await (await fetchSrc(`https://api.crossref.org/works?${p}`)).json()).message) || {}).items || []).map(w => ({title: (Array.isArray(w.title) ? w.title[0] : w.title) || '', authors: (w.author || []).slice(0, 5).map(a => `${a.given || ''} ${a.family || ''}`.trim()), year: String(w.published?.['date-parts']?.[0]?.[0] || ''), journal: (Array.isArray(w['container-title']) ? w['container-title'][0] : '') || '', abstract: (w.abstract || '').replace(/<[^>]+>/g, '').slice(0, 900), citations: w['is-referenced-by-count'] || 0, doi: normDOI(w.DOI), url: w.DOI ? 'https://doi.org/' + w.DOI : '', source: 'CrossRef', oa: ''}));
+}
+async function searchSS(q, max, yr) {
+  const p = new URLSearchParams({query: q, limit: Math.min(max, 50), year: `${yr.from}-${yr.to}`, fields: 'title,abstract,year,authors,venue,citationCount,url,externalIds'});
+  return (((await (await fetchSrc(`https://api.semanticscholar.org/graph/v1/paper/search?${p}`, {tries: 4})).json()).data) || []).map(x => ({title: x.title || '', authors: (x.authors || []).slice(0, 5).map(a => a.name), year: String(x.year || ''), journal: x.venue || '', abstract: (x.abstract || '').slice(0, 900), citations: x.citationCount || 0, doi: normDOI(x.externalIds?.DOI), url: x.url || '', source: 'Semantic Scholar', oa: ''}));
+}
+async function searchEP(q, max, yr) {
+  const p = new URLSearchParams({query: `${q} AND (PUB_YEAR:[${yr.from} TO ${yr.to}])`, format: 'json', pageSize: Math.min(max, 50), resultType: 'core'});
+  return ((((await (await fetchSrc(`https://www.ebi.ac.uk/europepmc/webservices/rest/search?${p}`)).json()).resultList) || {}).result || []).map(a => ({title: a.title || '', authors: (a.authorString || '').split(',').slice(0, 5).map(s => s.trim()), year: String(a.pubYear || ''), journal: a.journalTitle || '', abstract: (a.abstractText || '').replace(/<[^>]+>/g, '').slice(0, 900), citations: a.citedByCount || 0, doi: normDOI(a.doi), url: a.doi ? 'https://doi.org/' + a.doi : '', source: 'Europe PMC', oa: a.isOpenAccess === 'Y' ? 'open' : ''}));
+}
+async function searchPM(q, max, yr) {
+  const sp = new URLSearchParams({db: 'pubmed', term: `(${q}) AND (${yr.from}[PDAT]:${yr.to}[PDAT])`, retmax: max, retmode: 'json', tool: 'memoriaid'});
+  const ids = (((await (await fetchSrc(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?${sp}`)).json()).esearchresult) || {}).idlist || []; if (!ids.length) return [];
+  const xml = new DOMParser().parseFromString(await (await fetchSrc(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=${ids.join(',')}&retmode=xml&rettype=abstract&tool=memoriaid`)).text(), 'application/xml');
+  return [...xml.querySelectorAll('PubmedArticle')].map(a => ({title: (a.querySelector('ArticleTitle')?.textContent || '').trim(), authors: [...a.querySelectorAll('AuthorList > Author')].slice(0, 5).map(au => `${au.querySelector('ForeName')?.textContent || ''} ${au.querySelector('LastName')?.textContent || ''}`.trim()), year: a.querySelector('PubDate > Year')?.textContent || '', journal: a.querySelector('Journal > Title')?.textContent || '', abstract: [...a.querySelectorAll('Abstract > AbstractText')].map(n => n.textContent).join(' ').slice(0, 1000), citations: 0, doi: normDOI([...a.querySelectorAll('ArticleId')].find(n => n.getAttribute('IdType') === 'doi')?.textContent), url: `https://pubmed.ncbi.nlm.nih.gov/${a.querySelector('PMID')?.textContent || ''}/`, source: 'PubMed', oa: '', retracted: [...a.querySelectorAll('PublicationType')].some(n => /Retracted Publication/i.test(n.textContent))})).filter(p => p.title);
+}
+async function searchAX(q, max, yr) {
+  const terms = String(q).replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(w => w.length > 2); if (!terms.length) return [];
+  for (const op of [' AND ', ' OR ']) {
+    const p = new URLSearchParams({query: `(${terms.join(op)}) AND publicationYear:[${yr.from} TO ${yr.to}]`, 'client-id': 'arxiv.content', 'page[size]': Math.min(max, 50)});
+    const out = (((await (await fetchSrc(`https://api.datacite.org/dois?${p}`, {tries: 2})).json()).data) || []).map(d => { const a = d.attributes || {}; return {title: ((a.titles || [])[0]?.title || '').trim(), authors: (a.creators || []).slice(0, 5).map(c => c.name || ''), year: String(a.publicationYear || ''), journal: 'arXiv (preprint)', abstract: ((a.descriptions || []).find(x => x.descriptionType === 'Abstract')?.description || '').slice(0, 900), citations: a.citationCount || 0, doi: normDOI(a.doi), url: a.doi ? 'https://doi.org/' + a.doi : '', source: 'arXiv', oa: 'gold'}; }).filter(p => p.title);
+    if (out.length || op === ' OR ') return out;
+  }
+  return [];
+}
+const BUSCADORES = {oa: searchOA, cr: searchCR, ss: searchSS, ep: searchEP, pm: searchPM, ax: searchAX};
+function jaccard(a, b) { const A = new Set(a.split(' ')), B = new Set(b.split(' ')); if (!A.size || !B.size) return 0; let n = 0; A.forEach(x => { if (B.has(x)) n++; }); return n / (A.size + B.size - n); }
+function merge(a, b) { const L = k => ((a[k] || '').length >= (b[k] || '').length ? a[k] : b[k]); return {...a, title: L('title'), abstract: L('abstract'), journal: L('journal'), authors: (a.authors || []).length >= (b.authors || []).length ? a.authors : b.authors, year: a.year || b.year, citations: Math.max(a.citations || 0, b.citations || 0), doi: a.doi || b.doi, url: a.url || b.url, oa: a.oa || b.oa, retracted: a.retracted || b.retracted, sources: [...new Set([...(a.sources || [a.source]), ...(b.sources || [b.source])])]}; }
+function dedup(ps) {
+  const byDoi = new Map(), byT = new Map(), out = [];
+  ps.forEach(p => { const q = {...p, sources: p.sources || [p.source]}, tt = normTitle(q.title), tk = tt.split(' ').slice(0, 12).join(' ');
+    if (q.doi && byDoi.has(q.doi)) { const i = byDoi.get(q.doi); out[i] = merge(out[i], q); return; }
+    if (tk && byT.has(tk)) { const i = byT.get(tk); if (jaccard(tt, normTitle(out[i].title)) >= 0.85) { out[i] = merge(out[i], q); if (q.doi) byDoi.set(q.doi, i); return; } }
+    out.push(q); const i = out.length - 1; if (q.doi) byDoi.set(q.doi, i); if (tk) byT.set(tk, i); });
+  return out;
+}
+function rank(ps) {
+  const now = yNow; ps.forEach(p => { const y = parseInt(p.year) || now; p.cpy = (p.citations || 0) / Math.max(1, now - y + 1); });
+  const s = [...ps].sort((a, b) => a.cpy - b.cpy); s.forEach((p, i) => p.cpct = i / (s.length || 1));
+  ps.forEach(p => { const rec = Math.max(0, 1 - (now - (parseInt(p.year) || now)) / 25); p.score = 0.45 * p.cpct + 0.25 * rec + 0.2 * ((p.abstract || '').length > 80 ? 1 : 0) + 0.1 * Math.min(3, p.sources.length) / 3 - (p.retracted ? 1 : 0); });
+  return ps.sort((a, b) => b.score - a.score);
+}
+async function pMap(items, fn, limit = 4) { const out = new Array(items.length); let i = 0; await Promise.all(Array.from({length: Math.min(limit, items.length || 1)}, async () => { while (i < items.length) { const k = i++; try { out[k] = await fn(items[k]); } catch (e) { if (e.message === '__STOP__') throw e; out[k] = null; } } })); return out; }
+</script>
+<script>
+'use strict';
+/* ══ Datos del proyecto como bloque de texto (única fuente de cifras) ══ */
+const fmtN = n => Math.round(n).toLocaleString('es-ES', {useGrouping: 'always'});
+function datosProyecto() {
+  const p = S.proj, P = presupuesto(), L = [];
+  L.push(`Título: ${p.titulo || '—'}`); if (p.acronimo) L.push(`Acrónimo: ${p.acronimo}`);
+  L.push(`Duración: ${p.meses} meses`); L.push(`TRL inicial: ${p.trlIni}; TRL final previsto: ${p.trlFin}`);
+  L.push('Entidades:'); S.ents.filter(e => e.nombre).forEach(e => L.push(`- ${e.nombre} (${e.tipo}): ${e.rol || '—'}`));
+  if (p.idea) L.push(`Idea y problema: ${p.idea}`);
+  const ob = String(p.objetivos || '').split('\n').map(x => x.trim()).filter(Boolean);
+  if (ob.length) { L.push('Objetivos:'); ob.forEach((o, i) => L.push(`- ${i ? 'OE' + i : 'Objetivo general'}: ${o}`)); }
+  if (p.novedad) L.push(`Novedad frente a lo existente: ${p.novedad}`);
+  if (p.resultados) L.push(`Resultados esperados y transferencia: ${p.resultados}`);
+  if (p.s3) L.push(`Prioridad S3-CV y retos: ${p.s3}`);
+  if (S.budget.per.length) {
+    L.push(`Presupuesto: personal ${fmtN(P.per)} €; servicios externos ${fmtN(P.ext)} €; otros gastos directos ${fmtN(P.otr)} €; costes indirectos ${fmtN(P.ind)} € (${numIn(S.budget.indirectPct)} % de los directos); total ${fmtN(P.tot)} €.`);
+    if (Object.keys(P.porEnt).length > 1) L.push('Presupuesto por entidad: ' + Object.entries(P.porEnt).map(([k, v]) => `${k} ${fmtN(v)} €`).join('; '));
+    L.push(`Personal (${fmtN(P.horas)} horas en total):`); S.budget.per.forEach(r => L.push(`- ${r.perfil || 'Perfil'} (${r.ent || S.ents[0]?.nombre || ''}): ${fmtN(numIn(r.horas))} h a ${numIn(r.eur)} €/h; dedicación: ${DEDIC[r.tipo] || 'I+D'}`));
+    [...S.budget.ext.map(r => ['Servicio externo', r]), ...S.budget.otr.map(r => ['Otro gasto', r])].forEach(([t, r]) => L.push(`- ${t}: ${r.concepto || '—'} (${fmtN(numIn(r.importe))} €)`));
+  }
+  if (S.wps.length) { L.push('Paquetes de trabajo:'); S.wps.forEach((w, i) => L.push(`- PT${i + 1} ${w.nombre}: meses ${w.ini}–${w.fin}; responsable: ${w.resp || '—'}; entregable o hito: ${w.entregable || '—'}`)); }
+  return scrub(L.join('\n'));
+}
+const DEDIC = {id: 'I+D', gestion: 'Gestión y coordinación', difusion: 'Difusión y transferencia'};
+
+/* ══ Citas ancladas: [P n] papers, [B n] bases. El código valida, limpia y renumera ══ */
+const CITE_RE = /\[((?:[PB]\s?\d+)(?:\s*[,;–-]\s*(?:[PB]\s?)?\d+)*)\]/g;
+const AUTORANIO_RE = /\[[A-ZÁÉÍÓÚÑ][^\]\d]{2,40},?\s*(19|20)\d{2}[a-z]?\]/g;
+const PLAIN_RE = /\[\d+(?:\s*[,;–-]\s*\d+)*\]/g;
+function partes(inner) {
+  const out = []; let L = 'P';
+  inner.split(/[,;]/).forEach(part => { const m = part.trim().match(/^([PB])?\s?(\d+)(?:\s*[–-]\s*([PB])?\s?(\d+))?$/); if (!m) return; if (m[1]) L = m[1]; const a = +m[2], b = m[4] ? +m[4] : a; if (b >= a && b - a < 40) for (let k = a; k <= b; k++) out.push({L, n: k}); });
+  return out;
+}
+const okCite = (x, NP, NB) => x.n >= 1 && x.n <= (x.L === 'P' ? NP : NB);
+function auditSec(text, NP, NB) {
+  const ids = []; let m; CITE_RE.lastIndex = 0; while ((m = CITE_RE.exec(text))) ids.push(...partes(m[1]));
+  const v = ids.filter(x => okCite(x, NP, NB));
+  return {P: v.filter(x => x.L === 'P').map(x => x.n), B: v.filter(x => x.L === 'B').map(x => x.n), emitidas: ids.length, invalidas: ids.length - v.length, autor: (text.match(AUTORANIO_RE) || []).length, sinLetra: (text.match(PLAIN_RE) || []).length, palabras: wc(text.replace(CITE_RE, ''))};
+}
+const limpiaTx = x => x.replace(/\(\s*\)/g, '').replace(/ +([.,;:])/g, '$1').replace(/ {2,}/g, ' ');
+function limpia(text, NP, NB) {
+  return limpiaTx(text.replace(CITE_RE, (f, inner) => { const k = partes(inner).filter(x => okCite(x, NP, NB)); if (!k.length) return ''; const u = [...new Map(k.map(x => [x.L + x.n, x])).values()]; return '[' + u.map(x => x.L + x.n).join(', ') + ']'; }).replace(AUTORANIO_RE, '').replace(PLAIN_RE, ''));
+}
+const famDe = s => String(s || '').trim().split(/\s+/).pop();
+const iniDe = s => { const p = String(s || '').trim().split(/\s+/); return p.length > 1 ? p[0][0] + '.' : ''; };
+function autorAnio(p) { const a = p.authors || [], Y = p.year || 's. f.'; if (!a.length) return `Anónimo, ${Y}`; if (a.length === 1) return `${famDe(a[0])}, ${Y}`; if (a.length === 2) return `${famDe(a[0])} y ${famDe(a[1])}, ${Y}`; return `${famDe(a[0])} et al., ${Y}`; }
+function refLine(r, style) {
+  const p = r.paper, au = p.authors || [], doi = p.doi ? `https://doi.org/${p.doi}` : (p.url || ''), J = p.journal || '', Y = p.year || 's. f.', demo = p.demo ? ' [DEMO: referencia ficticia]' : '';
+  if (style === 'APA 7') return `${au.slice(0, 20).map(a => `${famDe(a)}, ${iniDe(a)}`).join(', ') || 'Anónimo'} (${Y}). ${p.title}. ${J}${J ? '. ' : ''}${doi}${demo}`;
+  return `[${r.n}] ${au.slice(0, 6).map(a => `${iniDe(a)} ${famDe(a)}`.trim()).join(', ') + (au.length > 6 ? ', et al.' : '') || 'Anónimo'}, "${p.title}," ${J}${J ? ', ' : ''}${Y}. ${doi}${demo}`;
+}
+function finaliza(secs, corpus, style) {
+  const order = [], map = new Map(), NP = corpus.length;
+  secs.forEach(s => { let m; CITE_RE.lastIndex = 0; while ((m = CITE_RE.exec(s.texto))) partes(m[1]).forEach(x => { if (x.L === 'P' && x.n >= 1 && x.n <= NP && !map.has(x.n)) { map.set(x.n, order.length + 1); order.push(x.n); } }); });
+  const apa = style === 'APA 7';
+  const out = secs.map(s => { const B = new Set(); const t = s.texto.replace(CITE_RE, (f, inner) => { const k = partes(inner); k.filter(x => x.L === 'B').forEach(x => B.add(x.n)); const ps = [...new Set(k.filter(x => x.L === 'P' && map.has(x.n)).map(x => x.n))]; if (!ps.length) return ''; return apa ? '(' + ps.map(n => autorAnio(corpus[n - 1])).join('; ') + ')' : '[' + ps.map(n => map.get(n)).sort((a, b) => a - b).join(', ') + ']'; });
+    return {...s, final: limpiaTx(t).replace(/\s+\./g, '.').trim(), bRefs: [...B].sort((a, b) => a - b)}; });
+  return {secs: out, refs: order.map((o, i) => ({n: i + 1, orig: o, paper: corpus[o - 1]}))};
+}
+/* cifras que aparecen en el texto y no están en ninguna fuente (datos, bases, corpus) */
+function numerosDe(t) {
+  const s = String(t).replace(CITE_RE, ' ').replace(/\b(?:PT|OE|WP|TRL|C|P|B)\s?\d+\b/g, ' ');
+  return new Set((s.match(/\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?/g) || []).map(x => /^\d{1,3}(\.\d{3})+/.test(x) ? x.replace(/\./g, '').replace(',', '.') : x.replace(',', '.')).map(x => String(parseFloat(x))));
+}
+function cifrasNuevas(texto, material) { const m = numerosDe(material); return [...numerosDe(texto)].filter(x => !m.has(x) && parseFloat(x) > 12); }
+
+/* ══ Convocatoria: análisis con verificación literal ══ */
+const fragSig = () => S.frags.length + ':' + S.frags.reduce((a, f) => a + f.text.length, 0);
+async function analizaConvocatoria() {
+  if (!S.frags.length) { S.call = callGenerica(); S.call.sig = fragSig(); log('ℹ Sin bases cargadas: se usa la estructura genérica del programa. Carga las bases para usar los criterios reales.', 'warn'); return; }
+  const sel = fragsParaLector(), txt = sel.map(f => `[B${f.n}] ${f.text}`).join('\n\n'), NB = S.frags.length;
+  log(`📄 Lector de bases: ${sel.length} de ${NB} fragmentos enviados…`);
+  let j = null;
+  try { j = await ag('lector', [{role: 'system', content: 'Eres técnico de gestión de ayudas públicas de I+D. Extraes requisitos sin inventar nada.'}, {role: 'user', content: rell(promptDe('lector'), {frags: txt})}], {json: true, temp: 0.1, ctx: {}}); }
+  catch (e) { if (e.message === '__STOP__') throw e; log('⚠ El lector no respondió con JSON válido: ' + e.message, 'warn'); }
+  const todo = basesTodo();
+  const verifica = it => { const refs = (it.refs || []).map(Number).filter(n => n >= 1 && n <= NB); const enRef = refs.some(n => contiene(S.frags[n - 1].text, it.cita || '')); return {...it, refs, verificado: !!(it.cita && (enRef || contiene(todo, it.cita))), enFragmento: enRef}; };
+  const ap = (j?.apartados || []).filter(a => a && a.titulo).map(verifica), cr = (j?.criterios || []).filter(c => c && c.nombre).map((c, i) => ({...verifica(c), id: c.id || 'C' + (i + 1), puntos: numIn(c.puntos), umbral: numIn(c.umbral)})), rq = (j?.requisitos || []).filter(r => r && r.texto).map(verifica);
+  const gen = callGenerica();
+  S.call = {origen: 'bases', apartados: ap.length ? ap : gen.apartados, criterios: cr.length ? cr : gen.criterios, requisitos: rq, extension: numIn(j?.extension_total_palabras), apGen: !ap.length, crGen: !cr.length, sig: fragSig()};
+  S.call.apartados.forEach(a => { if (a.estado_arte == null) a.estado_arte = /arte|antecedente|novedad|innova|estado de la t/i.test(a.titulo); });
+  const nv = [...ap, ...cr, ...rq].filter(x => !x.verificado).length;
+  log(`✅ Convocatoria: ${S.call.apartados.length} apartados, ${S.call.criterios.length} criterios, ${rq.length} requisitos${nv ? ` · ${nv} sin verificar en el texto` : ' · todo verificado literalmente'}`, nv ? 'warn' : 'ok');
+  if (S.call.apGen) log('⚠ No se encontraron apartados en las bases: se usa la estructura genérica.', 'warn');
+  if (S.call.crGen) log('⚠ No se encontraron criterios con puntuación: se usan criterios genéricos.', 'warn');
+}
+
+/* ══ Estado del arte ══ */
+let BUSCANDO = false;
+async function buscaArte({auto = false} = {}) {
+  const yr = {from: Math.min(numIn(S.arte.yfrom), numIn(S.arte.yto)), to: Math.max(numIn(S.arte.yfrom), numIn(S.arte.yto))};
+  let qs = String(S.arte.queries || '').split('\n').map(x => x.trim()).filter(Boolean);
+  if (!qs.length) {
+    log('🧭 Explorador: proponiendo consultas…');
+    try { const j = await ag('scout', [{role: 'user', content: rell(promptDe('scout'), {maxQ: 4, proyecto: scrub(`${S.proj.titulo}\n${S.proj.idea}\nPalabras clave: ${S.proj.kw}`)})}], {json: true, temp: 0.4, ctx: {}}); qs = (j?.queries || []).map(String).filter(Boolean).slice(0, 5); }
+    catch (e) { if (e.message === '__STOP__') throw e; }
+    if (!qs.length) qs = [S.proj.kw || S.proj.titulo].filter(Boolean);
+    S.arte.queries = qs.join('\n'); if ($('a_queries')) $('a_queries').value = S.arte.queries;
+  }
+  if (!qs.length) throw new Error('Escribe palabras clave o consultas para buscar el estado del arte.');
+  let raw;
+  if (getProv() === 'demo') { await sleep(400); raw = DEMO_PAPERS.map(p => ({...p, sources: [p.source]})); log(`🔍 Demostración: ${raw.length} papers ficticios (no se consulta ninguna base real).`, 'warn'); }
+  else {
+    for (const k in SRC_STATE) delete SRC_STATE[k];
+    const srcs = FUENTES.filter(f => S.arte.srcs[f.id]), jobs = []; qs.forEach(q => srcs.forEach(s => jobs.push({q, s})));
+    log(`🔍 ${jobs.length} búsquedas (${qs.length} consultas × ${srcs.length} fuentes)`);
+    const res = await pMap(jobs, async j => { if (PARAR) throw PARADO(); if (srcDown(j.s.name)) return []; try { const r = await BUSCADORES[j.s.id](j.q, 15, yr); log(`  ${j.s.name}: ${r.length}`, r.length ? 'ok' : 'warn'); setArteStatus(); return r; } catch (e) { if (e.message === '__STOP__') throw e; srcFail(j.s.name, e.message); return []; } }, 4);
+    raw = res.flat().filter(Boolean);
+  }
+  const all = dedup(raw), b4 = all.length, sinRet = all.filter(p => !p.retracted), byYear = sinRet.filter(p => { const y = parseInt(p.year); return !y || (y >= yr.from && y <= yr.to); });
+  const ranked = rank(byYear), top = numIn(S.arte.topP) || 20;
+  ranked.forEach((p, i) => p.sel = i < top);
+  S.papers = ranked; S.arteFlow = {consultas: qs, identificados: raw.length, unicos: b4, retractados: b4 - sinRet.length, fueraDeRango: sinRet.length - byYear.length, elegibles: ranked.length};
+  log(`📚 ${raw.length} registros → ${b4} únicos → ${ranked.length} elegibles · ${Math.min(top, ranked.length)} seleccionados para el corpus${auto ? ' (selección automática)' : ''}`, 'ok');
+  guarda();
+}
+const corpusSel = () => S.papers.filter(p => p.sel);
+function listaCorpus(corpus, larga) { return corpus.map((p, i) => `[P${i + 1}] ${p.title} | ${(p.authors || []).slice(0, 3).join(', ')}${(p.authors || []).length > 3 ? ' et al.' : ''} | ${p.year || '?'} | ${p.journal || '?'}${larga ? `\n    ${(p.abstract || '(sin resumen)').slice(0, 450)}` : ''}`).join('\n'); }
+
+/* ══ Estructura ══ */
+/* asignación criterio ↔ sección por familias temáticas (código, sin IA) */
+const FAMILIAS = [['novedad', 'innova', 'arte', 'cientific', 'calidad', 'antecedente', 'tecnolog', 'excelen'], ['metodolog', 'plan de trabajo', 'viabil', 'cronogram', 'paquete', 'riesgo', 'ejecuci'], ['empresa', 'transferencia', 'colabora', 'explotaci', 'consorcio', 'difusi', 'socio'], ['impacto', 's3', 'comunitat', 'territori', 'social', 'economic', 'ambient', 'estrateg'], ['presupuesto', 'coste', 'gasto', 'financ', 'recursos'], ['equipo', 'capacidad', 'experiencia', 'personal investigador'], ['objetivo', 'resultado', 'indicador', 'medible']];
+const familiasDe = t => { const n = norm(t); return new Set(FAMILIAS.map((f, i) => f.some(k => n.includes(k)) ? i : -1).filter(i => i >= 0)); };
+const afinidad = (a, b) => { let n = 0; a.forEach(x => { if (b.has(x)) n++; }); return n; };
+function asignaCriterios(secs, criterios) {
+  const fs = secs.map(s => familiasDe(s.titulo + ' ' + (s.descripcion || '') + (s.estado_arte ? ' estado del arte' : ''))), esRes = s => /resumen|summary|resum/i.test(s.titulo);
+  criterios.forEach(c => { const fc = familiasDe(c.nombre + ' ' + (c.descripcion || '')); let best = 0; secs.forEach((s, i) => { if (!esRes(s)) best = Math.max(best, afinidad(fs[i], fc)); });
+    secs.forEach((s, i) => { if (!esRes(s) && best > 0 && afinidad(fs[i], fc) === best && !s.criterios.includes(c.id)) s.criterios.push(c.id); }); });
+  secs.forEach((s, i) => { if (s.criterios.length || esRes(s)) return; let bc = null, bs = 0; criterios.forEach(c => { const a = afinidad(fs[i], familiasDe(c.nombre + ' ' + (c.descripcion || ''))); if (a > bs) { bs = a; bc = c; } }); if (bc) s.criterios.push(bc.id); });
+  criterios.forEach(c => { if (!secs.some(s => s.criterios.includes(c.id))) (secs.find(s => !esRes(s)) || secs[0]).criterios.push(c.id); });
+  return secs;
+}
+function estructuraPorDefecto(total) {
+  const ap = S.call.apartados, cr = S.call.criterios;
+  const secs = ap.map(a => ({titulo: a.titulo, descripcion: a.descripcion || '', limite: numIn(a.limite_palabras), estado_arte: !!a.estado_arte, criterios: [], refs: a.refs || []}));
+  asignaCriterios(secs, cr);
+  const peso = s => 1 + s.criterios.reduce((a, id) => a + (cr.find(c => c.id === id)?.puntos || 10) / 10, 0), W = secs.reduce((a, s) => a + peso(s), 0);
+  secs.forEach(s => s.palabras = Math.max(150, Math.round(total * peso(s) / W / 10) * 10));
+  return secs;
+}
+async function estructura() {
+  const total = numIn(S.opt.palabras) || numIn(S.call.extension) * 0.9 || 4500;
+  const base = estructuraPorDefecto(total);
+  try {
+    const j = await ag('architect', [{role: 'user', content: rell(promptDe('architect'), {apartados: S.call.apartados.map(a => `- ${a.titulo}${a.limite_palabras ? ` (máx. ${a.limite_palabras} palabras)` : ''}: ${a.descripcion || ''}`).join('\n'), criterios: S.call.criterios.map(c => `- ${c.id} ${c.nombre} (${c.puntos} puntos)`).join('\n'), palabras: total})}], {json: true, temp: 0.3, ctx: {base}});
+    const arr = Array.isArray(j?.secciones) ? j.secciones : [];
+    if (arr.length >= Math.max(3, base.length - 2)) {
+      const ids = new Set(S.call.criterios.map(c => c.id));
+      const secs = arr.map(s => { const b = base.find(x => norm(x.titulo) === norm(s.titulo)) || base.find(x => norm(s.titulo).includes(norm(x.titulo)) || norm(x.titulo).includes(norm(s.titulo))); return {titulo: String(s.titulo || b?.titulo || 'Sección'), descripcion: b?.descripcion || '', limite: b?.limite || 0, estado_arte: s.estado_arte ?? b?.estado_arte ?? false, criterios: (s.criterios || []).map(String).filter(x => ids.has(x)), refs: b?.refs || [], palabras: Math.max(120, numIn(s.palabras) || b?.palabras || 400)}; });
+      const faltan = base.filter(b => !secs.some(s => norm(s.titulo) === norm(b.titulo)));
+      if (faltan.length) log(`⚠ El arquitecto omitió ${faltan.length} apartados obligatorios; se añaden: ${faltan.map(f => f.titulo).join(', ')}`, 'warn');
+      faltan.forEach(f => secs.push(f));
+      const orden = t => { const i = base.findIndex(b => norm(b.titulo) === norm(t)); return i < 0 ? 99 : i; }; secs.sort((a, b) => orden(a.titulo) - orden(b.titulo));
+      asignaCriterios(secs, S.call.criterios);
+      secs.forEach(s => { if (s.limite && s.palabras > s.limite * 0.95) { s.palabras = Math.floor(s.limite * 0.9); } });
+      log(`🏗 Arquitecto: ${secs.length} secciones · ${fmtN(secs.reduce((a, s) => a + s.palabras, 0))} palabras previstas`, 'ok');
+      return secs;
+    }
+    log('⚠ El arquitecto devolvió una estructura incompleta: se usa la de la convocatoria.', 'warn');
+  } catch (e) { if (e.message === '__STOP__') throw e; log('⚠ Arquitecto sin respuesta válida: se usa la estructura de la convocatoria.', 'warn'); }
+  return base;
+}
+
+/* ══ Redacción de una sección ══ */
+function fragsDeSeccion(sec) {
+  if (!S.frags.length) return [];
+  const ids = new Set(sec.refs || []);
+  sec.criterios.forEach(id => (S.call.criterios.find(c => c.id === id)?.refs || []).forEach(n => ids.add(n)));
+  const tw = new Set(norm(sec.titulo + ' ' + sec.descripcion).split(' ').filter(w => w.length > 4));
+  S.frags.map(f => ({f, s: norm(f.text).split(' ').filter(w => tw.has(w)).length})).sort((a, b) => b.s - a.s).slice(0, 3).forEach(x => { if (x.s > 1) ids.add(x.f.n); });
+  return [...ids].filter(n => n >= 1 && n <= S.frags.length).sort((a, b) => a - b).slice(0, 6).map(n => S.frags[n - 1]);
+}
+async function redactaSeccion(sec, i, ctx) {
+  const {corpus, datos, lang, NB} = ctx, NP = corpus.length, fr = fragsDeSeccion(sec);
+  const crit = sec.criterios.map(id => { const c = S.call.criterios.find(x => x.id === id); return c ? `${c.id} ${c.nombre}` : id; }).join('; ') || '—';
+  const guia = `Qué debe contener: ${sec.descripcion || 'según el título'}.${/plan de trabajo|metodolog/i.test(sec.titulo) ? ' Describe cada paquete de trabajo con sus meses, responsable y entregable tal como figuran en los datos.' : ''}${/presupuesto/i.test(sec.titulo) ? ' Justifica cada partida con las tareas; usa solo los importes de los datos.' : ''}`;
+  const user = rell(promptDe('crafter'), {seccion: sec.titulo, acronimo: S.proj.acronimo || S.proj.titulo, palabras: sec.palabras, criterios: crit, guia, datos, bases: fr.length ? fr.map(f => `[B${f.n}] ${f.text.slice(0, 900)}`).join('\n\n') : '(no se han cargado bases: no uses [B n])', papers: NP ? listaCorpus(corpus, sec.estado_arte) : '(sin corpus: no uses [P n])', np: NP, nb: NB, instr: S.proj.instr ? '\nIndicaciones de la persona usuaria: ' + scrub(S.proj.instr) : ''});
+  const sys = `Eres redactor experto en memorias técnicas de proyectos de I+D para agencias públicas. Escribe en ${lang}. Usa solo [P n] (1–${NP}) y [B n] (1–${NB}) para citar.`;
+  let raw = await ag('crafter', [{role: 'system', content: sys}, {role: 'user', content: user}], {temp: 0.5, ctx: {sec, i, NP, NB, fr}});
+  let a = auditSec(raw, NP, NB); const emit = {emitidas: a.emitidas, invalidas: a.invalidas, autor: a.autor, sinLetra: a.sinLetra};
+  let text = limpia(raw, NP, NB);
+  if (a.invalidas || a.autor || a.sinLetra) log(`  ⚠ «${sec.titulo}»: ${a.invalidas} citas fuera de rango, ${a.autor} autor-año, ${a.sinLetra} sin letra → eliminadas por código`, 'warn');
+  a = auditSec(text, NP, NB);
+  if (sec.estado_arte && NP && a.P.length === 0 && a.palabras > 80) {
+    log(`  ⚠ «${sec.titulo}» no cita ningún paper: se reescribe exigiendo citas…`, 'warn');
+    const rw = await ag('crafter', [{role: 'system', content: sys}, {role: 'user', content: `Reescribe este texto añadiendo citas [P n] (1–${NP}) a cada afirmación sobre la literatura, sin cambiar el contenido.\n\nCORPUS:\n${listaCorpus(corpus, true)}\n\nTEXTO:\n${text}`}], {temp: 0.3, ctx: {sec, i, NP, NB, fr, reescritura: true}});
+    const a2 = auditSec(rw, NP, NB); emit.emitidas += a2.emitidas; emit.invalidas += a2.invalidas; emit.autor += a2.autor; emit.sinLetra += a2.sinLetra; text = limpia(rw, NP, NB); a = auditSec(text, NP, NB);
+  }
+  return {titulo: sec.titulo, texto: text.trim(), sec, audit: a, emit, frags: fr.map(f => f.n)};
+}
+
+/* ══ Evaluación simulada ══ */
+async function evalua(secs, ronda) {
+  const cr = S.call.criterios, memo = secs.map(s => `## ${s.titulo}\n${limpiaTx(s.texto.replace(CITE_RE, ''))}`).join('\n\n').slice(0, 26000);
+  const j = await ag('evaluador', [{role: 'system', content: `Eres evaluador experto de una agencia pública de I+D. Responde en ${S.opt.lang}.`}, {role: 'user', content: rell(promptDe('evaluador'), {criterios: cr.map(c => `- ${c.id} ${c.nombre}: máximo ${c.puntos || 10} puntos${c.umbral ? `, umbral ${c.umbral}` : ''}. ${c.descripcion || ''}`).join('\n'), memoria: memo})}], {json: true, temp: 0.2, ctx: {secs, ronda}});
+  const items = cr.map(c => { const e = (j?.evaluacion || []).find(x => String(x.id) === c.id) || {}; const max = c.puntos || 10; const pts = Math.max(0, Math.min(max, numIn(e.puntos))); return {id: c.id, nombre: c.nombre, max, umbral: c.umbral || 0, puntos: pts, fortalezas: e.fortalezas || '', debilidades: e.debilidades || '', seccion: e.seccion_a_mejorar || ''}; });
+  return {items, total: items.reduce((a, x) => a + x.puntos, 0), max: items.reduce((a, x) => a + x.max, 0)};
+}
+
+/* ══ PIPELINE ══ */
+const FASES = ['Convocatoria', 'Estado del arte', 'Estructura', 'Redacción', 'Evaluación y mejora', 'Cierre'];
+let EJEC = false;
+const FASE_ST = [];
+function fase(i, st) { FASE_ST[i] = st || ''; const el = $('ph' + i); if (el) { el.classList.remove('active', 'done'); if (st) el.classList.add(st); } }
+async function generar() {
+  if (EJEC || BUSCANDO) return;
+  if (!S.proj.titulo.trim() || !S.proj.idea.trim()) { toast('Completa al menos el título y la idea del proyecto.'); showView('proy'); return; }
+  if (getProv() !== 'demo' && !getKey()) { abreIA(); toast('Pega tu clave de IA para continuar'); return; }
+  if (!(await confirmaEnvio())) return;
+  EJEC = true; PARAR = false; usoReset(); LOGS.length = 0; $('logPanel').innerHTML = ''; FASES.forEach((_, i) => fase(i, '')); botones();
+  const t0 = Date.now(), lang = S.opt.lang, run = {ts: new Date().toISOString(), version: VERSION, prov: getProv(), model: getMod(), lang, cite: S.opt.cite, preset: S.preset, rondas: [], ejemplo: S.ejemplo};
+  try {
+    fase(0, 'active'); log('── 1 · CONVOCATORIA ──');
+    if (!S.call || S.call.sig !== fragSig()) await analizaConvocatoria(); else log('✅ Se reutiliza el análisis de la convocatoria.', 'ok');
+    fase(0, 'done'); fase(1, 'active'); log('── 2 · ESTADO DEL ARTE ──');
+    if (!corpusSel().length) await buscaArte({auto: true}); else log(`✅ Corpus revisado: ${corpusSel().length} papers.`, 'ok');
+    const corpus = corpusSel().map(p => ({...p})), NB = S.frags.length;
+    log(`🔖 Corpus fijado: [P1]–[P${corpus.length}] · bases: [B1]–[B${NB}]`, 'ok');
+    fase(1, 'done'); fase(2, 'active'); log('── 3 · ESTRUCTURA ──');
+    const estr = await estructura(); fase(2, 'done');
+    fase(3, 'active'); log('── 4 · REDACCIÓN ──');
+    const datos = datosProyecto(), ctx = {corpus, datos, lang, NB}, secs = [];
+    for (let i = 0; i < estr.length; i++) { if (PARAR) throw PARADO(); log(`✍ ${i + 1}/${estr.length} «${estr[i].titulo}» (~${estr[i].palabras} palabras)`); const r = await redactaSeccion(estr[i], i, ctx); secs.push(r); log(`  ✅ ${r.audit.palabras} palabras · ${r.audit.P.length} citas a papers · ${r.audit.B.length} a bases`, 'ok'); S.run = {...run, parcial: true, secs, corpus, estr}; guarda(); }
+    fase(3, 'done'); fase(4, 'active');
+    let ev = null;
+    if (S.opt.evalua) {
+      log('── 5 · EVALUACIÓN Y MEJORA ──');
+      ev = await evalua(secs, 0); run.rondas.push({ronda: 0, total: ev.total, max: ev.max, accion: 'Evaluación inicial'}); log(`📊 Evaluación inicial: ${ev.total.toFixed(1)} / ${ev.max}`, 'ok');
+      for (let k = 1; k <= numIn(S.opt.iter); k++) {
+        if (PARAR) throw PARADO();
+        const peor = [...ev.items].sort((a, b) => a.puntos / a.max - b.puntos / b.max)[0];
+        let idx = secs.findIndex(s => peor.seccion && (norm(s.titulo) === norm(peor.seccion) || norm(s.titulo).includes(norm(peor.seccion)) || norm(peor.seccion).includes(norm(s.titulo))));
+        if (idx < 0) idx = secs.findIndex(s => s.sec.criterios.includes(peor.id)); if (idx < 0) idx = 0;
+        const s = secs[idx], NP = corpus.length; log(`🔁 Ronda ${k}: ${peor.id} (${peor.puntos}/${peor.max}) → reescribir «${s.titulo}»`);
+        const raw = await ag('mejora', [{role: 'system', content: `Eres redactor experto en memorias de I+D. Escribe en ${lang}.`}, {role: 'user', content: rell(promptDe('mejora'), {seccion: s.titulo, criterio: `${peor.id} ${peor.nombre}`, debilidad: peor.debilidades || 'falta concreción', palabras: s.sec.palabras, np: NP, nb: NB, datos, papers: listaCorpus(corpus, s.sec.estado_arte), texto: s.texto})}], {temp: 0.5, ctx: {s, k}});
+        const a0 = auditSec(raw, NP, NB), nuevo = limpia(raw, NP, NB), a1 = auditSec(nuevo, NP, NB);
+        if (a1.P.length < s.audit.P.length * 0.9) { log(`  ↩ Descartada: perdía ${s.audit.P.length - a1.P.length} citas.`, 'warn'); run.rondas.push({ronda: k, total: ev.total, max: ev.max, accion: `Descartada en «${s.titulo}»: perdía citas`}); continue; }
+        const cand = secs.map((x, j) => j === idx ? {...x, texto: nuevo, audit: a1, emit: {emitidas: x.emit.emitidas + a0.emitidas, invalidas: x.emit.invalidas + a0.invalidas, autor: x.emit.autor + a0.autor, sinLetra: x.emit.sinLetra + a0.sinLetra}} : x);
+        const ev2 = await evalua(cand, k);
+        if (ev2.total > ev.total) { secs.splice(0, secs.length, ...cand); log(`  ✅ Conservada: ${ev.total.toFixed(1)} → ${ev2.total.toFixed(1)}`, 'ok'); run.rondas.push({ronda: k, total: ev2.total, max: ev2.max, accion: `Conservada: «${s.titulo}» (${peor.id})`}); ev = ev2; }
+        else { log(`  ↩ Revertida: ${ev2.total.toFixed(1)} no mejora ${ev.total.toFixed(1)}`, 'warn'); run.rondas.push({ronda: k, total: ev2.total, max: ev2.max, accion: `Revertida: «${s.titulo}» (${peor.id})`}); }
+      }
+    }
+    fase(4, 'done'); fase(5, 'active'); log('── 6 · CIERRE ──');
+    let resumen = '';
+    if (S.opt.resumen && !secs.some(s => /resumen|summary|resum/i.test(s.titulo))) { resumen = limpiaTx(String(await ag('resumen', [{role: 'user', content: rell(promptDe('resumen'), {palabras: 250, memoria: secs.map(s => s.texto.replace(CITE_RE, '')).join('\n\n').slice(0, 12000)})}], {temp: 0.3, ctx: {}})).replace(CITE_RE, '').replace(PLAIN_RE, '')).trim(); }
+    Object.assign(run, cierra(secs, corpus, ev, resumen, datos));
+    run.tiempo = Math.round((Date.now() - t0) / 1000); run.uso = {in: USO.in, out: USO.out, calls: USO.calls, coste: coste(USO.in, USO.out), porAgente: USO.by};
+    S.run = run; await guardaYa(); fase(5, 'done');
+    log(`🎉 Memoria generada en ${run.tiempo} s · ${run.metr.palabras} palabras · ${run.refs.length} referencias · ${pct(run.metr.resueltas)} citas resueltas`, 'ok');
+    toast('Memoria generada'); showView('mem');
+  } catch (e) {
+    if (e.message === '__STOP__') log('⏹ Generación detenida.', 'warn');
+    else { log('❌ ' + e.message, 'err'); toast(e.message, 7000); }
+    if (S.run?.parcial && S.run.secs?.length) { const r = S.run; Object.assign(r, cierra(r.secs, r.corpus, null, '', datosProyecto())); r.parcial = true; S.run = r; guardaYa(); log('💾 Se conserva el borrador parcial en «Memoria».', 'warn'); }
+  } finally { EJEC = false; PARAR = false; botones(); pintaDots(); }
+}
+function cierra(secs, corpus, ev, resumen, datos) {
+  const fin = finaliza(secs, corpus, S.opt.cite), material = [datos, basesTodo(), corpus.map(p => `${p.title} ${p.year} ${p.abstract}`).join(' ')].join('\n');
+  const cifras = fin.secs.map(s => ({titulo: s.titulo, cifras: cifrasNuevas(s.final, material)})).filter(x => x.cifras.length);
+  const emit = secs.reduce((a, s) => ({emitidas: a.emitidas + s.emit.emitidas, invalidas: a.invalidas + s.emit.invalidas, autor: a.autor + s.emit.autor, sinLetra: a.sinLetra + s.emit.sinLetra}), {emitidas: 0, invalidas: 0, autor: 0, sinLetra: 0});
+  const palabras = fin.secs.reduce((a, s) => a + wc(s.final), 0), Pcit = secs.reduce((a, s) => a + s.audit.P.length, 0);
+  return {secs: fin.secs.map(s => ({titulo: s.titulo, texto: s.texto, final: s.final, bRefs: s.bRefs, criterios: s.sec.criterios, limite: s.sec.limite, palabrasObj: s.sec.palabras, estado_arte: s.sec.estado_arte, audit: s.audit, editado: false})),
+    refs: fin.refs, corpus, ev, resumen, cifras, call: JSON.parse(JSON.stringify(S.call)), presupuesto: presupuesto(), checksPres: checksPresupuesto(), checksPlan: checksPlan(), datos,
+    metr: {palabras, emitidas: emit.emitidas, eliminadas: emit.invalidas + emit.autor + emit.sinLetra, total: emit.emitidas + emit.autor + emit.sinLetra, validas: emit.emitidas - emit.invalidas, resueltas: (emit.emitidas + emit.autor + emit.sinLetra) ? (emit.emitidas - emit.invalidas) / (emit.emitidas + emit.autor + emit.sinLetra) : 1, citasP: Pcit, cobertura: corpus.length ? fin.refs.length / corpus.length : 0, conDoi: fin.refs.length ? fin.refs.filter(r => r.paper.doi).length / fin.refs.length : 0}, arteFlow: S.arteFlow || null};
+}
+
+/* ══ Modo demostración: respuestas simuladas, deterministas ══ */
+const DEMO_BASES = `TEXTO DE EJEMPLO — no reproduce ninguna convocatoria real. Sirve solo para probar la herramienta.
+Artículo 1. Objeto
+Se convocan ayudas para proyectos de I+D de carácter no económico desarrollados por centros tecnológicos de la Comunitat Valenciana en colaboración efectiva con empresas, que generen conocimiento transferible al tejido productivo valenciano y se enmarquen en las prioridades de la Estrategia de Especialización Inteligente S3-CV.
+Artículo 5. Gastos subvencionables
+Serán subvencionables los costes de personal propio con un coste horario máximo de 50 euros por hora, los servicios externos contratados exclusivamente para el proyecto y otros gastos directos, que no podrán superar el 15 por ciento de la ayuda. Los costes indirectos se calcularán a tipo fijo de hasta el 25 por ciento de los costes directos.
+Artículo 11. Memoria técnica
+La memoria técnica tendrá una extensión máxima de 20 páginas y contendrá, al menos, los siguientes apartados: resumen del proyecto; antecedentes y estado del arte; objetivos; metodología y plan de trabajo; colaboración con empresas y transferencia de resultados; impacto en la Comunitat Valenciana; presupuesto.
+Artículo 12. Criterios de valoración
+Las solicitudes se valorarán sobre 100 puntos con los siguientes criterios.
+1. Calidad científico-técnica y grado de novedad del proyecto, hasta 30 puntos.
+2. Adecuación de la metodología y del plan de trabajo, hasta 20 puntos.
+3. Implicación de las empresas y potencial de transferencia de los resultados, hasta 30 puntos.
+4. Impacto en la Comunitat Valenciana y alineación con la S3-CV, hasta 20 puntos.
+Será necesario obtener al menos 50 puntos para que el proyecto sea financiable.`;
+const fragCon = f => { const i = S.frags.findIndex(x => contiene(x.text, f)); return i < 0 ? [] : [i + 1]; };
+const DEMO_PAPERS = [
+  ['Active packaging with natural antimicrobials for fresh-cut fruit: a review', ['L. Marín', 'A. Costa', 'J. Ruiz'], '2022', 'Trends in Food Science & Technology', 'Revisión de sistemas de envase activo con antimicrobianos naturales para fruta cortada; resume eficacia frente a mohos y limitaciones de escalado industrial.', 140],
+  ['Compostable PLA/PBAT films with essential oil coatings: barrier and release behaviour', ['S. Vidal', 'M. Ferrer'], '2023', 'Food Packaging and Shelf Life', 'Estudia la liberación de aceites esenciales desde recubrimientos sobre films compostables y su efecto en las propiedades barrera.', 61],
+  ['Shelf-life extension of fresh-cut apple using chitosan-based active coatings', ['R. Ortega', 'P. Lindqvist', 'E. Sanz', 'K. Mori'], '2021', 'Postharvest Biology and Technology', 'Ensayos de vida útil en manzana cortada con recubrimientos de quitosano; reducción del pardeamiento y de la carga microbiana.', 98],
+  ['Migration testing of active compounds from biodegradable food contact materials', ['C. Blanco', 'H. Weber'], '2023', 'Food Additives & Contaminants: Part A', 'Metodología de ensayos de migración específica para compuestos activos en materiales biodegradables en contacto con alimentos.', 33],
+  ['Industrial scale-up of active packaging: barriers and opportunities', ['D. Navarro', 'T. Okafor'], '2024', 'Journal of Cleaner Production', 'Analiza por qué pocas soluciones de envase activo llegan a la industria: coste, regulación y compatibilidad con líneas de envasado.', 21],
+  ['Consumer acceptance of compostable packaging for fresh produce in Southern Europe', ['I. Gómez', 'F. Rossi'], '2022', 'Sustainable Production and Consumption', 'Encuesta sobre aceptación de envases compostables para frutas y hortalizas en España e Italia.', 45],
+  ['Antifungal efficacy of encapsulated thymol in polymer matrices', ['N. Petrov', 'A. Lledó', 'B. Silva'], '2020', 'International Journal of Food Microbiology', 'Eficacia antifúngica del timol encapsulado en matrices poliméricas frente a Botrytis y Penicillium.', 112],
+  ['Life cycle assessment of compostable versus conventional fresh-cut fruit trays', ['M. Esteve', 'J. Park'], '2024', 'Resources, Conservation and Recycling', 'Comparación de ciclo de vida de bandejas compostables y convencionales para fruta cortada.', 14]
+].map(([title, authors, year, journal, abstract, citations], i) => ({title: '[DEMO] ' + title, authors, year, journal, abstract, citations, doi: '', url: '', source: 'Demo', demo: true, oa: ''}));
+const DEMO = {
+  lector() {
+    if (!S.frags.some(f => /TEXTO DE EJEMPLO/.test(f.text))) { log('ℹ En modo demostración no se analizan bases reales: se usa la estructura genérica. Conecta un proveedor de IA para leerlas.', 'warn'); return {apartados: [], criterios: [], requisitos: []}; }
+    const r11 = fragCon('La memoria técnica tendrá una extensión máxima de 20 páginas'), r12 = fragCon('Las solicitudes se valorarán sobre 100 puntos'), r5 = fragCon('coste horario máximo de 50 euros por hora');
+    const ap = [['Resumen del proyecto', false], ['Antecedentes y estado del arte', true], ['Objetivos', false], ['Metodología y plan de trabajo', false], ['Colaboración con empresas y transferencia de resultados', false], ['Impacto en la Comunitat Valenciana', false], ['Presupuesto', false]];
+    return {extension_total_palabras: 9000,
+      apartados: ap.map(([t, a]) => ({titulo: t, descripcion: 'Apartado exigido por el artículo 11', limite_palabras: 0, refs: r11, cita: 'La memoria técnica tendrá una extensión máxima de 20 páginas', estado_arte: a})),
+      criterios: [['C1', 'Calidad científico-técnica y grado de novedad', 30, 'Calidad científico-técnica y grado de novedad del proyecto, hasta 30 puntos'], ['C2', 'Adecuación de la metodología y del plan de trabajo', 20, 'Adecuación de la metodología y del plan de trabajo, hasta 20 puntos'], ['C3', 'Implicación de las empresas y potencial de transferencia', 30, 'Implicación de las empresas y potencial de transferencia de los resultados, hasta 30 puntos'], ['C4', 'Impacto en la Comunitat Valenciana y alineación con la S3-CV', 20, 'Impacto en la Comunitat Valenciana y alineación con la S3-CV, hasta 20 puntos']].map(([id, n, p, c]) => ({id, nombre: n, puntos: p, umbral: 0, descripcion: '', refs: fragCon(c).length ? fragCon(c) : r12, cita: c})),
+      requisitos: [{texto: 'Coste horario máximo de personal: 50 €/h', refs: r5, cita: 'con un coste horario máximo de 50 euros por hora'}, {texto: 'Puntuación mínima para ser financiable: 50 puntos', refs: r12, cita: 'Será necesario obtener al menos 50 puntos para que el proyecto sea financiable'}, {texto: 'Los proyectos deben finalizar antes del 30 de junio (frase que el modelo «recuerda» pero no está en las bases)', refs: r11, cita: 'Los proyectos deberán finalizar antes del 30 de junio del año siguiente'}]};
+  },
+  scout() { return {queries: ['active packaging fresh-cut fruit', 'compostable antimicrobial coating', 'migration active compounds biodegradable']}; },
+  architect({base}) { return {secciones: base.map(s => ({titulo: s.titulo, palabras: s.palabras, criterios: s.criterios, estado_arte: s.estado_arte}))}; },
+  crafter({sec, i, NP, NB, fr, reescritura}) {
+    const p = S.proj, acr = p.acronimo || 'El proyecto', b = fr[0]?.n ? `[B${fr[0].n}]` : '', P = n => NP ? `[P${Math.min(n, NP)}]` : '';
+    const emp = S.ents.filter(e => e.tipo === 'Empresa').map(e => e.nombre), wps = S.wps.map((w, k) => `el PT${k + 1} (${w.nombre}, meses ${w.ini}–${w.fin}), cuyo entregable es ${w.entregable || 'un informe técnico'}`);
+    const t = norm(sec.titulo), Pr = presupuesto();
+    if (/arte|antecedente/.test(t)) return `${reescritura ? '' : ''}Los envases activos con antimicrobianos naturales han mostrado en laboratorio una reducción clara de mohos en fruta cortada ${P(1)}, y los recubrimientos sobre films compostables permiten controlar la liberación del agente activo sin perder propiedades barrera ${P(2)}. En manzana cortada, los recubrimientos de quitosano reducen el pardeamiento y la carga microbiana ${P(3)}, mientras que el timol encapsulado es eficaz frente a Botrytis y Penicillium ${P(7)}.\n\nSin embargo, pocas soluciones llegan a la industria: el coste, la regulación de materiales en contacto con alimentos y la compatibilidad con las líneas de envasado frenan el escalado [P5, P4]. ${acr} se sitúa en ese hueco, con la validación en condiciones reales como eje del proyecto ${b}. Estudios previos atribuyen a estos envases un 37 % menos de mermas [Pérez et al., 2022] [P99].`;
+    if (/objetiv/.test(t)) return `${String(p.objetivos || '').split('\n').filter(Boolean).map((o, k) => `${k ? 'OE' + k : 'Objetivo general'}: ${o.trim()}`).join('\n\n')}\n\nLos objetivos responden directamente a los criterios de calidad y novedad de la convocatoria ${b}.`;
+    if (/metodolog|plan de trabajo/.test(t)) return `El plan se organiza en ${S.wps.length} paquetes de trabajo a lo largo de ${p.meses} meses. ${wps.slice(0, 3).join('; ')}. A continuación, ${wps.slice(3).join('; ')}.\n\nLa metodología combina formulación en laboratorio, ensayos de migración según la práctica descrita en la literatura ${P(4)} y validación en planta con las empresas, lo que permite medir el avance de TRL ${p.trlIni} a TRL ${p.trlFin} ${b}.`;
+    if (/empresa|transferencia|colaboraci|consorcio/.test(t)) return `${emp.join(' y ') || 'Las empresas colaboradoras'} participan desde la definición de requisitos hasta la validación final. ${S.ents.filter(e => e.tipo === 'Empresa').map(e => `${e.nombre} aporta ${e.rol}`).join('. ')}.\n\nLos resultados se transfieren mediante jornadas técnicas, informes de validación y la cesión de resultados prevista en las bases ${b}, con atención a la aceptación del consumidor de envases compostables ${P(6)}.`;
+    if (/impacto|s3/.test(t)) return `${acr} se alinea con ${p.s3 || 'las prioridades de la S3-CV'} ${b}. El impacto principal es reducir mermas y residuos en la cadena hortofrutícola valenciana, con un balance ambiental favorable de las bandejas compostables frente a las convencionales ${P(8)}.`;
+    if (/presupuesto/.test(t)) return `El presupuesto total asciende a ${fmtN(Pr.tot)} €, de los que ${fmtN(Pr.per)} € corresponden a personal propio (${fmtN(Pr.horas)} horas), ${fmtN(Pr.ext)} € a servicios externos y ${fmtN(Pr.otr)} € a otros gastos directos. Los costes indirectos se aplican al ${numIn(S.budget.indirectPct)} % de los directos, dentro del límite de la convocatoria ${b}.`;
+    if (/resumen/.test(t)) return `${acr} propone ${String(p.idea || '').split('.')[0].toLowerCase()}. El proyecto parte de TRL ${p.trlIni} y prevé alcanzar TRL ${p.trlFin} en ${p.meses} meses, en colaboración con ${emp.join(' y ') || 'empresas de la Comunitat Valenciana'} ${b}.`;
+    return `Esta sección desarrolla «${sec.titulo}» a partir de los datos del proyecto ${b}. ${p.novedad || ''}`;
+  },
+  evaluador({ronda}) { return {evaluacion: S.call.criterios.map((c, k) => ({id: c.id, puntos: Math.round((c.puntos || 10) * Math.min(0.95, [0.62, 0.7, 0.55, 0.66, 0.6][k % 5] + (ronda ? 0.06 * ronda * (k === 2 ? 1 : 0) : 0)) * 10) / 10, fortalezas: 'Planteamiento claro y bien alineado con la convocatoria.', debilidades: k === 2 ? 'El papel de cada empresa en la explotación de resultados no está cuantificado.' : 'Podría concretar más los indicadores.', seccion_a_mejorar: k === 2 ? 'Colaboración con empresas y transferencia de resultados' : ''}))}; },
+  mejora({s, k}) { const extra = [`Para asegurar la explotación, cada empresa asume un paquete de validación concreto y recibe los informes de resultados al cierre de cada hito [P5].`, `La transferencia se mide con indicadores sencillos: número de empresas que prueban el prototipo, lotes validados en planta y jornadas técnicas realizadas, todos ligados a los entregables de los paquetes de trabajo [P6].`, `Los resultados que no se incorporen a producción durante el proyecto quedan documentados para su explotación posterior por las empresas colaboradoras [P1].`]; return s.texto + '\n\n' + extra[((k || 1) - 1) % extra.length]; },
+  resumen() { const p = S.proj; return `${p.acronimo || 'El proyecto'} propone ${String(p.idea || '').split('.')[0].toLowerCase()}. Durante ${p.meses} meses, el centro y las empresas colaboradoras formularán, fabricarán y validarán en condiciones reales la solución, con un plan de transferencia que facilita su adopción industrial en la Comunitat Valenciana.`; }
+};
+function cargaEjemplo() {
+  const s = estadoInicial(); S = s; S.ejemplo = true;
+  S.proj = {titulo: 'Envases activos compostables para alargar la vida útil de fruta cortada', acronimo: 'ENVAFRESC (ejemplo)', meses: 18, trlIni: 3, trlFin: 6,
+    idea: 'Desarrollar bandejas y films compostables con un recubrimiento antimicrobiano natural que reduzca las mermas de fruta cortada. Las empresas hortofrutícolas valencianas pierden producto por mohos y pardeamiento en los primeros días, y los envases actuales no son compostables.',
+    objetivos: 'Desarrollar y validar en planta un envase activo compostable para fruta cortada\nFormular un recubrimiento antimicrobiano natural compatible con films compostables\nFabricar prototipos de bandeja y film a escala piloto\nValidar la vida útil con fruta cortada en las instalaciones de una empresa colaboradora',
+    novedad: 'Combina en un mismo envase compostable la liberación controlada de antimicrobianos naturales y la compatibilidad con líneas de envasado existentes, validada en planta y no solo en laboratorio.',
+    resultados: 'Prototipo validado, protocolo de ensayos de migración, informe de vida útil y jornada de transferencia para el sector hortofrutícola.',
+    s3: 'S3-CV: alimentación sostenible y economía circular', kw: 'active packaging fresh-cut fruit compostable antimicrobial', instr: 'Tono técnico y concreto; destaca la validación en planta.'};
+  S.ents = [{nombre: 'Centro tecnológico (ejemplo)', tipo: 'Centro tecnológico', rol: 'Solicitante; formulación, ensayos y coordinación'}, {nombre: 'Envases del Turia S.L. (ficticia)', tipo: 'Empresa', rol: 'Fabricación de prototipos a escala piloto'}, {nombre: 'Hortofrutícola La Ribera S.A. (ficticia)', tipo: 'Empresa', rol: 'Validación con fruta cortada en su planta'}];
+  const c = S.ents[0].nombre;
+  S.budget = {indirectPct: 25,
+    per: [{perfil: 'Investigador/a principal', ent: c, tipo: 'id', horas: 380, eur: 42}, {perfil: 'Investigador/a de materiales', ent: c, tipo: 'id', horas: 700, eur: 38}, {perfil: 'Técnico/a de laboratorio', ent: c, tipo: 'id', horas: 900, eur: 30}, {perfil: 'Gestión del proyecto', ent: c, tipo: 'gestion', horas: 150, eur: 40}, {perfil: 'Difusión y transferencia', ent: c, tipo: 'difusion', horas: 160, eur: 35}],
+    ext: [{concepto: 'Ensayos de migración en laboratorio acreditado', ent: c, importe: 9500}, {concepto: 'Informe de auditoría', ent: c, importe: 1400}],
+    otr: [{concepto: 'Polímeros y principios activos', ent: c, importe: 7800}, {concepto: 'Material fungible de laboratorio', ent: c, importe: 2200}]};
+  S.wps = [{nombre: 'Requisitos y especificaciones', ini: 1, fin: 3, resp: c, entregable: 'Informe de requisitos'}, {nombre: 'Formulación del recubrimiento activo', ini: 2, fin: 9, resp: c, entregable: 'Formulación seleccionada'}, {nombre: 'Prototipos de bandeja y film', ini: 7, fin: 13, resp: 'Envases del Turia S.L. (ficticia)', entregable: 'Lote piloto de prototipos'}, {nombre: 'Validación en planta', ini: 12, fin: 17, resp: 'Hortofrutícola La Ribera S.A. (ficticia)', entregable: 'Informe de vida útil'}, {nombre: 'Difusión y transferencia', ini: 1, fin: 18, resp: c, entregable: 'Jornada técnica sectorial'}, {nombre: 'Coordinación', ini: 1, fin: 18, resp: c, entregable: 'Informes de seguimiento'}];
+  S.bases = [{nombre: 'bases_de_ejemplo.txt (ficticias)', text: DEMO_BASES}]; rehaceFrags(); S.call = null;
+  guardaYa(); renderAll(); showView('conv'); toast('Ejemplo cargado: datos y bases ficticios');
+}
+</script>
+<script>
+'use strict';
+/* ══ Interfaz ══ */
+const VIEWS = ['conv', 'proy', 'pres', 'arte', 'gen', 'mem', 'cum', 'ag'];
+const RENDER = {conv: renderConv, proy: renderProy, pres: renderPres, arte: renderArte, gen: renderGen, mem: renderMem, cum: renderCum, ag: renderAg};
+let VIEW = 'conv';
+function showView(v) {
+  if (!VIEWS.includes(v)) v = 'conv'; VIEW = v;
+  VIEWS.forEach(x => { $('v-' + x).hidden = x !== v; }); $$('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.v === v ? 'true' : 'false'));
+  RENDER[v](); try { if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v); } catch {}
+  window.scrollTo({top: 0});
+}
+const renderAll = () => { pintaBinds(); RENDER[VIEW](); pintaDots(); pintaProv(); };
+function pintaDots() {
+  const ok = {conv: !!S.call, proy: !!(S.proj.titulo && S.proj.idea), pres: S.budget.per.length > 0 && !checksPresupuesto().some(c => c.estado === 'bad'), arte: corpusSel().length >= 3};
+  Object.entries(ok).forEach(([k, v]) => $('d-' + k)?.classList.toggle('ok', v));
+}
+const f1 = x => Number(x).toLocaleString('es-ES', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+const pill = (estado, txt) => `<span class="pill ${estado}">${esc(txt)}</span>`;
+const PILL_TXT = {ok: 'Cumple', warn: 'Revisar', bad: 'No cumple', neu: '—'};
+const checkList = arr => arr.map(c => `<div class="ck">${pill(c.estado, PILL_TXT[c.estado])}<span class="t">${esc(c.t)}</span><span class="d">${esc(c.d)}</span></div>`).join('');
+
+/* enlace de formularios: data-bind="ruta.del.estado" */
+const getPath = p => p.split('.').reduce((o, k) => o?.[k], S);
+const setPath = (p, v) => { const ks = p.split('.'), last = ks.pop(); ks.reduce((o, k) => o[k], S)[last] = v; };
+function pintaBinds() { $$('[data-bind]').forEach(el => { const v = getPath(el.dataset.bind); if (el.type === 'checkbox') el.checked = !!v; else el.value = v ?? ''; }); $('a_email').value = LS.get('email'); }
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset.bind) { setPath(el.dataset.bind, el.type === 'checkbox' ? el.checked : el.hasAttribute('data-num') ? numIn(el.value) : el.value); guarda(); if (el.dataset.bind.startsWith('budget')) pintaPresSum(); pintaDots(); return; }
+  if (el.dataset.t) { const arr = tablaArr(el.dataset.t), r = arr[+el.dataset.i]; if (!r) return; r[el.dataset.k] = el.type === 'number' ? numIn(el.value) : el.value; guarda(); if (['per', 'ext', 'otr'].includes(el.dataset.t)) pintaPresSum(el.dataset.t, +el.dataset.i); if (el.dataset.t === 'wp') pintaGantt(); if (el.dataset.t === 'ent') pintaDots(); return; }
+  if (el.dataset.rule) { S.rules = {...rules(), [el.dataset.rule]: numIn(el.value)}; guarda(); return; }
+  if (el.id === 'a_email') LS.set('email', el.value.trim());
+});
+document.addEventListener('change', e => { const el = e.target; if (el.dataset.t && el.tagName === 'SELECT') { tablaArr(el.dataset.t)[+el.dataset.i][el.dataset.k] = el.value; guarda(); pintaPresSum(); } if (el.dataset.bind && el.tagName === 'SELECT') { setPath(el.dataset.bind, el.hasAttribute('data-num') ? numIn(el.value) : el.value); guarda(); } });
+const tablaArr = t => ({ent: S.ents, per: S.budget.per, ext: S.budget.ext, otr: S.budget.otr, wp: S.wps}[t]);
+const inp = (t, i, k, v, type = 'text', extra = '') => `<input type="${type}" data-t="${t}" data-i="${i}" data-k="${k}" value="${esc(v ?? '')}" aria-label="${k}" ${extra}>`;
+const sel = (t, i, k, v, opts) => `<select data-t="${t}" data-i="${i}" data-k="${k}" aria-label="${k}">${opts.map(o => { const [val, lab] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(val)}"${String(val) === String(v) ? ' selected' : ''}>${esc(lab)}</option>`; }).join('')}</select>`;
+const delBtn = (t, i) => `<button class="btn small danger" data-del="${t}" data-i="${i}" type="button" aria-label="Eliminar fila">✕</button>`;
+document.addEventListener('click', e => {
+  const d = e.target.closest('[data-del]'); if (d) { tablaArr(d.dataset.del).splice(+d.dataset.i, 1); guarda(); RENDER[VIEW](); pintaDots(); return; }
+  const tab = e.target.closest('.tab'); if (tab) { showView(tab.dataset.v); return; }
+  const cl = e.target.closest('[data-close]'); if (cl) { cl.closest('.modal').hidden = true; pintaProv(); return; }
+  if (e.target.classList.contains('modal')) { e.target.hidden = true; pintaProv(); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $$('.modal').forEach(m => { if (!m.hidden && m.id !== 'mEnvio') { m.hidden = true; pintaProv(); } }); });
+
+/* ── 1 · convocatoria ── */
+function renderConv() {
+  $('selPreset').innerHTML = Object.entries(PRESETS).map(([k, p]) => `<option value="${k}"${k === S.preset ? ' selected' : ''}>${esc(p.nombre)}</option>`).join('');
+  $('presetFuente').textContent = PRESETS[S.preset].fuente;
+  const R = rules(); $('rulesBox').innerHTML = Object.entries(RULE_LABELS).filter(([k]) => S.preset === 'custom' || R[k]).map(([k, [l, u]]) => `<div class="field"><label for="r_${k}">${esc(l)}${u ? ` <span class="hint">(${esc(u)})</span>` : ''}</label><input type="number" id="r_${k}" data-rule="${k}" value="${R[k]}"></div>`).join('');
+  $('basesFiles').innerHTML = S.bases.length ? 'Cargado: ' + S.bases.map(b => esc(b.nombre)).join(' · ') : 'Sin documentos de la convocatoria. Puedes generar con la estructura genérica del programa.';
+  $('fragCount').textContent = S.frags.length + ' fragmentos';
+  $('fragList').innerHTML = S.frags.length ? S.frags.slice(0, 80).map(f => `<div class="frag"><b>B${f.n}</b>${esc(f.text.slice(0, 260))}${f.text.length > 260 ? '…' : ''}</div>`).join('') + (S.frags.length > 80 ? `<p class="hint">…y ${S.frags.length - 80} más</p>` : '') : '<p class="hint">Aún no hay fragmentos.</p>';
+  pintaCall();
+}
+function pintaCall() {
+  const c = S.call;
+  if (!c) { $('callOrigen').innerHTML = pill('neu', 'Sin analizar'); $('callBox').innerHTML = `<p class="hint">Pulsa «Analizar convocatoria». Sin bases se usará la estructura genérica de «${esc(PRESETS[S.preset].nombre)}».</p>`; return; }
+  $('callOrigen').innerHTML = c.origen === 'generico' ? pill('warn', 'Estructura genérica') : pill('ok', 'Extraída de las bases');
+  const ver = x => x.verificado == null ? pill('neu', 'genérico') : x.verificado ? pill('ok', 'verificado') : pill('bad', 'no está en las bases');
+  const refs = x => (x.refs || []).length ? x.refs.map(n => 'B' + n).join(', ') : '—';
+  $('callBox').innerHTML = `
+    <div class="tw"><table><thead><tr><th>Apartado de la memoria</th><th class="num">Límite (palabras)</th><th>Fuente</th><th>Comprobación</th></tr></thead><tbody>${c.apartados.map(a => `<tr><td>${esc(a.titulo)}${a.estado_arte ? ' <span class="hint">· estado del arte</span>' : ''}</td><td class="num">${a.limite_palabras ? fmtN(a.limite_palabras) : '—'}</td><td class="mono">${refs(a)}</td><td>${ver(a)}</td></tr>`).join('')}</tbody></table></div>
+    <div class="tw"><table><thead><tr><th>Criterio</th><th class="num">Puntos</th><th class="num">Umbral</th><th>Fuente</th><th>Comprobación</th></tr></thead><tbody>${c.criterios.map(x => `<tr><td><span class="mono">${esc(x.id)}</span> ${esc(x.nombre)}</td><td class="num">${x.puntos || '—'}</td><td class="num">${x.umbral || '—'}</td><td class="mono">${refs(x)}</td><td>${ver(x)}</td></tr>`).join('')}</tbody></table></div>
+    ${c.requisitos?.length ? `<div class="tw"><table><thead><tr><th>Requisito</th><th>Fuente</th><th>Comprobación</th></tr></thead><tbody>${c.requisitos.map(x => `<tr><td>${esc(x.texto)}</td><td class="mono">${refs(x)}</td><td>${ver(x)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+    ${c.extension ? `<p class="hint">Extensión total indicada: ${fmtN(c.extension)} palabras aprox.</p>` : ''}`;
+}
+async function anadeArchivos(files) {
+  for (const f of files) { try { toast('Leyendo ' + f.name + '…'); const t = await extraeTexto(f); if (t.trim().length < 50) { toast(`${f.name}: no se pudo extraer texto (¿PDF escaneado?)`); continue; } S.bases.push({nombre: f.name, text: t}); } catch (e) { toast(f.name + ': ' + e.message, 6000); } }
+  S.ejemplo = S.ejemplo && S.bases.every(b => /ficticias/.test(b.nombre)); rehaceFrags(); S.call = null; guarda(); renderConv(); pintaDots();
+}
+
+/* ── 2 · proyecto ── */
+function renderProy() {
+  $('tbEnt').innerHTML = S.ents.map((e, i) => `<tr><td>${inp('ent', i, 'nombre', e.nombre)}</td><td>${sel('ent', i, 'tipo', e.tipo, ['Centro tecnológico', 'Empresa', 'Universidad u organismo de investigación', 'Otra entidad'])}</td><td>${inp('ent', i, 'rol', e.rol)}</td><td>${S.ents.length > 1 ? delBtn('ent', i) : ''}</td></tr>`).join('');
+}
+
+/* ── 3 · presupuesto ── */
+const entOpts = () => { const n = S.ents.map(e => e.nombre).filter(Boolean); return n.length ? n : ['—']; };
+function renderPres() {
+  const P = presupuesto(), eo = entOpts();
+  $('tbPer').innerHTML = S.budget.per.map((r, i) => `<tr><td>${inp('per', i, 'perfil', r.perfil)}</td><td>${sel('per', i, 'ent', r.ent, eo)}</td><td>${sel('per', i, 'tipo', r.tipo, [['id', 'I+D'], ['gestion', 'Gestión'], ['difusion', 'Difusión']])}</td><td class="num">${inp('per', i, 'horas', r.horas, 'number', 'min="0" style="width:6.5em"')}</td><td class="num">${inp('per', i, 'eur', r.eur, 'number', 'min="0" step="0.5" style="width:5.5em"')}</td><td class="num" id="pc${i}">${eur(P.coste(r))}</td><td>${delBtn('per', i)}</td></tr>`).join('') || '<tr><td colspan="7" class="hint">Sin perfiles.</td></tr>';
+  const gasto = t => S.budget[t].map((r, i) => `<tr><td>${inp(t, i, 'concepto', r.concepto)}</td><td>${sel(t, i, 'ent', r.ent, eo)}</td><td class="num">${inp(t, i, 'importe', r.importe, 'number', 'min="0" style="width:8em"')}</td><td>${delBtn(t, i)}</td></tr>`).join('') || '<tr><td colspan="4" class="hint">Sin partidas.</td></tr>';
+  $('tbExt').innerHTML = gasto('ext'); $('tbOtr').innerHTML = gasto('otr');
+  $('tbWp').innerHTML = S.wps.map((w, i) => `<tr><td><span class="mono">PT${i + 1}</span> ${inp('wp', i, 'nombre', w.nombre, 'text', 'style="width:calc(100% - 3em)"')}</td><td class="num">${inp('wp', i, 'ini', w.ini, 'number', 'min="1" style="width:4.5em"')}</td><td class="num">${inp('wp', i, 'fin', w.fin, 'number', 'min="1" style="width:4.5em"')}</td><td>${sel('wp', i, 'resp', w.resp, entOpts())}</td><td>${inp('wp', i, 'entregable', w.entregable)}</td><td>${delBtn('wp', i)}</td></tr>`).join('') || '<tr><td colspan="6" class="hint">Sin paquetes de trabajo.</td></tr>';
+  $('b_ind').value = S.budget.indirectPct;
+  pintaPresSum(); pintaGantt();
+}
+function pintaPresSum(t, i) {
+  const P = presupuesto();
+  if (t === 'per' && i != null && $('pc' + i)) $('pc' + i).textContent = eur(P.coste(S.budget.per[i]));
+  const rows = [['Personal propio', P.per], ['Servicios externos', P.ext], ['Otros gastos directos', P.otr], ['Costes directos', P.dir], [`Costes indirectos (${numIn(S.budget.indirectPct)} %)`, P.ind]];
+  $('tbSum').innerHTML = rows.map(([l, v]) => `<tr><td>${l}</td><td class="num">${eur(v)}</td></tr>`).join('') + `<tr class="tot"><td>Total</td><td class="num">${eur(P.tot)}</td></tr>` + (Object.keys(P.porEnt).length > 1 ? Object.entries(P.porEnt).map(([k, v]) => `<tr><td class="hint">${esc(k)}</td><td class="num hint">${eur(v)} · ${P.tot ? pct(v / P.tot, 1) : '—'}</td></tr>`).join('') : '');
+  $('budgetChecks').innerHTML = checkList([...checksPresupuesto(), ...checksPlan()]);
+  pintaDots();
+}
+function ganttSvg(wps, meses) {
+  const M = Math.max(numIn(meses), ...wps.map(w => numIn(w.fin)), 1), L = 210, W = 760, cw = (W - L - 16) / M, rh = 26, H = 36 + wps.length * rh + 8;
+  const ticks = Array.from({length: M}, (_, k) => k + 1).filter(m => M <= 24 || m % 3 === 1 || m === M);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cronograma de paquetes de trabajo" font-family="var(--f-ui)" font-size="12">
+    ${ticks.map(m => `<line x1="${L + (m - 1) * cw}" x2="${L + (m - 1) * cw}" y1="22" y2="${H - 4}" stroke="var(--line)"/><text x="${L + (m - 0.5) * cw}" y="16" text-anchor="middle" fill="var(--ink-3)" font-size="11">${m}</text>`).join('')}
+    ${wps.map((w, i) => { const y = 30 + i * rh, a = Math.max(1, numIn(w.ini)), b = Math.max(a, numIn(w.fin)), bad = numIn(w.fin) < numIn(w.ini) || (numIn(meses) && b > numIn(meses));
+      return `<text x="0" y="${y + 13}" fill="var(--ink)">${esc(('PT' + (i + 1) + ' ' + (w.nombre || '')).slice(0, 30))}</text><rect x="${L + (a - 1) * cw + 1}" y="${y + 2}" width="${Math.max(4, (b - a + 1) * cw - 2)}" height="${rh - 10}" rx="4" fill="${bad ? 'var(--bad)' : 'var(--accent)'}" fill-opacity="${bad ? 0.8 : 0.75}"/>`; }).join('')}
+  </svg>`;
+}
+function pintaGantt() { $('ganttBox').innerHTML = S.wps.length ? ganttSvg(S.wps, S.proj.meses) : ''; }
+
+/* ── 4 · estado del arte ── */
+function renderArte() {
+  $('srcBox').innerHTML = FUENTES.map(f => `<label class="chk"><input type="checkbox" data-src="${f.id}" ${S.arte.srcs[f.id] ? 'checked' : ''}> <span>${f.name}</span></label>`).join('');
+  $$('[data-src]').forEach(c => c.onchange = () => { S.arte.srcs[c.dataset.src] = c.checked; guarda(); });
+  pintaPapers();
+}
+function pintaPapers() {
+  $('papCount').textContent = S.papers.length; const n = corpusSel().length;
+  $('corpusInfo').textContent = S.papers.length ? `${n} en el corpus${S.arteFlow ? ` · ${S.arteFlow.identificados} registros, ${S.arteFlow.unicos} únicos, ${S.arteFlow.retractados} retractados excluidos` : ''}` : '';
+  $('papList').innerHTML = S.papers.length ? S.papers.slice(0, 120).map((p, i) => `<div class="paper"><input type="checkbox" data-pap="${i}" ${p.sel ? 'checked' : ''} aria-label="Incluir en el corpus"><div><b>${esc(p.title)}</b><div class="meta">${esc((p.authors || []).slice(0, 3).join(', '))}${(p.authors || []).length > 3 ? ' et al.' : ''} · ${esc(p.year || '?')} · ${esc(p.journal || '—')} · ${p.citations || 0} citas · ${esc((p.sources || [p.source]).join(' / '))}${p.doi ? ` · <a href="https://doi.org/${esc(p.doi)}" target="_blank" rel="noopener">DOI</a>` : ''}</div></div><div class="ab">${esc(p.abstract || 'Sin resumen.')}</div></div>`).join('') : '<p class="hint">Aún no hay papers. Pulsa «Buscar estado del arte» o deja que la generación lo haga automáticamente.</p>';
+  $$('[data-pap]').forEach(c => c.onchange = () => { S.papers[+c.dataset.pap].sel = c.checked; guarda(); $('corpusInfo').textContent = `${corpusSel().length} en el corpus`; pintaDots(); });
+  pintaDots();
+}
+const setArteStatus = () => { const el = $('arteStatus'); if (el) el.textContent = BUSCANDO ? 'Buscando…' : ''; };
+async function buscaDesdeVista() {
+  if (EJEC || BUSCANDO) return;
+  if (getProv() !== 'demo' && !(await confirmaEnvio())) return;
+  BUSCANDO = true; PARAR = false; botones(); setArteStatus(); LOGS.length = 0; $('logPanel').innerHTML = '';
+  try { await buscaArte(); toast(`${corpusSel().length} papers en el corpus`); } catch (e) { if (e.message !== '__STOP__') toast(e.message, 6000); }
+  finally { BUSCANDO = false; PARAR = false; botones(); setArteStatus(); pintaPapers(); }
+}
+
+/* ── 5 · generar ── */
+function renderGen() {
+  $('phases').innerHTML = FASES.map((f, i) => `<div class="ph ${FASE_ST[i] || ''}" id="ph${i}"><b>${i + 1}</b>${f}</div>`).join('');
+  const P = presupuesto(), bad = checksPresupuesto().filter(c => c.estado === 'bad').length, item = (ok, t, d) => `<div class="ck">${pill(ok === true ? 'ok' : ok === false ? 'bad' : 'warn', ok === true ? 'Listo' : ok === false ? 'Falta' : 'Opcional')}<span class="t">${esc(t)}</span><span class="d">${esc(d)}</span></div>`;
+  $('readyBox').innerHTML = `<h3>Antes de generar</h3><div class="checks">
+    ${item(S.frags.length ? true : null, 'Convocatoria', S.frags.length ? `${S.frags.length} fragmentos${S.call ? ' · analizada' : ' · se analizará al generar'}` : 'Sin bases: estructura y criterios genéricos')}
+    ${item(!!(S.proj.titulo && S.proj.idea), 'Proyecto', S.proj.titulo ? S.proj.titulo : 'Falta título e idea')}
+    ${item(S.budget.per.length ? (bad ? null : true) : null, 'Presupuesto', S.budget.per.length ? `${eur(P.tot)}${bad ? ` · ${bad} reglas no se cumplen` : ''}` : 'Sin presupuesto: la memoria no tendrá cifras económicas')}
+    ${item(corpusSel().length ? true : null, 'Estado del arte', corpusSel().length ? `${corpusSel().length} papers revisados` : 'Se buscará automáticamente')}
+    ${item(true, 'Proveedor', `${PROV[getProv()].n} · ${getMod()}`)}</div>`;
+  pintaCoste();
+}
+function botones() { const busy = EJEC || BUSCANDO; $('btnGen').disabled = busy; $('btnParar').disabled = !busy; $('btnBuscar').disabled = busy; $('btnParar2').disabled = !busy; $('btnAnaliza').disabled = busy; }
+
+/* ── memoria ── */
+function renderMem() {
+  const r = S.run;
+  if (!r || !r.secs?.length) { $('memBox').innerHTML = '<div class="panel"><p>Aún no hay memoria. Ve a <b>Generar</b>.</p></div>'; return; }
+  const fecha = new Date(r.ts).toLocaleDateString('es-ES', {day: 'numeric', month: 'long', year: 'numeric'});
+  $('memBox').innerHTML = `${r.parcial ? '<div class="note warn">Borrador parcial: la generación se detuvo antes de terminar.</div>' : ''}${r.ejemplo ? '<div class="note warn">Ejemplo con datos, bases y referencias ficticias.</div>' : ''}
+  <article class="doc">
+    <div class="dtitle">${esc(S.proj.titulo || 'Memoria técnica')}</div>
+    <div class="dsub">${esc(S.proj.acronimo || '')} · ${esc(PRESETS[r.preset]?.nombre || '')} · ${fecha} · ${esc(PROV[r.prov]?.n || '')} ${esc(r.model || '')}</div>
+    ${r.resumen ? `<section class="sec"><h3>Resumen ejecutivo</h3><div class="body">${parrafos(r.resumen)}</div></section>` : ''}
+    ${r.secs.map((s, i) => `<section class="sec" id="sec${i}"><h3>${esc(s.titulo)}</h3>
+      <div class="tools">${pill(s.limite && wc(s.final) > s.limite ? 'bad' : 'neu', `${wc(s.final)} palabras${s.limite ? ` / máx. ${s.limite}` : ''}`)}${s.criterios.map(c => pill('neu', c)).join('')}${s.bRefs.length ? `<span>Bases: ${s.bRefs.map(n => 'B' + n).join(', ')}</span>` : ''}${s.editado ? pill('warn', 'editada a mano') : ''}<span class="spacer"></span><button class="btn small" data-edit="${i}" type="button">Editar</button><button class="btn small" data-regen="${i}" type="button">Reescribir con indicaciones</button></div>
+      <div class="body" id="sb${i}">${parrafos(s.final)}</div></section>`).join('')}
+    ${S.wps.length ? `<section class="sec"><h3>Cronograma</h3><div class="gantt">${ganttSvg(S.wps, S.proj.meses)}</div></section>` : ''}
+    <section class="sec"><h3>Referencias</h3>${r.refs.length ? `<ol class="refs">${r.refs.map(x => `<li>${esc(refLine(x, r.cite).replace(/^\[\d+\]\s*/, ''))}</li>`).join('')}</ol>` : '<p class="hint">La memoria no cita ningún paper del corpus.</p>'}</section>
+  </article>`;
+  $$('[data-edit]').forEach(b => b.onclick = () => editaSeccion(+b.dataset.edit));
+  $$('[data-regen]').forEach(b => b.onclick = () => regeneraSeccion(+b.dataset.regen));
+}
+const parrafos = t => String(t || '').split(/\n{2,}|\n(?=OE\d|Objetivo general)/).map(p => p.trim()).filter(Boolean).map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
+function editaSeccion(i) {
+  const s = S.run.secs[i], box = $('sb' + i);
+  box.innerHTML = `<textarea id="ed${i}" aria-label="Texto de la sección">${esc(s.final)}</textarea><div class="row"><button class="btn primary small" id="eds${i}" type="button">Guardar</button><button class="btn small" id="edc${i}" type="button">Cancelar</button><span class="hint">Las métricas de Cumplimiento siguen siendo las de la versión generada.</span></div>`;
+  $('eds' + i).onclick = () => { s.final = $('ed' + i).value; s.editado = true; guarda(); renderMem(); };
+  $('edc' + i).onclick = () => renderMem();
+}
+function regeneraSeccion(i) {
+  const s = S.run.secs[i], box = $('sb' + i);
+  box.insertAdjacentHTML('afterbegin', `<div class="panel sunk" id="rg${i}"><div class="field"><label for="rgt${i}">¿Qué debe cambiar?</label><textarea id="rgt${i}" placeholder="p. ej. concreta el papel de cada empresa en la validación"></textarea></div><div class="row"><button class="btn primary small" id="rgs${i}" type="button">Reescribir</button><button class="btn small" id="rgc${i}" type="button">Cancelar</button></div></div>`);
+  $('rgc' + i).onclick = () => $('rg' + i).remove();
+  $('rgs' + i).onclick = async () => {
+    if (EJEC) return; const fb = $('rgt' + i).value.trim(); if (getProv() !== 'demo' && !(await confirmaEnvio())) return;
+    EJEC = true; $('rgs' + i).disabled = true; $('rgs' + i).textContent = 'Reescribiendo…';
+    try {
+      const r = S.run, corpus = r.corpus, NP = corpus.length, NB = S.frags.length;
+      const raw = await ag('mejora', [{role: 'system', content: `Eres redactor experto en memorias de I+D. Escribe en ${r.lang}.`}, {role: 'user', content: rell(promptDe('mejora'), {seccion: s.titulo, criterio: s.criterios.join(', ') || '—', debilidad: scrub(fb) || 'mejora la concreción', palabras: s.palabrasObj, np: NP, nb: NB, datos: datosProyecto(), papers: listaCorpus(corpus, s.estado_arte), texto: s.texto})}], {temp: 0.5, ctx: {s}});
+      s.texto = limpia(raw, NP, NB).trim(); s.audit = auditSec(s.texto, NP, NB);
+      const secsSrc = r.secs.map(x => ({titulo: x.titulo, texto: x.texto, audit: x.audit, emit: {emitidas: 0, invalidas: 0, autor: 0, sinLetra: 0}, sec: {criterios: x.criterios, limite: x.limite, palabras: x.palabrasObj, estado_arte: x.estado_arte}}));
+      const fin = finaliza(secsSrc, corpus, r.cite); r.refs = fin.refs; fin.secs.forEach((x, j) => { if (j === i || !r.secs[j].editado) { r.secs[j].final = x.final; r.secs[j].bRefs = x.bRefs; } });
+      s.editado = false; guarda(); toast('Sección reescrita'); renderMem();
+    } catch (e) { toast(e.message, 6000); $('rgs' + i).disabled = false; $('rgs' + i).textContent = 'Reescribir'; }
+    finally { EJEC = false; }
+  };
+}
+
+/* ── cumplimiento ── */
+function renderCum() {
+  const r = S.run;
+  const presChecks = checklist => `<div class="checks">${checkList(checklist)}</div>`;
+  if (!r || !r.secs?.length) { $('cumBox').innerHTML = `<div class="panel"><h3>Presupuesto y plan (en vivo)</h3>${presChecks([...checksPresupuesto(), ...checksPlan()])}<p class="hint">Genera la memoria para ver el resto de comprobaciones.</p></div>`; return; }
+  const c = r.call, m = r.metr, ck = [];
+  const presentes = c.apartados.map(a => ({a, ok: r.secs.some(s => norm(s.titulo) === norm(a.titulo))}));
+  ck.push({estado: presentes.every(x => x.ok) ? 'ok' : 'bad', t: 'Apartados obligatorios presentes', d: presentes.every(x => x.ok) ? `${presentes.length} de ${presentes.length}` : 'Faltan: ' + presentes.filter(x => !x.ok).map(x => x.a.titulo).join(', ')});
+  const largas = r.secs.filter(s => s.limite && wc(s.final) > s.limite); ck.push({estado: largas.length ? 'bad' : 'ok', t: 'Extensión por apartado', d: largas.length ? largas.map(s => `${s.titulo}: ${wc(s.final)}/${s.limite}`).join('; ') : (r.secs.some(s => s.limite) ? 'Todas dentro del límite.' : 'La convocatoria no fija límites por apartado.')});
+  if (c.extension) ck.push({estado: m.palabras > c.extension ? 'bad' : 'ok', t: 'Extensión total', d: `${fmtN(m.palabras)} de ${fmtN(c.extension)} palabras aprox.`});
+  const sinCubrir = c.criterios.filter(x => !r.secs.some(s => s.criterios.includes(x.id))); ck.push({estado: sinCubrir.length ? 'bad' : 'ok', t: 'Todos los criterios tienen una sección que los trabaja', d: sinCubrir.length ? sinCubrir.map(x => x.id).join(', ') : `${c.criterios.length} criterios cubiertos`});
+  ck.push({estado: m.resueltas >= 0.99 ? 'ok' : m.resueltas >= 0.9 ? 'warn' : 'bad', t: 'Citas resueltas contra el corpus y las bases', d: `${m.validas} de ${m.total} marcadores del modelo son válidos; ${m.total - m.validas} eliminados por código (fuera de rango, autor-año o sin letra)`});
+  const arteSin = r.secs.filter(s => s.estado_arte && !s.audit.P.length); ck.push({estado: arteSin.length ? 'bad' : 'ok', t: 'Secciones de estado del arte con bibliografía', d: arteSin.length ? 'Sin citas: ' + arteSin.map(s => s.titulo).join(', ') : 'Todas citan papers del corpus.'});
+  ck.push({estado: r.cifras.length ? 'warn' : 'ok', t: 'Cifras sin respaldo en los datos, las bases o el corpus', d: r.cifras.length ? r.cifras.map(x => `${x.titulo}: ${x.cifras.join(', ')}`).join(' · ') : 'Ninguna.'});
+  if (c.origen === 'generico' || c.crGen) ck.push({estado: 'warn', t: 'Criterios genéricos', d: 'No se han usado los criterios reales de la convocatoria: carga las bases.'});
+  const nv = [...c.apartados, ...c.criterios, ...(c.requisitos || [])].filter(x => x.verificado === false); if (c.origen === 'bases') ck.push({estado: nv.length ? 'warn' : 'ok', t: 'Requisitos extraídos que aparecen literalmente en las bases', d: nv.length ? `${nv.length} no verificados: ${nv.map(x => x.titulo || x.nombre || x.texto).join(' · ')}` : 'Todos verificados.'});
+  const ev = r.ev;
+  const evHtml = ev ? `<div class="panel"><div class="row"><h3>Evaluación simulada</h3>${pill('neu', 'juicio del modelo, no calibrado')}<span class="spacer"></span><b style="font-size:1.2rem">${f1(ev.total)} / ${ev.max}</b></div>
+    <div class="tw"><table><thead><tr><th>Criterio</th><th class="num">Puntos</th><th class="num">Umbral</th><th>Debilidad señalada</th></tr></thead><tbody>${ev.items.map(x => `<tr><td><span class="mono">${esc(x.id)}</span> ${esc(x.nombre)}</td><td class="num">${f1(x.puntos)} / ${x.max}</td><td class="num">${x.umbral ? (x.puntos >= x.umbral ? pill('ok', x.umbral) : pill('bad', x.umbral)) : '—'}</td><td>${esc(x.debilidades)}</td></tr>`).join('')}</tbody></table></div>
+    ${r.rondas.length > 1 ? `<div class="tw"><table><thead><tr><th>Ronda</th><th>Acción</th><th class="num">Total</th></tr></thead><tbody>${r.rondas.map(x => `<tr><td>${x.ronda}</td><td>${esc(x.accion)}</td><td class="num">${f1(x.total)} / ${x.max}</td></tr>`).join('')}</tbody></table></div>` : ''}</div>` : '';
+  const mx = `<div class="panel"><h3>Matriz criterios × secciones</h3><div class="tw"><table class="mx"><thead><tr><th>Sección</th>${c.criterios.map(x => `<th class="num">${esc(x.id)}</th>`).join('')}<th class="num">Citas P</th><th class="num">Citas B</th></tr></thead><tbody>${r.secs.map(s => `<tr><td>${esc(s.titulo)}</td>${c.criterios.map(x => `<td class="c">${s.criterios.includes(x.id) ? '<span class="on">●</span>' : ''}</td>`).join('')}<td class="num">${s.audit.P.length}</td><td class="num">${s.audit.B.length}</td></tr>`).join('')}</tbody></table></div></div>`;
+  const usoT = r.uso ? `${fmtN(r.uso.in + r.uso.out)} tokens · ${r.uso.calls} llamadas${r.uso.coste != null ? ' · $' + r.uso.coste.toFixed(4) : ''}` : '—';
+  $('cumBox').innerHTML = `<div class="stats"><div class="stat"><b>${fmtN(m.palabras)}</b><span>palabras</span></div><div class="stat"><b>${r.refs.length}</b><span>referencias citadas de ${r.corpus.length}</span></div><div class="stat"><b>${pct(m.resueltas)}</b><span>citas resueltas</span></div><div class="stat"><b>${pct(m.conDoi)}</b><span>referencias con DOI</span></div><div class="stat"><b>${eur0(r.presupuesto.tot)}</b><span>presupuesto total</span></div></div>
+    <div class="grid2"><div class="panel"><h3>Memoria</h3><div class="checks">${checkList(ck)}</div></div><div class="panel"><h3>Presupuesto y plan (en vivo)</h3>${presChecks([...checksPresupuesto(), ...checksPlan()])}</div></div>
+    ${evHtml}${mx}<div class="panel"><h3>Trazabilidad</h3><p class="hint">Proveedor ${esc(PROV[r.prov]?.n || '')} · ${esc(r.model || '')} · ${r.tiempo ?? '—'} s · ${usoT}</p>${r.arteFlow ? `<p class="hint">Estado del arte: ${r.arteFlow.consultas.length} consultas, ${r.arteFlow.identificados} registros, ${r.arteFlow.unicos} únicos tras deduplicar por DOI y título, ${r.arteFlow.retractados} retractados excluidos.</p>` : ''}</div>`;
+}
+
+/* ── agentes ── */
+function renderAg() {
+  $('agBox').innerHTML = AGENTS.map(a => `<div class="panel"><div class="row"><h3 class="mono">${a.id}</h3><span class="hint">${esc(a.role)}</span><span class="spacer"></span><label class="hint" for="tk_${a.id}">Tokens</label><input type="number" id="tk_${a.id}" data-tok="${a.id}" value="${tokensDe(a.id)}" style="width:7em"><button class="btn small" data-reset="${a.id}" type="button">Restaurar</button></div><textarea id="pr_${a.id}" data-prompt="${a.id}" style="min-height:180px;font-family:var(--f-mono);font-size:.8rem">${esc(promptDe(a.id))}</textarea></div>`).join('');
+  $$('[data-prompt]').forEach(t => t.oninput = () => LS.set('prompt_' + t.dataset.prompt, t.value === DEFAULT_PROMPTS[t.dataset.prompt] ? '' : t.value));
+  $$('[data-tok]').forEach(t => t.oninput = () => LS.set('tok_' + t.dataset.tok, t.value));
+  $$('[data-reset]').forEach(b => b.onclick = () => { LS.set('prompt_' + b.dataset.reset, ''); LS.set('tok_' + b.dataset.reset, ''); renderAg(); });
+}
+
+/* ── IA y aviso de envío ── */
+function pintaProv() { const p = getProv(); $('provPill').textContent = p === 'demo' ? 'modo demostración' : `${PROV[p].n} · ${getMod()}`; }
+function cargaIA() { const pv = getProv(); $('selProv').value = pv; const d = pv === 'demo'; $('keyField').hidden = d; $('modelField').hidden = d; $('apiKey').value = getKey(pv); $('modelo').value = getMod(pv); $('priceIn').value = LS.get('priceIn'); $('priceOut').value = LS.get('priceOut'); $('iaEstado').textContent = ''; let ml = []; try { ml = JSON.parse(LS.get('models_' + pv) || '[]'); } catch {} $('modelos').innerHTML = [...new Set([PROV[pv].m, ...ml])].map(m => `<option value="${esc(m)}">`).join(''); }
+function abreIA() { cargaIA(); $('mIA').hidden = false; }
+$('selProv').onchange = () => { LS.set('prov', $('selProv').value); cargaIA(); pintaProv(); };
+$('apiKey').oninput = () => { const pv = getProv(); if (PROV[pv].k) LS.set(PROV[pv].k, $('apiKey').value.trim()); };
+$('modelo').oninput = () => LS.set('model_' + getProv(), $('modelo').value.trim());
+$('priceIn').oninput = () => LS.set('priceIn', $('priceIn').value.trim());
+$('priceOut').oninput = () => LS.set('priceOut', $('priceOut').value.trim());
+$('btnEye').onclick = () => { const k = $('apiKey'); k.type = k.type === 'password' ? 'text' : 'password'; };
+$('btnModelos').onclick = async () => { const st = $('iaEstado'); st.textContent = '…'; try { const l = await listaModelos(); LS.set('models_' + getProv(), JSON.stringify(l)); $('modelos').innerHTML = l.map(m => `<option value="${esc(m)}">`).join(''); st.textContent = `${l.length} modelos disponibles; escribe o elige uno.`; } catch (e) { st.textContent = e.message; } };
+let ENVIO_OK = false;
+function confirmaEnvio() {
+  if (getProv() === 'demo' || ENVIO_OK) return Promise.resolve(true);
+  return new Promise(ok => {
+    $('envProv').textContent = `${PROV[getProv()].n} (${getMod()})`; $('envMuestra').textContent = datosProyecto().slice(0, 900) + '\n…'; $('mEnvio').hidden = false;
+    $('envSi').onclick = () => { ENVIO_OK = true; $('mEnvio').hidden = true; ok(true); };
+    $('envNo').onclick = () => { $('mEnvio').hidden = true; ok(false); };
+  });
+}
+
+/* ══ Exportación ══ */
+const slugDe = () => (norm(S.proj.acronimo || S.proj.titulo || 'memoria').replace(/ /g, '_').slice(0, 40) || 'memoria');
+function docMd() {
+  const r = S.run; let d = `# ${S.proj.titulo}\n\n*${S.proj.acronimo || ''} · ${PRESETS[r.preset]?.nombre || ''} · Memoria I+D v${VERSION}*\n\n`;
+  if (r.ejemplo) d += '> Ejemplo con datos, bases y referencias ficticias.\n\n';
+  if (r.resumen) d += `## Resumen ejecutivo\n\n${r.resumen}\n\n`;
+  r.secs.forEach(s => { d += `## ${s.titulo}\n\n${s.final}\n\n`; });
+  if (S.wps.length) d += `## Cronograma\n\n| Paquete | Meses | Responsable | Entregable |\n|---|---|---|---|\n${S.wps.map((w, i) => `| PT${i + 1} ${w.nombre} | ${w.ini}–${w.fin} | ${w.resp || ''} | ${w.entregable || ''} |`).join('\n')}\n\n`;
+  if (S.budget.per.length) { const P = presupuesto(); d += `## Presupuesto\n\n| Partida | Importe |\n|---|---|\n| Personal propio | ${eur(P.per)} |\n| Servicios externos | ${eur(P.ext)} |\n| Otros gastos directos | ${eur(P.otr)} |\n| Costes indirectos (${numIn(S.budget.indirectPct)} %) | ${eur(P.ind)} |\n| **Total** | **${eur(P.tot)}** |\n\n`; }
+  d += `## Referencias\n\n${r.refs.map(x => refLine(x, r.cite)).join('\n\n') || '—'}\n`;
+  return d;
+}
+/* .docx real sin librerías: ZIP sin compresión + XML de Word (técnica de Doctoralia) */
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+function makeZip(files) {
+  const enc = new TextEncoder(), parts = [], cen = []; let off = 0; const u16 = n => [n & 255, (n >> 8) & 255], u32 = n => [n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >>> 24) & 255];
+  files.forEach(f => { const nb = enc.encode(f.name), db = enc.encode(f.str), c = crc32(db);
+    const loc = new Uint8Array([...u32(0x04034b50), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0), ...u32(c), ...u32(db.length), ...u32(db.length), ...u16(nb.length), ...u16(0)]);
+    parts.push(loc, nb, db); cen.push(new Uint8Array([...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0), ...u32(c), ...u32(db.length), ...u32(db.length), ...u16(nb.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(off)]), nb); off += loc.length + nb.length + db.length; });
+  const size = cen.reduce((a, x) => a + x.length, 0), end = new Uint8Array([...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(files.length), ...u16(files.length), ...u32(size), ...u32(off), ...u16(0)]);
+  return new Blob([...parts, ...cen, end], {type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+const xe = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const wP = (t, st = '', opt = {}) => `<w:p>${st || opt.jc ? `<w:pPr>${st ? `<w:pStyle w:val="${st}"/>` : ''}${opt.jc ? `<w:jc w:val="${opt.jc}"/>` : ''}</w:pPr>` : ''}${String(t).split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map(x => { const b = /^\*\*[\s\S]+\*\*$/.test(x); return `<w:r>${b || opt.i ? `<w:rPr>${b ? '<w:b/>' : ''}${opt.i ? '<w:i/>' : ''}</w:rPr>` : ''}<w:t xml:space="preserve">${xe(b ? x.slice(2, -2) : x)}</w:t></w:r>`; }).join('')}</w:p>`;
+function docx() {
+  const r = S.run, b = []; b.push(wP(S.proj.titulo, 'Title')); b.push(wP(`${S.proj.acronimo || ''} · ${PRESETS[r.preset]?.nombre || ''}`, '', {i: true}));
+  if (r.ejemplo) b.push(wP('Ejemplo con datos, bases y referencias ficticias.', '', {i: true}));
+  const bloque = (tit, txt) => { b.push(wP(tit, 'Heading1')); String(txt).split(/\n{2,}/).forEach(p => p.split('\n').forEach(l => l.trim() && b.push(wP(l.trim().replace(/^[-•]\s+/, '• '), '', {jc: 'both'})))); };
+  if (r.resumen) bloque('Resumen ejecutivo', r.resumen);
+  r.secs.forEach(s => bloque(s.titulo, s.final));
+  if (S.wps.length) { b.push(wP('Cronograma', 'Heading1')); S.wps.forEach((w, i) => b.push(wP(`**PT${i + 1} ${w.nombre}** · meses ${w.ini}–${w.fin} · ${w.resp || ''} · ${w.entregable || ''}`))); }
+  if (S.budget.per.length) { const P = presupuesto(); b.push(wP('Presupuesto', 'Heading1')); [['Personal propio', P.per], ['Servicios externos', P.ext], ['Otros gastos directos', P.otr], [`Costes indirectos (${numIn(S.budget.indirectPct)} %)`, P.ind], ['**Total**', P.tot]].forEach(([l, v]) => b.push(wP(`${l}: ${eur(v)}`))); }
+  b.push(wP('Referencias', 'Heading1')); r.refs.forEach(x => b.push(wP(refLine(x, r.cite))));
+  const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${b.join('')}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1417" w:right="1417" w:bottom="1417" w:left="1417" w:header="709" w:footer="709" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:lang w:val="es-ES"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="200"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:color w:val="123A5C"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="360" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:color w:val="123A5C"/></w:rPr></w:style></w:styles>`;
+  return makeZip([
+    {name: '[Content_Types].xml', str: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>'},
+    {name: '_rels/.rels', str: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'},
+    {name: 'word/_rels/document.xml.rels', str: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'},
+    {name: 'word/document.xml', str: doc}, {name: 'word/styles.xml', str: styles}]);
+}
+function traza() { const r = S.run; return {app: 'Memoria I+D', version: VERSION, generado: r.ts, proveedor: r.prov, modelo: r.model, idioma: r.lang, programa: r.preset, reglas: rules(), convocatoria: r.call, fragmentos: S.frags, datos_proyecto: r.datos, presupuesto: r.presupuesto, comprobaciones: {presupuesto: r.checksPres, plan: r.checksPlan, cifras_sin_respaldo: r.cifras, metricas: r.metr}, evaluacion: r.ev, rondas: r.rondas, corpus: r.corpus.map((p, i) => ({n: i + 1, titulo: p.title, autores: p.authors, anio: p.year, revista: p.journal, doi: p.doi, fuentes: p.sources})), referencias: r.refs.map(x => ({n: x.n, corpus: x.orig, doi: x.paper.doi, titulo: x.paper.title})), secciones: r.secs.map(s => ({titulo: s.titulo, texto_con_marcadores: s.texto, texto_final: s.final, bases_citadas: s.bRefs, criterios: s.criterios})), prompts: Object.fromEntries(AGENTS.map(a => [a.id, promptDe(a.id)])), uso: r.uso}; }
+const necesitaRun = () => { if (!S.run?.secs?.length) { toast('Primero genera la memoria'); return false; } return true; };
+$('exMd').onclick = () => necesitaRun() && dl(slugDe() + '_memoria.md', docMd(), 'text/markdown');
+$('exDocx').onclick = () => necesitaRun() && dl(slugDe() + '_memoria.docx', docx());
+$('exJson').onclick = () => necesitaRun() && dl(slugDe() + '_traza.json', JSON.stringify(traza(), null, 2), 'application/json');
+$('exCopy').onclick = async () => { if (!necesitaRun()) return; const t = docMd(); try { await navigator.clipboard.writeText(t); toast('Copiado'); } catch { toast('No se pudo copiar: usa la descarga en Markdown'); } };
+
+/* ══ Arranque ══ */
+$('selPreset').onchange = () => { S.preset = $('selPreset').value; S.rules = {...PRESETS[S.preset].rules}; if (PRESETS[S.preset].rules.indirectMaxPct) S.budget.indirectPct = Math.min(numIn(S.budget.indirectPct) || 99, PRESETS[S.preset].rules.indirectMaxPct); if (S.call?.origen === 'generico') S.call = null; guarda(); renderConv(); pintaDots(); };
+const dz = $('dropBases');
+dz.onclick = () => $('fileBases').click(); dz.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('fileBases').click(); } };
+dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); }; dz.ondragleave = () => dz.classList.remove('over');
+dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); anadeArchivos([...e.dataTransfer.files]); };
+$('fileBases').onchange = e => { anadeArchivos([...e.target.files]); e.target.value = ''; };
+$('btnPaste').onclick = () => { const t = $('pasteBases').value.trim(); if (t.length < 50) { toast('Pega un texto más largo'); return; } S.bases.push({nombre: 'Texto pegado ' + (S.bases.length + 1), text: t}); $('pasteBases').value = ''; rehaceFrags(); S.call = null; guarda(); renderConv(); };
+$('btnClearBases').onclick = () => { S.bases = []; S.frags = []; S.call = null; guarda(); renderConv(); pintaDots(); };
+$('btnAnaliza').onclick = async () => { if (EJEC) return; if (S.frags.length && getProv() !== 'demo' && !getKey()) { abreIA(); return; } if (S.frags.length && !(await confirmaEnvio())) return; EJEC = true; botones(); $('btnAnaliza').textContent = 'Analizando…'; try { await analizaConvocatoria(); guarda(); } catch (e) { toast(e.message, 6000); } finally { EJEC = false; botones(); $('btnAnaliza').textContent = 'Analizar convocatoria'; pintaCall(); pintaDots(); } };
+$('addEnt').onclick = () => { S.ents.push({nombre: '', tipo: 'Empresa', rol: ''}); guarda(); renderProy(); };
+$('addPer').onclick = () => { S.budget.per.push({perfil: '', ent: S.ents[0]?.nombre || '', tipo: 'id', horas: 0, eur: 0}); guarda(); renderPres(); };
+$('addExt').onclick = () => { S.budget.ext.push({concepto: '', ent: S.ents[0]?.nombre || '', importe: 0}); guarda(); renderPres(); };
+$('addOtr').onclick = () => { S.budget.otr.push({concepto: '', ent: S.ents[0]?.nombre || '', importe: 0}); guarda(); renderPres(); };
+$('addWp').onclick = () => { const n = S.wps.length; S.wps.push({nombre: '', ini: 1, fin: numIn(S.proj.meses) || 12, resp: S.ents[0]?.nombre || '', entregable: ''}); guarda(); renderPres(); };
+$('btnBuscar').onclick = buscaDesdeVista;
+$('btnGen').onclick = generar;
+$('btnParar').onclick = $('btnParar2').onclick = () => { PARAR = true; log('⏹ Parando tras la llamada en curso…', 'warn'); };
+$('btnIA').onclick = abreIA;
+$('btnHelp').onclick = () => $('mHelp').hidden = false;
+$('btnEjemplo').onclick = cargaEjemplo;
+window.addEventListener('hashchange', () => showView(location.hash.slice(1)));
+window.addEventListener('pagehide', () => { try { kv('readwrite', s => s.put(JSON.parse(JSON.stringify(S)), 'main')); } catch {} });
+$('ver').textContent = VERSION;
+(async () => {
+  const st = await cargaEstado();
+  if (st && typeof st === 'object') { S = {...estadoInicial(), ...st, proj: {...estadoInicial().proj, ...(st.proj || {})}, arte: {...estadoInicial().arte, ...(st.arte || {})}, opt: {...estadoInicial().opt, ...(st.opt || {})}, budget: {...estadoInicial().budget, ...(st.budget || {})}}; }
+  else if (getProv() === 'demo') cargaEjemplo();
+  pintaBinds(); pintaProv(); showView(location.hash.slice(1) || 'conv'); pintaDots();
+})();
+</script>
+</body>
+</html>
