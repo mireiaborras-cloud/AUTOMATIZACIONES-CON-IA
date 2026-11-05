@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#032C62">
+<title>Preguntas Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<!--
+  Preguntas Test · genera bancos de preguntas tipo test a partir de un libro en PDF, con el número de preguntas que elijas por tema.
+  Arquitectura inspirada en Doctoralia (F. Borrás Rocher, UMH, licencia MIT): el texto se trocea en fragmentos numerados,
+  la IA escribe cada pregunta citando un fragmento y una frase literal, y el código comprueba cada pregunta antes de darla por buena.
+
+  Contiene código e identidad visual adaptados de Doctoralia (https://github.com/fborrasumh/doctoralia).
+  Copyright (c) 2026 Fernando Borrás Rocher. Licencia MIT: el aviso de copyright y este permiso deben
+  incluirse en todas las copias o partes sustanciales del software. Texto completo en THIRD_PARTY_LICENSE_doctoralia.txt.
+-->
+<style>
+:root{
+  --tema1:#26686D; --tema2:#00A499; --tema3:#64A70B; --tema4:#00A9CE; --tema5:#D9A405; --tema6:#728A8C; --tema7:#032C62; --tema8:#643005;
+  --tinta:#032C62; --acero:#1F4F5A; --acero-claro:#728A8C; --gris:#556B6E;
+  --papel:#F2F6F6; --blanco:#FFFFFF; --linea:#D3DEDF; --linea-2:#E6EEEE;
+  --brasa:#00A499; --brasa-suave:#DDF3F1;
+  --forjado:#64A70B; --forjado-osc:#4A7D08; --forjado-suave:#EAF4DC; --ambar:#7A5C00; --ambar-suave:#FBF1D2;
+  --malo:#643005; --malo-suave:#F4E6DA;
+  --c-libro:#00A9CE; --c-temas:#26686D; --c-gen:#00A499; --c-banco:#64A70B; --c-res:#728A8C;
+  --sombra:0 1px 0 rgba(3,44,98,.05), 0 14px 34px -22px rgba(3,44,98,.45);
+  --sombra-alta:0 2px 0 rgba(3,44,98,.04), 0 22px 50px -24px rgba(3,44,98,.55);
+  --r:14px;
+  --display:"Bricolage Grotesque",Georgia,serif;
+  --texto:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--papel);color:var(--tinta);font:16px/1.55 var(--texto);-webkit-font-smoothing:antialiased;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.15}
+p{margin:0}
+a{color:var(--acero)}
+code,.mono{font-family:var(--mono);font-size:.86em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--brasa);outline-offset:2px;border-radius:6px}
+svg.i{width:1.15em;height:1.15em;vertical-align:-.2em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+.top{position:sticky;top:0;z-index:40;background:var(--tinta);color:#EAF2FA;box-shadow:0 6px 24px -14px rgba(0,0,0,.6)}
+.tb-in{max-width:1180px;margin:0 auto;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:14px}
+.logo{background:none;border:0;color:#fff;font-family:var(--display);font-weight:800;font-size:23px;letter-spacing:-.03em;cursor:pointer;padding:2px 4px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.logo em{font-style:normal;color:var(--brasa)}
+.logo .anv{width:30px;height:30px;border-radius:9px;background:var(--brasa);display:grid;place-items:center;color:#fff}
+.logo .anv svg{width:17px;height:17px}
+.stepper{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;overflow-x:auto;scrollbar-width:none}
+.stepper::-webkit-scrollbar{display:none}
+.sdot{display:flex;align-items:center;gap:7px;background:none;border:0;color:#9DB4CF;font:600 13px var(--texto);padding:6px;cursor:pointer;border-radius:10px;white-space:nowrap}
+.sdot .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:2px solid #3A5F8C;font:700 12px var(--mono);color:#B5C8DD;transition:all .2s}
+.sdot .n svg{width:14px;height:14px}
+.sdot .n .ok{display:none}
+.sdot[data-state="done"] .n{background:var(--forjado);border-color:var(--forjado);color:#fff}
+.sdot[data-state="done"] .n .ok{display:block}.sdot[data-state="done"] .n .k{display:none}
+.sdot[data-state="now"]{color:#fff}
+.sdot[data-state="now"] .n{background:var(--brasa);border-color:var(--brasa);color:#fff;box-shadow:0 0 0 4px rgba(0,164,153,.3)}
+.sdot:hover{background:rgba(255,255,255,.06)}
+.sline{flex:0 1 26px;height:2px;background:#24497A;min-width:6px}
+.sline.on{background:var(--forjado)}
+.tb-tools{display:flex;gap:6px;align-items:center}
+.tb-btn{background:transparent;border:1px solid #3A5F8C;color:#D3E0EE;border-radius:9px;padding:6px 10px;font:600 13px var(--texto);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tb-btn:hover{border-color:var(--brasa);color:#fff}
+.tb-btn[aria-current="page"]{background:#fff;color:var(--tinta);border-color:#fff}
+.tb-sep{width:1px;height:24px;background:#24497A;margin:0 2px}
+.provpill{font:600 11px var(--mono);letter-spacing:.04em;color:#9DB4CF;max-width:18ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.progress{height:4px;background:#0B3A75}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--tema2),var(--tema4));transition:width .4s}
+.top .lbl{color:inherit;font:inherit}
+@media(max-width:1100px){.tb-btn .lbl{display:none}.provpill{display:none}}
+@media(max-width:820px){.sdot .lbl{display:none}.sdot[data-state="now"] .lbl{display:inline}}
+@media(max-width:620px){.tb-in{flex-wrap:wrap;gap:8px}.stepper{order:3;flex-basis:100%;justify-content:space-between}.sdot[data-state="now"] .lbl{display:none}.tb-tools{margin-left:auto}}
+
+main{max-width:1180px;margin:0 auto;padding-block:26px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.view{display:flex;flex-direction:column;gap:18px}
+@media(prefers-reduced-motion:no-preference){.view:not([hidden]){animation:rise .35s cubic-bezier(.2,.7,.3,1) both}@keyframes rise{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}}
+.sh{display:flex;gap:18px;align-items:flex-start;margin:4px 0}
+.sh-ico{width:64px;height:64px;border-radius:18px;background:var(--c,var(--brasa));color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 12px 24px -14px var(--c,var(--brasa))}
+.sh-ico svg{width:32px;height:32px}
+.sh-step{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--acero-claro);margin:4px 0}
+.sh h2{font-family:var(--display);font-weight:800;font-size:clamp(26px,3.6vw,38px);letter-spacing:-.025em;line-height:1.05;margin:0 0 6px}
+.sh-lede{margin:0;color:var(--gris);font-size:16.5px;max-width:72ch}
+@media(max-width:600px){.sh-ico{width:48px;height:48px;border-radius:14px}.sh-ico svg{width:24px;height:24px}}
+.eyebrow{font:600 11.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--acero-claro)}
+
+.panel{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--r);box-shadow:var(--sombra);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel h3{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label,.lbl{font-size:13.5px;font-weight:600;color:var(--acero)}
+.hint{font-size:12.8px;color:var(--gris)}
+input[type=text],input[type=number],input[type=password],input[type=search],select,textarea{width:100%;min-width:0;padding:10px 12px;border:1.5px solid var(--linea);border-radius:10px;font-size:15px;color:var(--tinta);background:#fff;transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acero-claro);box-shadow:0 0 0 4px rgba(0,164,153,.18)}
+input::placeholder,textarea::placeholder{color:#97AAAC}
+textarea{resize:vertical;min-height:90px;line-height:1.5}
+input[type=number]{font-variant-numeric:tabular-nums}
+.chk{display:flex;gap:9px;align-items:flex-start;font-size:14.5px}
+.chk input{margin-top:4px;accent-color:var(--tema1)}
+.drop{border:2px dashed var(--linea);border-radius:var(--r);padding:30px 18px;text-align:center;color:var(--acero);cursor:pointer;background:var(--papel);font-weight:600;transition:border-color .15s,background .15s}
+.drop:hover,.drop.over{border-color:var(--brasa);background:var(--brasa-suave)}
+.drop .di{width:48px;height:48px;border-radius:12px;background:var(--c-libro);color:#fff;display:grid;place-items:center;margin:0 auto 10px}
+.drop .di svg{width:24px;height:24px}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:11px;font-weight:600;font-size:15px;border:1.5px solid var(--linea);background:#fff;color:var(--acero);padding:10px 16px;cursor:pointer;transition:transform .08s,background .15s,border-color .15s;line-height:1.2}
+.btn:hover{border-color:var(--acero-claro);background:#F4F8F8}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--tema1);border-color:var(--tema1);color:#fff;box-shadow:0 8px 18px -10px var(--tema1)}
+.btn.primary:hover{background:#1C5357;border-color:#1C5357}
+.btn.dark{background:var(--tinta);border-color:var(--tinta);color:#fff}
+.btn.big{font-size:17px;padding:14px 24px;border-radius:13px}
+.btn.danger{color:var(--malo)}
+.btn.small{padding:6px 11px;font-size:13.5px;border-radius:9px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+
+.tw{overflow-x:auto;border:1px solid var(--linea);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{background:var(--tinta);color:#fff;text-align:left;padding:9px 11px;font-size:12.5px;font-weight:700;white-space:nowrap}
+td{padding:7px 11px;border-bottom:1px solid var(--linea-2);vertical-align:middle}
+tr:nth-child(even) td{background:#F7FAFA}
+td input,td select{padding:7px 9px;font-size:14px;border-radius:8px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td input[type=number]{width:5.6em}
+td input[type=checkbox]{accent-color:var(--tema1);width:18px;height:18px}
+tr.off td{opacity:.55}
+.tot td{font-weight:700;background:var(--papel)!important;border-top:2px solid var(--tinta)}
+
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700;white-space:nowrap;background:var(--linea-2);color:var(--gris)}
+.pill.ok{background:var(--forjado-suave);color:var(--forjado-osc)}
+.pill.warn{background:var(--ambar-suave);color:var(--ambar)}
+.pill.bad{background:var(--malo-suave);color:var(--malo)}
+.pill.neu{background:var(--linea-2);color:var(--gris)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--blanco);border:1px solid var(--linea);border-radius:12px;padding:12px 14px;box-shadow:var(--sombra)}
+.stat b{display:block;font:800 26px var(--display);letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--gris)}
+.note{font-size:14px;background:var(--papel);border-left:4px solid var(--forjado);border-radius:8px;padding:11px 14px;color:var(--acero)}
+.note.warn{background:#FBF5E1;border:1px solid #EBD48A;border-radius:12px;color:#6B5000}
+
+.ptemas{display:flex;flex-direction:column;gap:8px}
+.ptema{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;font-size:14px}
+.ptema .bar{grid-column:1/-1;height:6px;border-radius:99px;background:var(--linea-2);overflow:hidden}
+.ptema .bar span{display:block;height:100%;background:linear-gradient(90deg,var(--tema2),var(--tema3));transition:width .3s}
+.log{background:var(--tinta);color:#C6D6E8;border-radius:12px;padding:12px 14px;font:12.3px/1.6 var(--mono);max-height:320px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.log:empty::before{content:"El registro de la generación aparecerá aquí.";color:#7C93AC}
+.log .ok{color:#9BD45A} .log .warn{color:#F0CB55} .log .err{color:#F2A982}
+.live{font:12.5px var(--mono);color:var(--gris)}
+
+.hero{background:var(--tinta);color:#EAF2FA;border-radius:22px;padding:40px 36px;position:relative;overflow:hidden;box-shadow:var(--sombra-alta)}
+.hero::before{content:"";position:absolute;right:-80px;top:-80px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(0,169,206,.5),transparent 65%)}
+.hero::after{content:"";position:absolute;left:30%;bottom:-140px;width:420px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(100,167,11,.35),transparent 65%)}
+.hero>*{position:relative;z-index:1}
+.hero .eyebrow{color:#9DB4CF;margin:0 0 14px;display:block}
+.hero h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,5.4vw,58px);line-height:.98;letter-spacing:-.035em;margin:0 0 16px;max-width:17ch}
+.hero h1 em{font-style:normal;color:var(--brasa)}
+.hero .lede{max-width:62ch;font-size:18px;color:#C6D6E8;margin:0 0 24px}
+.hero .btn:not(.primary){background:transparent;color:#fff;border-color:#3A5F8C}
+.hero .btn:not(.primary):hover{border-color:#fff}
+.draft{margin-top:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:14.5px}
+@media(max-width:600px){.hero{padding:28px 20px;border-radius:18px}}
+.sec-title{font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:-.02em;margin:14px 0 0}
+.sec-sub{color:var(--gris);margin:0}
+.journey{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.jstop{background:#fff;border:1px solid var(--linea);border-radius:14px;padding:16px;position:relative;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.jstop:hover{transform:translateY(-3px);box-shadow:var(--sombra-alta)}
+.jstop .ji{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;background:var(--c);margin-bottom:10px}
+.jstop .ji svg{width:20px;height:20px}
+.jstop b{display:block;font-size:15px;margin-bottom:2px}
+.jstop span{display:block;font-size:13px;color:var(--gris);line-height:1.45}
+.jstop .jn{position:absolute;top:12px;right:14px;font:700 12px var(--mono);color:var(--acero-claro)}
+@media(max-width:900px){.journey{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.journey{grid-template-columns:1fr}}
+.parts{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.part{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--linea);border-radius:12px;padding:12px 14px}
+.part .pi{width:34px;height:34px;border-radius:10px;background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c);display:grid;place-items:center;flex:none}
+.part b{display:block;font-size:14.5px}
+.part span{display:block;font-size:12.8px;color:var(--gris);line-height:1.4}
+
+/* banco de preguntas */
+.res-head{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.res-head h2{font-family:var(--display);font-weight:800;font-size:clamp(24px,3vw,32px);letter-spacing:-.02em;margin:0;flex:1;min-width:220px;line-height:1.1}
+.tgroup{display:flex;flex-direction:column;gap:10px}
+.tgroup-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 2px 0}
+.tgroup-h h3{font-family:var(--display);font-weight:800;font-size:21px;letter-spacing:-.01em;flex:1;min-width:200px}
+.qcard{background:#fff;border:1px solid var(--linea);border-radius:14px;box-shadow:var(--sombra);padding:14px 16px;display:flex;flex-direction:column;gap:9px}
+.qcard.flag{border-color:#EBD48A}
+.qtop{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.qnum{font:700 12px var(--mono);color:var(--acero-claro)}
+.qcard textarea{min-height:52px;font-size:15px;font-weight:600}
+.qopt{display:flex;gap:9px;align-items:center}
+.qopt .let{font:700 12px var(--mono);width:26px;height:26px;border-radius:8px;background:var(--papel);color:var(--acero);display:grid;place-items:center;flex:none;cursor:pointer;border:1.5px solid var(--linea)}
+.qopt.ok .let{background:var(--forjado);border-color:var(--forjado);color:#fff}
+.qopt input[type=text]{padding:7px 10px;font-size:14.5px}
+.qopt.ok input[type=text]{border-color:#B9D98F;background:#F7FBF1}
+.cita{font-size:13.2px;color:var(--gris);border-left:3px solid var(--tema4);padding:2px 0 2px 10px}
+.cita i{color:var(--acero)}
+.qexp textarea{min-height:44px;font-size:13.8px;font-weight:400}
+.avisos{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--ambar)}
+
+.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:35;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--linea);padding-bottom:env(safe-area-inset-bottom,0px)}
+.bn-in{max-width:1180px;margin:0 auto;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:12px}
+.bn-hint{flex:1;text-align:center;font-size:14px;color:var(--gris)}
+@media(max-width:600px){.bn-hint{display:none}.bn-in{justify-content:space-between}}
+
+.modal{position:fixed;inset:0;z-index:60;background:rgba(3,44,98,.55);display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;overflow:auto}
+.mbox{background:#fff;border-radius:18px;max-width:640px;width:100%;box-shadow:var(--sombra-alta);overflow:hidden;display:flex;flex-direction:column}
+.mbox.wide{max-width:820px}
+.mhead{display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--tinta);color:#fff}
+.mhead h3{font-family:var(--display);font-size:22px;margin:0;flex:1}
+.mhead button{background:transparent;border:1px solid #3A5F8C;color:#fff;border-radius:9px;padding:6px 10px;cursor:pointer}
+.mbody{padding:18px 20px 22px;display:flex;flex-direction:column;gap:14px}
+.mbody pre{background:var(--papel);padding:10px 12px;border-radius:10px;font:12px var(--mono);white-space:pre-wrap;max-height:360px;overflow:auto;margin:0}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tinta);color:#fff;padding:11px 18px;border-radius:12px;font-size:14.5px;font-weight:600;z-index:70;max-width:90vw;text-align:center;box-shadow:var(--sombra-alta)}
+.foot{max-width:1180px;margin:0 auto;padding-top:28px;font-size:13px;color:#6A7F81;border-top:1px solid var(--linea);margin-top:28px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+<symbol id="i-gen" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+<symbol id="i-quiz" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/></symbol>
+<symbol id="i-ag" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></symbol>
+<symbol id="i-quote" viewBox="0 0 24 24"><path d="M10 11H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v6c0 2-1 3-3 4"/><path d="M19 11h-4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v6c0 2-1 3-3 4"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></symbol>
+</defs></svg>
+
+<header class="top">
+  <div class="tb-in">
+    <button class="logo tab" data-v="inicio" type="button" aria-label="Inicio"><span class="anv"><svg class="i"><use href="#i-quiz"/></svg></span>Preguntas<em>Test</em></button>
+    <nav class="stepper" aria-label="Recorrido"><button class="sdot tab" data-v="libro" type="button"><span class="n"><span class="k">1</span><svg class="i ok"><use href="#i-check"/></svg></span><span class="lbl">Libro</span></button><span class="sline" data-line="1"></span><button class="sdot tab" data-v="temas" type="button"><span class="n"><span class="k">2</span><svg class="i ok"><use href="#i-check"/></svg></span><span class="lbl">Temas</span></button><span class="sline" data-line="2"></span><button class="sdot tab" data-v="gen" type="button"><span class="n"><span class="k">3</span><svg class="i ok"><use href="#i-check"/></svg></span><span class="lbl">Generar</span></button></nav>
+    <div class="tb-tools">
+      <button class="tb-btn tab" data-v="banco" type="button" title="Banco de preguntas" aria-label="Banco de preguntas"><svg class="i"><use href="#i-quiz"/></svg><span class="lbl">Banco</span></button>
+      <button class="tb-btn tab" data-v="ag" type="button" title="Agentes y prompts" aria-label="Agentes y prompts"><svg class="i"><use href="#i-ag"/></svg><span class="lbl">Agentes</span></button>
+      <span class="tb-sep"></span>
+      <span class="provpill" id="provPill">demostración</span>
+      <button class="tb-btn" id="btnIA" type="button" title="Proveedor de IA"><svg class="i"><use href="#i-key"/></svg><span class="lbl">IA</span></button>
+      <button class="tb-btn" id="btnHelp" type="button" aria-label="Ayuda"><svg class="i"><use href="#i-help"/></svg></button>
+    </div>
+  </div>
+  <div class="progress"><span id="progBar"></span></div>
+</header>
+
+<main>
+<!-- INICIO -->
+<section class="view" id="v-inicio" hidden>
+  <div class="hero">
+    <span class="eyebrow">Banco de preguntas · Evaluación de alumnos</span>
+    <h1>Preguntas tipo test <em>sacadas de tu libro</em></h1>
+    <p class="lede">Sube el libro en PDF, elige cuántas preguntas quieres en cada tema y obtén un banco de preguntas de opción múltiple listo para revisar. Cada pregunta va anclada a una frase literal del libro, y el código descarta las que no se pueden comprobar.</p>
+    <div class="row"><button class="btn primary big" id="btnEmpezar" type="button">Empezar <svg class="i"><use href="#i-right"/></svg></button><button class="btn big" id="btnEjemplo" type="button"><svg class="i"><use href="#i-play"/></svg> Probar con un libro de ejemplo</button></div>
+    <div class="draft" id="draftBox" hidden></div>
+  </div>
+  <h2 class="sec-title">El recorrido</h2>
+  <p class="sec-sub">Tres pasos y una revisión final. Puedes volver a cualquiera desde la barra superior.</p>
+  <div class="journey">
+    <button class="jstop tab" data-v="libro" type="button" style="--c:var(--c-libro)"><span class="jn">1</span><div class="ji"><svg class="i"><use href="#i-book"/></svg></div><b>Libro</b><span>Sube el PDF. El texto se lee en tu navegador, página a página.</span></button>
+    <button class="jstop tab" data-v="temas" type="button" style="--c:var(--c-temas)"><span class="jn">2</span><div class="ji"><svg class="i"><use href="#i-list"/></svg></div><b>Temas</b><span>Se detectan por los marcadores, los encabezados o el índice. Pon cuántas preguntas quieres en cada uno.</span></button>
+    <button class="jstop tab" data-v="gen" type="button" style="--c:var(--c-gen)"><span class="jn">3</span><div class="ji"><svg class="i"><use href="#i-gen"/></svg></div><b>Generar</b><span>Opciones, dificultad e idioma. La IA escribe por lotes y el código valida.</span></button>
+    <button class="jstop tab" data-v="banco" type="button" style="--c:var(--c-banco)"><span class="jn">✓</span><div class="ji"><svg class="i"><use href="#i-quiz"/></svg></div><b>Banco</b><span>Revisa, edita y exporta en JSON, CSV o Moodle (GIFT).</span></button>
+  </div>
+  <h2 class="sec-title">Qué comprueba el código</h2>
+  <div class="parts">
+    <div class="part" style="--c:var(--c-libro)"><div class="pi"><svg class="i"><use href="#i-quote"/></svg></div><div><b>Cita literal</b><span>Cada pregunta indica la frase del libro que la justifica; si esa frase no está en el tema, la pregunta se descarta.</span></div></div>
+    <div class="part" style="--c:var(--c-temas)"><div class="pi"><svg class="i"><use href="#i-list"/></svg></div><div><b>Número exacto por tema</b><span>Pide por lotes repartidos por todo el tema y repite hasta llegar a las que has pedido.</span></div></div>
+    <div class="part" style="--c:var(--c-gen)"><div class="pi"><svg class="i"><use href="#i-shield"/></svg></div><div><b>Formato correcto</b><span>Una sola correcta, opciones distintas, sin «todas las anteriores» y sin preguntas repetidas.</span></div></div>
+    <div class="part" style="--c:var(--c-banco)"><div class="pi"><svg class="i"><use href="#i-shuffle"/></svg></div><div><b>Respuestas equilibradas</b><span>La posición de la respuesta correcta se reparte entre A, B, C y D para que no haya patrones.</span></div></div>
+    <div class="part" style="--c:var(--c-res)"><div class="pi"><svg class="i"><use href="#i-gen"/></svg></div><div><b>Pistas involuntarias</b><span>Avisa si la correcta es mucho más larga que las demás o si aparece en el enunciado.</span></div></div>
+    <div class="part" style="--c:var(--tema5)"><div class="pi"><svg class="i"><use href="#i-check"/></svg></div><div><b>Segunda opinión</b><span>Un agente revisor comprueba que la respuesta marcada es la que dice el libro (opcional).</span></div></div>
+  </div>
+</section>
+
+<!-- 1 · LIBRO -->
+<section class="view" id="v-libro" hidden>
+  <div class="sh"><div class="sh-ico" style="--c:var(--c-libro)"><svg class="i"><use href="#i-book"/></svg></div><div><p class="sh-step">Paso 1</p><h2>Libro</h2><p class="sh-lede">Sube el libro en PDF. El texto se extrae en tu navegador; a la IA solo se envían los fragmentos de cada tema cuando generes las preguntas. El PDF debe tener texto seleccionable: si es un escaneo, pásalo antes por un OCR.</p></div></div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="drop" id="dropPdf" tabindex="0" role="button" aria-label="Subir el libro en PDF"><div class="di"><svg class="i"><use href="#i-upload"/></svg></div>Arrastra aquí el libro o pulsa para elegirlo<br><span class="hint">PDF con texto · también admite un banco exportado (.json) para seguir editándolo</span></div>
+      <input type="file" id="filePdf" accept=".pdf,.json" hidden>
+      <div class="live" id="pdfStatus"></div>
+    </div>
+    <div class="panel" id="libroBox"></div>
+  </div>
+</section>
+
+<!-- 2 · TEMAS -->
+<section class="view" id="v-temas" hidden>
+  <div class="sh"><div class="sh-ico" style="--c:var(--c-temas)"><svg class="i"><use href="#i-list"/></svg></div><div><p class="sh-step">Paso 2</p><h2>Temas y número de preguntas</h2><p class="sh-lede">Comprueba que cada tema empieza y termina en las páginas correctas del PDF y escribe cuántas preguntas quieres en cada uno. Desmarca los que no deban entrar (portada, índice, anexos…).</p></div></div>
+  <div class="panel">
+    <div class="row"><span class="lbl">Detectar temas:</span><button class="btn small" id="detMarc" type="button">Marcadores del PDF</button><button class="btn small" id="detEnc" type="button">Encabezados («Tema 1», «Unidad 2»…)</button><button class="btn small" id="detIA" type="button"><svg class="i"><use href="#i-gen"/></svg> Leer el índice con IA</button><button class="btn small" id="detUno" type="button">Todo el libro en un tema</button><span class="spacer"></span><span id="origenTemas"></span></div>
+    <div class="row">
+      <label class="lbl" for="nTodos">Preguntas en cada tema</label><input type="number" id="nTodos" min="0" max="300" value="10" style="width:6em"><button class="btn small" id="aplicaTodos" type="button">Aplicar a todos</button>
+      <span class="tb-sep" style="background:var(--linea)"></span>
+      <label class="lbl" for="nTotal">Total de preguntas</label><input type="number" id="nTotal" min="0" max="5000" value="100" style="width:6.5em"><button class="btn small" id="reparte" type="button">Repartir según la extensión de cada tema</button>
+    </div>
+    <div class="tw"><table><thead><tr><th>Incluir</th><th>Tema</th><th class="num">Pág. inicio</th><th class="num">Pág. fin</th><th class="num">Palabras</th><th class="num">Preguntas</th><th class="num">Hechas</th><th></th></tr></thead><tbody id="tbTemas"></tbody></table></div>
+    <div class="row"><button class="btn small" id="addTema" type="button">Añadir tema</button><span class="spacer"></span><span class="hint" id="temasResumen"></span></div>
+    <div id="temasAvisos"></div>
+  </div>
+</section>
+
+<!-- 3 · GENERAR -->
+<section class="view" id="v-gen" hidden>
+  <div class="sh"><div class="sh-ico" style="--c:var(--c-gen)"><svg class="i"><use href="#i-gen"/></svg></div><div><p class="sh-step">Paso 3</p><h2>Generar las preguntas</h2><p class="sh-lede">Cada tema se trocea en fragmentos numerados [F1], [F2]… y se pide a la IA por lotes repartidos por todo el tema. Cada pregunta debe citar una frase literal de un fragmento; el código la busca en el libro y comprueba el formato antes de aceptarla.</p></div></div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="grid3">
+        <div class="field"><label for="o_lang">Idioma de las preguntas</label><select id="o_lang" data-bind="opt.lang"><option value="castellano">Castellano</option><option value="valenciano (catalán tal como se usa en la Comunitat Valenciana)">Valencià</option><option value="inglés">English</option><option value="francés">Français</option><option value="alemán">Deutsch</option></select></div>
+        <div class="field"><label for="o_nivel">Nivel de los alumnos</label><input type="text" id="o_nivel" data-bind="opt.nivel" placeholder="p. ej. 2.º de ESO"></div>
+        <div class="field"><label for="o_nopc">Opciones por pregunta</label><select id="o_nopc" data-bind="opt.nopc" data-num><option value="3">3 (A–C)</option><option value="4">4 (A–D)</option><option value="5">5 (A–E)</option></select></div>
+        <div class="field"><label for="o_lote">Preguntas por llamada</label><input type="number" id="o_lote" min="3" max="20" data-bind="opt.lote" data-num><span class="hint">Lotes pequeños dan más variedad.</span></div>
+      </div>
+      <div class="lbl">Dificultad (%)</div>
+      <div class="grid3">
+        <div class="field"><label for="o_f">Fácil · recordar</label><input type="number" id="o_f" min="0" max="100" data-bind="opt.facil" data-num></div>
+        <div class="field"><label for="o_m">Media · comprender</label><input type="number" id="o_m" min="0" max="100" data-bind="opt.media" data-num></div>
+        <div class="field"><label for="o_d">Difícil · aplicar</label><input type="number" id="o_d" min="0" max="100" data-bind="opt.dificil" data-num></div>
+      </div>
+      <div class="row"><label class="chk"><input type="checkbox" id="o_vf" data-bind="opt.vf" data-bool> <span>Incluir también preguntas de verdadero o falso</span></label><input type="number" id="o_pvf" min="0" max="100" data-bind="opt.pctVf" data-num style="width:5.5em" aria-label="Porcentaje de verdadero o falso"><span class="hint">% del total</span></div>
+      <label class="chk"><input type="checkbox" id="o_rev" data-bind="opt.revisar" data-bool> <span>Revisor: otro agente comprueba cada respuesta contra su fragmento (más fiable, cuesta algo más)</span></label>
+      <label class="chk"><input type="checkbox" id="o_est" data-bind="opt.estricto" data-bool> <span>Descartar las preguntas cuya cita no aparezca literalmente en el libro</span></label>
+      <div class="field"><label for="o_modo">Si un tema ya tiene preguntas</label><select id="o_modo" data-bind="opt.modo"><option value="completar">Completar hasta el número pedido</option><option value="sustituir">Sustituirlas por preguntas nuevas</option></select></div>
+      <div class="field"><label for="o_instr">Indicaciones para la IA (opcional)</label><textarea id="o_instr" data-bind="opt.instr" placeholder="p. ej. Céntrate en definiciones y procesos; evita preguntar por fechas."></textarea></div>
+    </div>
+    <div class="panel">
+      <h3>Resumen</h3>
+      <div id="genResumen"></div>
+      <div class="row"><button class="btn primary big" id="btnGen" type="button"><svg class="i"><use href="#i-gen"/></svg> Generar preguntas</button><button class="btn" id="btnParar" type="button" disabled>Parar</button></div>
+      <div class="live" id="liveCost"></div>
+      <div class="ptemas" id="progTemas"></div>
+    </div>
+  </div>
+  <div class="panel"><h3>Registro</h3><div class="log" id="logPanel" aria-live="polite"></div></div>
+</section>
+
+<!-- BANCO -->
+<section class="view" id="v-banco" hidden>
+  <div class="res-head"><div class="sh-ico" style="--c:var(--c-banco)"><svg class="i"><use href="#i-quiz"/></svg></div><h2>Banco de preguntas</h2><div class="row"><button class="btn primary" id="exJson" type="button"><svg class="i"><use href="#i-download"/></svg> JSON</button><button class="btn" id="exCsv" type="button">CSV (Excel)</button><button class="btn" id="exGift" type="button">Moodle (GIFT)</button></div></div>
+  <div class="stats" id="bancoStats"></div>
+  <div class="panel">
+    <div class="grid3">
+      <div class="field"><label for="fTema">Tema</label><select id="fTema"></select></div>
+      <div class="field"><label for="fEstado">Mostrar</label><select id="fEstado"><option value="todas">Todas</option><option value="avisos">Solo con avisos</option><option value="ok">Solo sin avisos</option></select></div>
+      <div class="field"><label for="fBusca">Buscar</label><input type="search" id="fBusca" placeholder="texto de la pregunta"></div>
+    </div>
+    <p class="hint">Los cambios se guardan solos. Pulsa una letra para marcar la respuesta correcta.</p>
+  </div>
+  <div id="bancoBox" class="view"></div>
+</section>
+
+<!-- AGENTES -->
+<section class="view" id="v-ag" hidden>
+  <div class="sh"><div class="sh-ico" style="--c:var(--c-res)"><svg class="i"><use href="#i-ag"/></svg></div><div><p class="sh-step">Configuración</p><h2>Agentes y prompts</h2><p class="sh-lede">Cada agente tiene su prompt y su tope de tokens. Las variables entre llaves dobles se rellenan al ejecutar. Los cambios se guardan en este navegador.</p></div></div>
+  <div id="agBox" class="view"></div>
+</section>
+<div class="foot">Preguntas Test v<span id="ver"></span> · Funciona en tu navegador: el libro, las preguntas y las claves se guardan solo aquí. Arquitectura e identidad visual basadas en Doctoralia (F. Borrás Rocher, UMH, licencia MIT). Revisa siempre las preguntas antes de usarlas con tus alumnos.</div>
+</main>
+
+<nav class="bottomnav" aria-label="Navegación"><div class="bn-in"><button class="btn" id="navBack" type="button"><svg class="i"><use href="#i-left"/></svg> Atrás</button><span class="bn-hint" id="navHint"></span><button class="btn dark" id="navNext" type="button"><span id="navNextTxt">Empezar</span> <svg class="i"><use href="#i-right"/></svg></button></div></nav>
+
+<!-- modal IA -->
+<div class="modal" id="mIA" hidden>
+  <div class="mbox" role="dialog" aria-labelledby="mIAt"><div class="mhead"><h3 id="mIAt">Proveedor de IA</h3><button type="button" data-close aria-label="Cerrar">✕</button></div><div class="mbody">
+    <div class="field"><label for="selProv">Proveedor</label><select id="selProv"><option value="demo">Demostración (sin clave, preguntas simuladas)</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option></select></div>
+    <div class="field" id="keyField"><label for="apiKey">Clave de API</label><div class="row"><input type="password" id="apiKey" autocomplete="off" style="flex:1"><button class="btn small" id="btnEye" type="button">Ver</button></div><span class="hint">Se guarda solo en este navegador y se envía solo a tu proveedor.</span></div>
+    <div class="field" id="modelField"><label for="modelo">Modelo</label><input type="text" id="modelo" list="modelos"><datalist id="modelos"></datalist><div class="row"><button class="btn small" id="btnModelos" type="button">Ver modelos de mi clave</button><span class="hint" id="iaEstado"></span></div><span class="hint">Un modelo económico basta; si las preguntas salen flojas, prueba uno superior.</span></div>
+    <div class="grid3"><div class="field"><label for="priceIn">Precio entrada ($/M tokens)</label><input type="text" id="priceIn" placeholder="p. ej. 0,40"></div><div class="field"><label for="priceOut">Precio salida ($/M tokens)</label><input type="text" id="priceOut" placeholder="p. ej. 1,60"></div></div>
+    <div class="row"><div class="spacer"></div><button class="btn primary" data-close type="button">Listo</button></div>
+  </div></div>
+</div>
+<!-- modal envío -->
+<div class="modal" id="mEnvio" hidden>
+  <div class="mbox" role="dialog" aria-labelledby="mEt"><div class="mhead"><h3 id="mEt">Antes del primer envío</h3></div><div class="mbody">
+    <p>Se enviarán a <b id="envProv"></b> fragmentos del texto de cada tema (con correos, DNI/NIE y teléfonos enmascarados) y tus indicaciones. Esto es una muestra:</p>
+    <pre id="envMuestra"></pre>
+    <div class="row"><div class="spacer"></div><button class="btn" id="envNo" type="button">Cancelar</button><button class="btn primary" id="envSi" type="button">Enviar y continuar</button></div>
+  </div></div>
+</div>
+<!-- modal texto del tema -->
+<div class="modal" id="mTexto" hidden>
+  <div class="mbox wide" role="dialog" aria-labelledby="mTt"><div class="mhead"><h3 id="mTt">Texto del tema</h3><button type="button" data-close aria-label="Cerrar">✕</button></div><div class="mbody">
+    <p class="hint" id="txtInfo"></p>
+    <pre id="txtTema"></pre>
+  </div></div>
+</div>
+<!-- modal ayuda -->
+<div class="modal" id="mHelp" hidden>
+  <div class="mbox" role="dialog" aria-labelledby="mHt"><div class="mhead"><h3 id="mHt">Cómo funciona</h3><button type="button" data-close aria-label="Cerrar">✕</button></div><div class="mbody">
+    <p><b>La IA propone, el código comprueba.</b> El texto de cada tema se trocea en fragmentos numerados [F n]. La IA escribe cada pregunta indicando el fragmento y una frase literal que la justifica; el código busca esa frase en el libro y comprueba que hay una sola respuesta correcta, que las opciones no se repiten y que la pregunta no está ya en el banco.</p>
+    <p><b>Recorrido.</b> 1) Sube el PDF. 2) Revisa los temas y escribe cuántas preguntas quieres en cada uno. 3) Elige idioma, dificultad y opciones y genera. Después revisa y edita en «Banco» y exporta.</p>
+    <p><b>Exportación.</b> JSON con temas y preguntas (pensado para la futura app de práctica), CSV para Excel y GIFT para importar en Moodle.</p>
+    <p><b>Límites.</b> Que la cita exista prueba que la pregunta sale del libro, no que esté bien planteada. El revisor es otro modelo y también puede equivocarse: revisa las preguntas antes de usarlas en una evaluación.</p>
+    <p><b>Modo demostración.</b> Sin clave, la app genera preguntas simuladas de completar huecos a partir de frases del libro, para que veas el recorrido completo.</p>
+    <div class="row"><div class="spacer"></div><button class="btn primary" data-close type="button">Cerrar</button></div>
+  </div></div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+'use strict';
+/* ══════════════════════════════════════════════════════════════════════════════════════════════
+   Preguntas Test · núcleo. Principio heredado de Doctoralia: la IA propone, el código comprueba.
+   ══════════════════════════════════════════════════════════════════════════════════════════════ */
+const APP = 'preguntastest', VERSION = '0.1.0';
+
+/* ── utilidades ── */
+const $ = id => document.getElementById(id), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+const wc = s => (String(s || '').match(/[\p{L}\p{N}]+/gu) || []).length;
+const numIn = v => { const x = parseFloat(String(v ?? '').replace(',', '.')); return isFinite(x) ? x : 0; };
+const fmtN = n => Math.round(n).toLocaleString('es-ES');
+const pct = (x, d = 0) => (x * 100).toLocaleString('es-ES', {maximumFractionDigits: d, minimumFractionDigits: d}) + ' %';
+const uid = (p = 'q') => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const LET = ['A', 'B', 'C', 'D', 'E', 'F'];
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const mediana = a => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2); };
+const romano = s => { const v = {i: 1, v: 5, x: 10, l: 50, c: 100}; let t = 0; s = String(s).toLowerCase(); for (let i = 0; i < s.length; i++) { const a = v[s[i]], b = v[s[i + 1]] || 0; if (!a) return 0; t += a < b ? -a : a; } return t; };
+function jaccard(a, b) { const A = new Set(a.split(' ').filter(Boolean)), B = new Set(b.split(' ').filter(Boolean)); if (!A.size || !B.size) return 0; let n = 0; A.forEach(x => { if (B.has(x)) n++; }); return n / (A.size + B.size - n); }
+/* reparto entero proporcional (resto mayor), con un mínimo por elemento si cabe */
+function reparto(pesos, total, min = 0) {
+  const n = pesos.length; if (!n) return []; total = Math.max(0, Math.round(total)); if (min * n > total) min = 0;
+  const pos = pesos.map(p => Math.max(0, +p || 0)); let W = pos.reduce((a, b) => a + b, 0); const w = W > 0 ? pos : pos.map(() => 1); if (!(W > 0)) W = n;
+  const rem = total - min * n, ideal = w.map(p => rem * p / W), out = ideal.map(x => min + Math.floor(x));
+  let r = total - out.reduce((a, b) => a + b, 0); const ord = ideal.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0]);
+  for (let j = 0; r > 0; j = (j + 1) % n) { out[ord[j][1]]++; r--; }
+  return out;
+}
+let _toastT;
+function toast(m, ms = 4200) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(_toastT); _toastT = setTimeout(() => t.hidden = true, ms); }
+function dl(nombre, contenido, tipo) { const b = contenido instanceof Blob ? contenido : new Blob([contenido], {type: tipo}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = nombre; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 2500); }
+const LS = {
+  get(k, d = '') { try { const v = localStorage.getItem(APP + '_' + k); return v == null ? d : v; } catch { return d; } },
+  set(k, v) { try { v === '' || v == null ? localStorage.removeItem(APP + '_' + k) : localStorage.setItem(APP + '_' + k, v); } catch {} }
+};
+function cargaLib(url, global) {
+  if (window[global]) return Promise.resolve(window[global]);
+  return new Promise((ok, ko) => { const s = document.createElement('script'); s.src = url; s.onload = () => ok(window[global]); s.onerror = () => ko(new Error('No se pudo cargar el lector de PDF. ¿Hay conexión a internet?')); document.head.appendChild(s); });
+}
+const PII = [['CORREO', /[\w.+-]+@[\w-]+\.[\w.-]+/g], ['ID', /\b\d{8}[A-HJ-NP-TV-Z]\b|\b[XYZ]\d{7}[A-Z]\b/gi], ['TELÉFONO', /(?:\+\d{2}\s?)?\b[6-9]\d{2}[\s.-]?\d{3}[\s.-]?\d{3}\b/g]];
+const scrub = txt => { let t = String(txt ?? ''); PII.forEach(([tag, rx]) => { t = t.replace(rx, `[${tag}]`); }); return t; };
+/* ¿aparece la frase en el texto, ignorando mayúsculas, tildes, puntuación y saltos de línea? */
+const contiene = (texto, frase) => { const q = norm(frase); return q.length >= 12 && norm(texto).includes(q); };
+
+/* ── estado (IndexedDB, con guardado diferido) ── */
+const estadoInicial = () => ({
+  libro: null, temas: [], preguntas: [], run: null, ejemplo: false,
+  opt: {lang: 'castellano', nivel: '', nopc: 4, lote: 8, facil: 30, media: 50, dificil: 20, vf: false, pctVf: 20, revisar: true, estricto: true, modo: 'completar', instr: '', defN: 10}
+});
+let S = estadoInicial();
+const dbP = new Promise((ok, ko) => { try { const r = indexedDB.open(APP, 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); } catch (e) { ko(e); } });
+const kv = async (mode, fn) => { const d = await dbP; return new Promise((ok, ko) => { const tx = d.transaction('kv', mode), q = fn(tx.objectStore('kv')); tx.oncomplete = () => ok(q && q.result); tx.onerror = () => ko(tx.error); }); };
+let _g;
+function guarda() { clearTimeout(_g); _g = setTimeout(() => kv('readwrite', s => s.put(JSON.parse(JSON.stringify(S)), 'main')).catch(() => toast('No se pudo guardar en el navegador')), 400); }
+const guardaYa = () => { clearTimeout(_g); return kv('readwrite', s => s.put(JSON.parse(JSON.stringify(S)), 'main')).catch(() => {}); };
+async function cargaEstado() { try { return await kv('readonly', s => s.get('main')); } catch { return null; } }
+
+/* ── registro y consumo ── */
+const LOGS = [];
+function log(msg, type = 'info') {
+  const ts = new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+  LOGS.push({ts, msg, type}); if (LOGS.length > 1500) LOGS.shift();
+  const p = $('logPanel'); if (p) { const d = document.createElement('div'); d.className = type; d.textContent = `[${ts}] ${msg}`; p.appendChild(d); p.scrollTop = p.scrollHeight; }
+}
+const USO = {by: {}, in: 0, out: 0, calls: 0, agente: null};
+function usoReset() { USO.by = {}; USO.in = USO.out = USO.calls = 0; pintaCoste(); }
+function reportaUso(i, o) { const k = USO.agente || 'otro', a = USO.by[k] || (USO.by[k] = {in: 0, out: 0, calls: 0}); a.in += i || 0; a.out += o || 0; a.calls++; USO.in += i || 0; USO.out += o || 0; USO.calls++; pintaCoste(); }
+const precio = () => { const i = numIn(LS.get('priceIn')), o = numIn(LS.get('priceOut')); return i > 0 || o > 0 ? {in: i, out: o} : null; };
+const coste = (ti, to) => { const p = precio(); return p ? ti * p.in / 1e6 + to * p.out / 1e6 : null; };
+function pintaCoste() { const el = $('liveCost'); if (!el) return; const c = coste(USO.in, USO.out); el.textContent = `${fmtN(USO.in + USO.out)} tokens · ${USO.calls} llamadas · coste: ${c == null ? (getProv() === 'demo' ? '0 (demostración)' : 'escribe tus precios en «IA»') : '$' + c.toFixed(4)}`; }
+
+/* ══ Proveedores de IA (OpenAI, Gemini, Claude) + modo demostración · adaptado de Doctoralia ══ */
+const PROV = {
+  demo: {n: 'Demostración', m: 'simulado', k: ''},
+  openai: {n: 'OpenAI', m: 'gpt-4.1-mini', k: 'key_openai'},
+  gemini: {n: 'Google Gemini', m: 'gemini-2.5-flash', k: 'key_gemini'},
+  anthropic: {n: 'Anthropic Claude', m: 'claude-haiku-4-5-20251001', k: 'key_anthropic'}
+};
+const getProv = () => PROV[LS.get('prov')] ? LS.get('prov') : 'demo';
+const getKey = (p = getProv()) => PROV[p].k ? LS.get(PROV[p].k) : '';
+const getMod = (p = getProv()) => LS.get('model_' + p) || PROV[p].m;
+const parseJ = tx => { tx = String(tx || '').trim().replace(/^```(?:json)?\s*|\s*```$/g, '').trim(); try { return JSON.parse(tx); } catch { const m = tx.match(/\{[\s\S]*\}/); if (m) try { return JSON.parse(m[0]); } catch {} } return null; };
+const sysDe = msgs => msgs.filter(m => m.role === 'system').map(m => m.content).join('\n\n');
+function agrupa(msgs, rolA) { const o = []; for (const m of msgs.filter(m => m.role !== 'system')) { const r = m.role === 'assistant' ? rolA : 'user'; if (o.length && o.at(-1).role === r) o.at(-1).text += '\n\n' + m.content; else o.push({role: r, text: m.content}); } return o; }
+function httpErr(st, tx, pv, mod) {
+  if (st === 401 || st === 403 || (pv === 'gemini' && st === 400 && /API key|API_KEY/i.test(tx))) return new Error(`${PROV[pv].n} no reconoce tu clave. Revísala en el botón «IA».`);
+  if (st === 404 || /model_not_found|does not exist/i.test(tx)) return new Error(`Tu clave no tiene acceso al modelo «${mod}». Elige otro en el botón «IA».`);
+  if (st === 429 && /quota|billing|credit|RESOURCE_EXHAUSTED/i.test(tx)) return new Error(`Tu cuenta de ${PROV[pv].n} no tiene saldo o ha alcanzado su límite.`);
+  return new Error(`${PROV[pv].n} ${st}: ${String(tx).slice(0, 180)}`);
+}
+async function conReintentos(fn, pv) {
+  for (let k = 0; k < 5; k++) {
+    let r; try { r = await fn(); } catch { if (k >= 2) throw new Error(`No hay conexión con ${PROV[pv].n}.`); await sleep(1500); continue; }
+    if (r.ok) return r;
+    if (r.status === 429 || r.status >= 500) { const tx = await r.clone().text(); if (r.status === 429 && /quota|billing|credit/i.test(tx)) return r; await sleep(2 ** (k + 1) * 1000); continue; }
+    return r;
+  }
+  throw new Error(`${PROV[pv].n} no responde ahora mismo. Inténtalo de nuevo en un momento.`);
+}
+async function llm(msgs, {json = false, max = 2500, temp = 0.4} = {}) {
+  const pv = getProv(), key = getKey(pv), mod = getMod(pv);
+  if (!key) throw new Error('Falta tu clave de IA. Pulsa el botón «IA», arriba.');
+  if (pv === 'openai') {
+    const razona = /^(gpt-[56]|o\d)/.test(mod), o = {json, reasoning: razona, comp: razona, temp: !razona};
+    const mm = msgs.map(m => ({role: m.role, content: m.content}));
+    for (let k = 0; k < 6; k++) {
+      const body = {model: mod, messages: mm};
+      if (o.json) body.response_format = {type: 'json_object'};
+      if (o.comp) body.max_completion_tokens = max * (o.reasoning ? 2 : 1); else body.max_tokens = max;
+      if (o.reasoning) body.reasoning_effort = 'low';
+      if (o.temp) body.temperature = temp;
+      const r = await conReintentos(() => fetch('https://api.openai.com/v1/chat/completions', {method: 'POST', headers: {'Content-Type': 'application/json', Authorization: 'Bearer ' + key}, body: JSON.stringify(body)}), pv);
+      if (r.ok) { const j = await r.json(); reportaUso(j.usage?.prompt_tokens, j.usage?.completion_tokens); return j.choices?.[0]?.message?.content || ''; }
+      const tx = await r.text();
+      if (r.status === 400) {
+        if (/reasoning_effort/i.test(tx) && o.reasoning) { o.reasoning = false; continue; }
+        if (/max_completion_tokens/i.test(tx) && o.comp) { o.comp = false; continue; }
+        if (/max_tokens/i.test(tx) && !o.comp) { o.comp = true; continue; }
+        if (/temperature/i.test(tx) && o.temp) { o.temp = false; continue; }
+        if (/response_format|json/i.test(tx) && o.json) { o.json = false; mm.at(-1).content += '\nResponde SOLO con JSON válido.'; continue; }
+      }
+      throw httpErr(r.status, tx, pv, mod);
+    }
+    throw new Error('OpenAI no responde ahora mismo.');
+  }
+  if (pv === 'gemini') {
+    const sys = sysDe(msgs), cont = agrupa(msgs, 'model').map(m => ({role: m.role, parts: [{text: m.text}]}));
+    const body = {contents: cont, generationConfig: {maxOutputTokens: max * 2, temperature: temp}};
+    if (sys) body.systemInstruction = {parts: [{text: sys}]};
+    if (json) body.generationConfig.responseMimeType = 'application/json';
+    const r = await conReintentos(() => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(mod)}:generateContent`, {method: 'POST', headers: {'Content-Type': 'application/json', 'x-goog-api-key': key}, body: JSON.stringify(body)}), pv);
+    const tx = await r.text(); if (!r.ok) throw httpErr(r.status, tx, pv, mod);
+    const j = JSON.parse(tx); reportaUso(j.usageMetadata?.promptTokenCount, (j.usageMetadata?.candidatesTokenCount || 0) + (j.usageMetadata?.thoughtsTokenCount || 0));
+    return (j.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
+  }
+  const sys = sysDe(msgs), mm = agrupa(msgs, 'assistant').map(m => ({role: m.role, content: m.text}));
+  if (json) mm.at(-1).content += '\n\nResponde SOLO con un objeto JSON válido, sin texto alrededor.';
+  const r = await conReintentos(() => fetch('https://api.anthropic.com/v1/messages', {method: 'POST', headers: {'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'}, body: JSON.stringify({model: mod, max_tokens: max, system: sys, messages: mm})}), pv);
+  const tx = await r.text(); if (!r.ok) throw httpErr(r.status, tx, pv, mod);
+  const jc = JSON.parse(tx); reportaUso(jc.usage?.input_tokens, jc.usage?.output_tokens);
+  return (jc.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+}
+async function listaModelos(pv = getProv()) {
+  const key = getKey(pv); if (!key) throw new Error('Primero pega tu clave.'); let r;
+  try {
+    if (pv === 'openai') r = await fetch('https://api.openai.com/v1/models', {headers: {Authorization: 'Bearer ' + key}});
+    else if (pv === 'gemini') r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=100', {headers: {'x-goog-api-key': key}});
+    else r = await fetch('https://api.anthropic.com/v1/models?limit=100', {headers: {'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'}});
+  } catch { throw new Error(`No hay conexión con ${PROV[pv].n}.`); }
+  const tx = await r.text(); if (!r.ok) throw httpErr(r.status, tx, pv, ''); const j = JSON.parse(tx);
+  if (pv === 'openai') return (j.data || []).map(m => m.id).filter(id => /^(gpt-|o\d)/.test(id) && !/(audio|realtime|transcribe|tts|image|embedding|moderation|search)/i.test(id)).sort();
+  if (pv === 'gemini') return (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name.replace(/^models\//, '')).sort();
+  return (j.data || []).map(m => m.id).sort();
+}
+
+/* ── agentes ── */
+const AGENTS = [
+  {id: 'indexador', role: 'Lee el índice del libro y propone los temas con su página (el código busca cada título en el PDF)', def: 2000},
+  {id: 'generador', role: 'Escribe un lote de preguntas de un tema citando [F n] y una frase literal', def: 4000},
+  {id: 'revisor', role: 'Comprueba que la respuesta marcada es la que dice el fragmento y que no hay otra correcta', def: 2000}
+];
+const DEFAULT_PROMPTS = {
+  indexador: `Estas son las primeras páginas de un libro de texto, numeradas tal como aparecen en el PDF. Localiza el índice y devuelve sus temas principales: solo el primer nivel (temas, unidades o capítulos), no los apartados.
+
+PÁGINAS:
+{{paginas}}
+
+Devuelve SOLO un JSON: {"temas":[{"titulo":"título tal como aparece en el índice","pagina":0}]}
+"pagina" es el número de página que indica el índice. No inventes temas que no figuren en el índice. Si no hay índice, devuelve {"temas":[]}.`,
+
+  generador: `Eres profesor y preparas preguntas tipo test para evaluar a alumnos{{nivel}} sobre el tema «{{tema}}» del libro «{{libro}}».
+
+FRAGMENTOS NUMERADOS DEL TEMA (única fuente admisible):
+{{fragmentos}}
+
+Escribe exactamente {{k}} preguntas en {{idioma}}:
+{{reparto}}
+
+Reglas:
+- Cada pregunta se responde con lo que dice un único fragmento. Indica su número en "fragmento" y copia en "cita" una frase literal de ese fragmento, de 8 a 30 palabras, que justifique la respuesta. La cita va en el idioma original del libro, letra a letra: el sistema la buscará en el texto.
+- Pregunta por conceptos, procesos, relaciones y aplicaciones importantes del tema, no por detalles triviales (números de página, figuras, ejemplos anecdóticos).
+- Una sola opción correcta. Los distractores deben ser plausibles, del mismo tipo y de longitud parecida a la correcta, y claramente incorrectos según el texto.
+- Prohibido: «todas las anteriores», «ninguna de las anteriores», «A y B son correctas» y las dobles negaciones.
+- La pregunta debe entenderse sin tener el libro delante: no escribas «según el texto», «en el fragmento» ni «como hemos visto».
+- Reparte las preguntas entre todos los fragmentos.
+- No repitas ni reformules estas preguntas ya hechas:
+{{previas}}{{instr}}
+
+Devuelve SOLO un JSON:
+{"preguntas":[{"tipo":"opcion_multiple","enunciado":"…","opciones":["…","…"],"correcta":0,"explicacion":"una o dos frases","dificultad":"facil","fragmento":1,"cita":"frase literal del fragmento"}]}
+"correcta" es la posición (empezando en 0) de la opción correcta. "dificultad" es facil, media o dificil. En verdadero o falso usa "tipo":"verdadero_falso" y "opciones":["Verdadero","Falso"].`,
+
+  revisor: `Revisa estas preguntas tipo test. Cada una lleva el fragmento del libro del que sale.
+
+{{preguntas}}
+
+Para cada pregunta comprueba: 1) que la opción marcada como correcta lo es según el fragmento; 2) que ninguna otra opción es también correcta; 3) que el enunciado es claro y no ambiguo.
+Devuelve SOLO un JSON: {"revision":[{"id":"…","ok":true,"problema":"","correcta_segun_texto":"A"}]}
+Si todo está bien, "ok": true y "problema": "". Si no, "ok": false y explica el problema en una frase.`
+};
+const promptDe = id => LS.get('prompt_' + id) || DEFAULT_PROMPTS[id] || '';
+const tokensDe = id => parseInt(LS.get('tok_' + id)) || AGENTS.find(a => a.id === id)?.def || 2000;
+const rell = (tpl, v) => String(tpl).replace(/\{\{(\w+)\}\}/g, (m, k) => k in v ? String(v[k]) : m);
+let PARAR = false;
+const PARADO = () => new Error('__STOP__');
+async function ag(id, msgs, {json = false, temp = 0.4, max, ctx = {}} = {}) {
+  if (PARAR) throw PARADO();
+  USO.agente = id;
+  let out;
+  if (getProv() === 'demo') { await sleep(180); out = DEMO[id] ? DEMO[id](ctx) : ''; reportaUso(Math.round(JSON.stringify(msgs).length / 4), Math.round(JSON.stringify(out).length / 4)); if (json && typeof out === 'string') out = parseJ(out); }
+  else {
+    const m = max || tokensDe(id);
+    if (json) { for (let k = 0; k < 2 && !out; k++) { const j = parseJ(await llm(msgs, {json: true, max: m, temp})); if (j && typeof j === 'object') out = j; } if (!out) throw new Error(`El agente ${id} no devolvió JSON válido.`); }
+    else { out = await llm(msgs, {max: m, temp}); if (!String(out || '').trim()) out = await llm(msgs, {max: m * 2, temp}); }
+  }
+  if (PARAR) throw PARADO();
+  return out;
+}
+
+/* ══ Modo demostración: preguntas de completar huecos hechas a partir de frases reales del libro ══ */
+const DEMO = {
+  indexador: ctx => ({temas: ctx.sugeridos || []}),
+  revisor: ctx => ({revision: (ctx.qs || []).map(q => ({id: q.id, ok: true, problema: '', correcta_segun_texto: LET[q.correcta]}))}),
+  generador: ctx => {
+    const frases = []; (ctx.frags || []).forEach(f => f.text.split(/(?<=[.!?])\s+/).forEach(s => { s = s.trim(); if (s.length > 50 && s.length < 280 && wc(s) >= 8) frases.push({s, n: f.n}); }));
+    const vocab = [...new Set((ctx.todo || '').match(/\p{L}{7,}/gu) || [])].map(w => w.toLowerCase());
+    const difs = []; ['facil', 'media', 'dificil'].forEach((d, i) => { for (let k = 0; k < (ctx.dif?.[i] || 0); k++) difs.push(d); });
+    const out = []; shuffle(frases);
+    for (const {s, n} of frases) {
+      if (out.length >= ctx.k) break;
+      const pal = (s.match(/\p{L}{7,}/gu) || []).sort((a, b) => b.length - a.length)[0]; if (!pal) continue;
+      const cita = s.split(/\s+/).slice(0, 28).join(' '), dif = difs[out.length] || 'media';
+      if (out.length < (ctx.nvf || 0)) { out.push({tipo: 'verdadero_falso', enunciado: s.replace(/[.!?]+$/, '') + '.', opciones: ['Verdadero', 'Falso'], correcta: 0, explicacion: 'El libro lo afirma así.', dificultad: dif, fragmento: n, cita}); continue; }
+      const dis = shuffle(vocab.filter(w => w !== pal.toLowerCase() && Math.abs(w.length - pal.length) < 5)).slice(0, (ctx.nopc || 4) - 1);
+      if (dis.length < (ctx.nopc || 4) - 1) continue;
+      out.push({tipo: 'opcion_multiple', enunciado: '[DEMO] Completa la frase: «' + s.replace(pal, '_____') + '»', opciones: [pal.toLowerCase(), ...dis], correcta: 0, explicacion: 'La palabra que falta aparece en el libro.', dificultad: dif, fragmento: n, cita});
+    }
+    return {preguntas: out};
+  }
+};
+
+/* ══ Libro: lectura del PDF, marcadores, encabezados y limpieza ══ */
+const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js', PDFJS_W = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+async function leePDF(file) {
+  const lib = await cargaLib(PDFJS, 'pdfjsLib'); lib.GlobalWorkerOptions.workerSrc = PDFJS_W;
+  const pdf = await lib.getDocument({data: await file.arrayBuffer()}).promise, pags = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    if (i % 10 === 1 || i === pdf.numPages) { $('pdfStatus').textContent = `Leyendo página ${i} de ${pdf.numPages}…`; await sleep(0); }
+    const c = await (await pdf.getPage(i)).getTextContent(); let out = '', line = '', lastY = null, prevEnd = null;
+    const flush = () => { if (line.trim()) out += line.replace(/\s+/g, ' ').trim() + '\n'; line = ''; prevEnd = null; };
+    for (const it of c.items) {
+      if (typeof it.str !== 'string') continue;
+      const x = it.transform?.[4] ?? 0, y = it.transform?.[5] ?? null;
+      if (lastY !== null && y !== null && Math.abs(y - lastY) > 3) flush();
+      if (prevEnd !== null && x - prevEnd > 1.2 && !/\s$/.test(line) && !/^\s/.test(it.str)) line += ' ';
+      line += it.str; prevEnd = x + (it.width || 0); if (y !== null) lastY = y;
+      if (it.hasEOL) flush();
+    }
+    flush(); pags.push(out);
+  }
+  let marcadores = [];
+  try { marcadores = await temasDeMarcadores(pdf); } catch {}
+  return {nombre: file.name, paginas: pags, nPag: pdf.numPages, marcadores};
+}
+async function temasDeMarcadores(pdf) {
+  const ol = await pdf.getOutline(); if (!ol || !ol.length) return [];
+  let items = ol; if (items.length === 1 && items[0].items?.length > 1) items = items[0].items;
+  const res = [];
+  for (const it of items) {
+    try { let d = it.dest; if (typeof d === 'string') d = await pdf.getDestination(d); if (!Array.isArray(d) || d[0] == null) continue;
+      const idx = typeof d[0] === 'object' ? await pdf.getPageIndex(d[0]) : Number(d[0]); res.push({titulo: String(it.title || '').trim(), ini: idx + 1}); } catch {}
+  }
+  return res.filter(r => r.titulo);
+}
+const TEMA_RE = /^\s*(tema|unidad(?:\s+did[aá]ctica)?|cap[ií]tulo|lecci[oó]n|bloque|m[oó]dulo|chapter|unit|lesson|module)\s+(\d{1,3}|[ivxlc]{1,7})\b\s*[.:\-–—]?\s*(.*)$/i;
+/* páginas cuyo texto contiene el índice: en ellas aparecen muchos encabezados distintos */
+function temasDeEncabezados(pags) {
+  const hits = [];
+  pags.forEach((txt, i) => {
+    const ls = txt.split('\n').map(l => l.trim()).filter(Boolean);
+    ls.forEach((l, j) => {
+      if (l.length > 140) return; const m = l.match(TEMA_RE); if (!m) return;
+      const n = /^\d+$/.test(m[2]) ? +m[2] : romano(m[2]); if (!n) return;
+      const resto = m[3] || '', esIndice = /\.{3,}|…{2,}|\s\d{1,4}\s*$/.test(resto);
+      let tit = resto.replace(/(\.{3,}|…{2,}).*$/, '').replace(/\s+\d{1,4}\s*$/, '').trim();
+      if (tit.length < 3) tit = (ls[j + 1] || '').replace(/(\.{3,}|…{2,}).*$/, '').slice(0, 100).trim();
+      hits.push({pag: i + 1, linea: j, tipo: norm(m[1]).split(' ')[0], n, titulo: tit, palabra: m[1], esIndice});
+    });
+  });
+  if (!hits.length) return [];
+  const cuenta = {}; hits.forEach(h => cuenta[h.tipo] = (cuenta[h.tipo] || 0) + 1);
+  const tipo = Object.entries(cuenta).sort((a, b) => b[1] - a[1])[0][0], hs = hits.filter(h => h.tipo === tipo);
+  const porPag = {}; hs.forEach(h => (porPag[h.pag] || (porPag[h.pag] = new Set())).add(h.n));
+  const indice = new Set(Object.keys(porPag).filter(p => porPag[p].size >= 3).map(Number));
+  const primeras = new Map();
+  hs.filter(h => !indice.has(h.pag) && !h.esIndice).sort((a, b) => a.pag - b.pag || a.linea - b.linea).forEach(h => { if (!primeras.has(h.n)) primeras.set(h.n, h); });
+  const out = []; [...primeras.values()].sort((a, b) => a.pag - b.pag).forEach(h => { if (!out.length || h.n > out.at(-1).n) out.push(h); });
+  const pal = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  return out.length >= 2 ? out.map(h => ({titulo: `${pal(h.palabra)} ${h.n}${h.titulo ? '. ' + h.titulo : ''}`, ini: h.pag})) : [];
+}
+/* cabeceras y pies repetidos (título del libro, editorial…) en las dos primeras o dos últimas líneas de muchas páginas */
+function lineasRepetidas(pags) {
+  const c = new Map();
+  pags.forEach(p => { const ls = p.split('\n').map(l => l.trim()).filter(Boolean); new Set([...ls.slice(0, 2), ...ls.slice(-2)].map(l => norm(l).replace(/\d+/g, '#'))).forEach(k => { if (k) c.set(k, (c.get(k) || 0) + 1); }); });
+  const min = Math.max(3, Math.ceil(pags.length * 0.3)); return [...c].filter(([, v]) => v >= min).map(([k]) => k);
+}
+let _repes = null;
+const repes = () => _repes || (_repes = new Set(S.libro?.repes || []));
+function textoPagina(p) {
+  const raw = S.libro?.paginas?.[p - 1] || '', R = repes();
+  const ls = raw.split('\n').map(l => l.trim()).filter(l => l && !/^\d{1,4}$/.test(l) && !R.has(norm(l).replace(/\d+/g, '#')));
+  return ls.join('\n').replace(/(\p{L})[-­]\n(\p{Ll})/gu, '$1$2').replace(/\s*\n\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+}
+const TEMA_CACHE = new Map();
+function fragmentaTema(t) {
+  const key = `${t.ini}-${t.fin}`; if (TEMA_CACHE.has(key)) return TEMA_CACHE.get(key);
+  const out = [], ini = Math.max(1, numIn(t.ini)), fin = Math.min(S.libro?.nPag || 0, Math.max(ini, numIn(t.fin)));
+  for (let p = ini; p <= fin; p++) {
+    const tx = textoPagina(p); if (wc(tx) < 8) continue;
+    const ss = tx.split(/(?<=[.!?…:;])\s+(?=[\p{Lu}¿¡«"(\d•–-])/u); let cur = '';
+    ss.forEach(s => { if (cur && cur.length + s.length > 1100) { out.push({pag: p, text: cur.trim().slice(0, 2400)}); cur = ''; } cur += s + ' '; });
+    if (cur.trim()) { if (cur.length < 250 && out.length && out.at(-1).pag === p) out.at(-1).text += ' ' + cur.trim(); else out.push({pag: p, text: cur.trim().slice(0, 2400)}); }
+  }
+  const r = out.map((f, i) => ({...f, n: i + 1})); TEMA_CACHE.set(key, r); return r;
+}
+const palabrasTema = t => fragmentaTema(t).reduce((a, f) => a + wc(f.text), 0);
+const NO_TEMA = /^(portada|cubierta|indice|contenido|sumario|bibliografia|creditos|agradecimientos|prologo|presentacion|solucionario|glosario|anexo|apendice|table of contents|contents|index|bibliography)/;
+function construyeTemas(lista, origen) {
+  const nPag = S.libro.nPag, s = lista.filter(x => x.ini >= 1 && x.ini <= nPag).sort((a, b) => a.ini - b.ini);
+  S.temas = s.map((x, i) => ({id: uid('t'), titulo: x.titulo, ini: x.ini, fin: i < s.length - 1 ? Math.max(x.ini, s[i + 1].ini - 1) : nPag, n: S.opt.defN, activo: !NO_TEMA.test(norm(x.titulo)), verificado: x.verificado !== false}));
+  S.libro.origen = origen; TEMA_CACHE.clear(); guarda();
+}
+function detectaTemas() {
+  const L = S.libro;
+  if (L.marcadores?.length >= 2) { construyeTemas(L.marcadores, 'marcadores'); return 'marcadores'; }
+  const e = temasDeEncabezados(L.paginas); if (e.length) { construyeTemas(e, 'encabezados'); return 'encabezados'; }
+  S.temas = []; L.origen = 'ninguno'; guarda(); return 'ninguno';
+}
+async function temasConIA() {
+  const L = S.libro; if (!L) return;
+  if (getProv() !== 'demo' && !getKey()) { abreIA(); toast('Pega tu clave de IA para leer el índice'); return; }
+  const k = Math.min(L.nPag, 16), txt = L.paginas.slice(0, k).map((p, i) => `[Página ${i + 1} del PDF]\n${p.slice(0, 1800)}`).join('\n\n');
+  if (!(await confirmaEnvio(txt))) return;
+  $('detIA').disabled = true; $('origenTemas').innerHTML = '<span class="live">Leyendo el índice…</span>';
+  try {
+    const sug = temasDeEncabezados(L.paginas).map(t => ({titulo: t.titulo, pagina: t.ini}));
+    const j = await ag('indexador', [{role: 'system', content: 'Eres un asistente que analiza libros de texto. No inventas nada que no esté en las páginas.'}, {role: 'user', content: rell(promptDe('indexador'), {paginas: scrub(txt)})}], {json: true, temp: 0.1, ctx: {sugeridos: sug}});
+    const arr = (j?.temas || []).filter(x => x && x.titulo).slice(0, 80);
+    if (!arr.length) { toast('La IA no encontró un índice en las primeras páginas. Añade los temas a mano.', 6000); renderTemas(); return; }
+    /* el código busca cada título en el PDF (fuera de las páginas del índice) para fijar su página real */
+    const sinPref = t => norm(t).replace(/^(tema|unidad|capitulo|leccion|bloque|modulo|chapter|unit|lesson|module)\s+\w+\s*/, '') || norm(t);
+    const qs = arr.map(x => sinPref(x.titulo)), npag = L.paginas.map(norm);
+    const indice = new Set(npag.map((p, i) => qs.filter(q => q.length >= 4 && p.includes(q)).length >= 3 ? i + 1 : 0).filter(Boolean));
+    const res = [], offs = []; let desde = 1;
+    arr.forEach((x, i) => { const q = qs[i]; let p = -1; if (q.length >= 4) for (let k = desde; k <= L.nPag; k++) { if (!indice.has(k) && npag[k - 1].includes(q)) { p = k; break; } }
+      if (p > 0) { if (numIn(x.pagina)) offs.push(p - numIn(x.pagina)); desde = p; res.push({titulo: String(x.titulo).trim(), ini: p, verificado: true}); } else res.push({titulo: String(x.titulo).trim(), pagLibro: numIn(x.pagina), verificado: false}); });
+    const off = mediana(offs) || 0; res.forEach(r => { if (!r.verificado) r.ini = Math.min(L.nPag, Math.max(1, r.pagLibro + off)); });
+    construyeTemas(res, 'ia');
+    const nv = res.filter(r => !r.verificado).length;
+    log(`📑 Índice leído por IA: ${res.length} temas${nv ? `, ${nv} sin localizar en el texto (página estimada)` : ', todos localizados en el texto'}`, nv ? 'warn' : 'ok');
+    toast(nv ? `${res.length} temas; revisa las páginas de los ${nv} marcados` : `${res.length} temas localizados en el libro`);
+  } catch (e) { if (e.message !== '__STOP__') toast(e.message, 7000); }
+  finally { $('detIA').disabled = false; renderTemas(); pintaDots(); }
+}
+
+/* ══ Generación: lotes repartidos por el tema y validación por código ══ */
+const MAXC = 14000;
+/* divide los fragmentos en grupos contiguos y reparte las preguntas en proporción al texto de cada grupo */
+function planLotes(frags, n, B) {
+  if (!frags.length || n <= 0) return [];
+  const nb = Math.max(1, Math.min(Math.ceil(n / B), frags.length)), grupos = [];
+  for (let j = 0; j < nb; j++) grupos.push(frags.slice(Math.floor(j * frags.length / nb), Math.floor((j + 1) * frags.length / nb)));
+  const ks = reparto(grupos.map(g => g.reduce((a, f) => a + f.text.length, 0)), n, 1);
+  return grupos.map((g, i) => {
+    let sel = g, ch = g.reduce((a, f) => a + f.text.length, 0);
+    if (ch > MAXC) { const paso = ch / MAXC; sel = []; let c = 0; for (let x = 0; x < g.length && c < MAXC; x += paso) { const f = g[Math.floor(x)]; if (!sel.includes(f)) { sel.push(f); c += f.text.length; } } }
+    return {frags: sel, k: ks[i]};
+  }).filter(l => l.k > 0);
+}
+const PROHIBIDAS = /\b(todas|ninguna) (de )?las (anteriores|opciones|respuestas)\b|\bambas son (correctas|incorrectas)\b|^[a-e] y [a-e]( son)?\b|\btodas son (correctas|incorrectas|verdaderas|falsas)\b|\bnone of the above\b|\ball of the above\b/;
+function validaPregunta(q, {t, frags, existentes}) {
+  const o = S.opt, no = motivo => ({ok: false, motivo});
+  if (!q || typeof q !== 'object') return no('formato no válido');
+  const enun = String(q.enunciado || '').trim(); if (enun.length < 10) return no('enunciado vacío');
+  const esVF = /verdad|true|vf|falso/i.test(String(q.tipo || ''));
+  let opciones = (Array.isArray(q.opciones) ? q.opciones : []).map(x => String(x ?? '').trim().replace(/^[a-eA-E][).:]\s+/, '')).filter(Boolean);
+  let c = q.correcta;
+  if (typeof c === 'string') { const s = c.trim(); if (/^[a-eA-E]$/.test(s)) c = s.toUpperCase().charCodeAt(0) - 65; else { const i = opciones.findIndex(x => norm(x) === norm(s)); c = i >= 0 ? i : parseInt(s); } }
+  c = Number(c);
+  if (esVF) {
+    if (!o.vf) return no('verdadero/falso no pedido');
+    if (opciones.length === 2 && /^(f|false|falso|fals)$/i.test(norm(opciones[0]))) c = 1 - c;
+    opciones = ['Verdadero', 'Falso']; if (c !== 0 && c !== 1) return no('respuesta correcta no válida');
+  } else {
+    const N = numIn(o.nopc) || 4;
+    if (!Number.isInteger(c) || c < 0 || c >= opciones.length) return no('respuesta correcta no válida');
+    if (opciones.length < N) return no('faltan opciones');
+    if (opciones.length > N) { const ok = opciones[c]; opciones = [ok, ...opciones.filter((_, i) => i !== c).slice(0, N - 1)]; c = 0; }
+    if (new Set(opciones.map(norm)).size !== opciones.length) return no('opciones repetidas');
+    if (opciones.some(x => PROHIBIDAS.test(norm(x)))) return no('«todas/ninguna de las anteriores»');
+  }
+  const nE = norm(enun);
+  if (existentes.some(e => jaccard(nE, norm(e.enunciado)) >= 0.72)) return no('repetida');
+  const cita = String(q.cita || '').trim(), fn = parseInt(q.fragmento); let f = frags.find(x => x.n === fn), verif = false;
+  if (cita && f && contiene(f.text, cita)) verif = true;
+  else if (cita) { const g = frags.find(x => contiene(x.text, cita)); if (g) { f = g; verif = true; } }
+  if (!verif && o.estricto) return no('cita no encontrada en el libro');
+  const avisos = []; if (!verif) avisos.push('La cita no aparece literalmente en el libro');
+  if (!esVF) {
+    const L = opciones.map(x => x.length), lc = L[c], resto = L.filter((_, i) => i !== c), med = resto.reduce((a, b) => a + b, 0) / resto.length;
+    if (lc > med * 1.8 && lc - med > 25) avisos.push('La opción correcta es mucho más larga que las demás (da una pista)');
+    if (norm(opciones[c]).length >= 6 && nE.includes(norm(opciones[c]))) avisos.push('La respuesta aparece en el enunciado');
+  }
+  const d = norm(q.dificultad), dificultad = /^f|easy/.test(d) ? 'facil' : /^d|hard/.test(d) ? 'dificil' : 'media';
+  return {ok: true, q: {id: uid('q'), tema: t.id, tipo: esVF ? 'vf' : 'mc', enunciado: enun, opciones, correcta: c, explicacion: String(q.explicacion || '').trim(), dificultad, frag: f?.n ?? null, pagina: f?.pag ?? null, cita, verificada: verif, revisada: null, avisos, editada: false}};
+}
+/* la respuesta correcta se coloca en A, B, C, D… por turnos aleatorios para que no haya patrones */
+function equilibra(qs) {
+  let bolsa = [];
+  qs.filter(q => q.tipo === 'mc').forEach(q => {
+    if (!bolsa.length) bolsa = shuffle([...Array(q.opciones.length).keys()]);
+    const destino = Math.min(bolsa.pop(), q.opciones.length - 1), ok = q.opciones[q.correcta], otras = shuffle(q.opciones.filter((_, j) => j !== q.correcta));
+    otras.splice(destino, 0, ok); q.opciones = otras; q.correcta = destino;
+  });
+}
+async function revisa(qs, frags) {
+  const txt = qs.map(q => { const f = frags.find(x => x.n === q.frag); return `ID: ${q.id}\nPregunta: ${q.enunciado}\n${q.opciones.map((o, i) => `${LET[i]}) ${o}`).join('\n')}\nMarcada como correcta: ${LET[q.correcta]}\nFragmento: ${f ? f.text.slice(0, 1500) : '(no disponible)'}`; }).join('\n\n---\n\n');
+  try {
+    const j = await ag('revisor', [{role: 'system', content: `Eres un profesor que revisa exámenes con rigor. Responde en ${S.opt.lang}.`}, {role: 'user', content: rell(promptDe('revisor'), {preguntas: scrub(txt)})}], {json: true, temp: 0.1, max: Math.max(tokensDe('revisor'), qs.length * 90), ctx: {qs}});
+    let n = 0;
+    (j?.revision || []).forEach(r => {
+      const q = qs.find(x => x.id === String(r.id)); if (!q) return;
+      const L = String(r.correcta_segun_texto || '').trim().toUpperCase().charAt(0), idx = LET.indexOf(L); q.revisada = true;
+      if (r.ok === false) { q.revisada = false; q.avisos.push('Revisor: ' + (String(r.problema || '').trim() || 'pregunta dudosa')); }
+      if (idx >= 0 && idx !== q.correcta && idx < q.opciones.length) { q.revisada = false; q.avisos.push(`Revisor: según el texto, la correcta sería la ${L} («${q.opciones[idx]}»)`); }
+      if (q.revisada === false) n++;
+    });
+    if (n) log(`  🔎 Revisor: ${n} preguntas marcadas para revisar`, 'warn');
+  } catch (e) { if (e.message === '__STOP__') throw e; log('  ⚠ El revisor no respondió: las preguntas quedan sin revisar. ' + e.message, 'warn'); }
+}
+function textoReparto(k) {
+  const o = S.opt, nvf = o.vf ? Math.round(k * numIn(o.pctVf) / 100) : 0, nmc = k - nvf, dif = reparto([o.facil, o.media, o.dificil], k, 0), L = [];
+  if (nmc) L.push(`- ${nmc} de opción múltiple con exactamente ${numIn(o.nopc) || 4} opciones y una sola correcta`);
+  if (nvf) L.push(`- ${nvf} de verdadero o falso (aproximadamente la mitad falsas: en las falsas, cambia un dato del texto para que la afirmación no sea cierta)`);
+  const d = [[dif[0], 'fáciles (recordar un dato, un término o una definición)'], [dif[1], 'de dificultad media (comprender o relacionar conceptos)'], [dif[2], 'difíciles (aplicar o razonar a partir de lo que dice el texto)']].filter(x => x[0] > 0).map(x => `${x[0]} ${x[1]}`);
+  if (d.length) L.push('- Dificultad: ' + d.join(', '));
+  return {texto: L.join('\n'), nvf, dif};
+}
+async function pideLote(t, frags, k, previas, todos) {
+  const o = S.opt, rp = textoReparto(k), fr = frags.map(f => `[F${f.n}] (pág. ${f.pag}) ${f.text}`).join('\n\n');
+  const user = rell(promptDe('generador'), {nivel: o.nivel ? ` de ${o.nivel}` : '', tema: t.titulo, libro: S.libro?.nombre?.replace(/\.pdf$/i, '') || 'el libro', fragmentos: scrub(fr), k, idioma: o.lang, reparto: rp.texto, previas: previas.slice(-40).map(q => '- ' + q.enunciado).join('\n') || '(ninguna)', instr: o.instr ? '\n\nIndicaciones del profesor: ' + scrub(o.instr) : ''});
+  let j;
+  try { j = await ag('generador', [{role: 'system', content: `Eres un profesor experto en diseñar preguntas de evaluación. Escribes en ${o.lang} y solo con información de los fragmentos que se te dan.`}, {role: 'user', content: user}], {json: true, temp: 0.7, max: Math.max(tokensDe('generador'), k * 330), ctx: {frags, k, nopc: numIn(o.nopc) || 4, nvf: rp.nvf, dif: rp.dif, todo: fr}}); }
+  catch (e) { if (e.message === '__STOP__') throw e; log('  ⚠ Lote sin respuesta válida: ' + e.message, 'warn'); return []; }
+  const arr = Array.isArray(j?.preguntas) ? j.preguntas : [], ok = [], rech = {};
+  arr.forEach(q => { const r = validaPregunta(q, {t, frags: todos, existentes: [...previas, ...ok]}); if (r.ok) ok.push(r.q); else rech[r.motivo] = (rech[r.motivo] || 0) + 1; });
+  const rs = Object.entries(rech).map(([m, n]) => `${n} ${m}`).join(', ');
+  log(`  · Lote [F${frags[0].n}–F${frags.at(-1).n}]: ${arr.length} recibidas → ${ok.length} válidas${rs ? ` · descartadas: ${rs}` : ''}`, rs ? 'warn' : 'ok');
+  if (o.revisar && ok.length) await revisa(ok, todos);
+  return ok;
+}
+async function generaTema(t, falta, previas, acc) {
+  const frags = fragmentaTema(t);
+  if (!frags.length) { log(`⚠ «${t.titulo}»: no hay texto en las páginas ${t.ini}–${t.fin} (¿PDF escaneado o páginas equivocadas?)`, 'warn'); return; }
+  const B = Math.max(3, Math.min(20, numIn(S.opt.lote) || 8)), lotes = planLotes(frags, falta, B);
+  log(`📘 «${t.titulo}»: ${falta} preguntas · ${frags.length} fragmentos · ${lotes.length} lotes`);
+  for (const L of lotes) { if (PARAR) throw PARADO(); acc.push(...await pideLote(t, L.frags, L.k, [...previas, ...acc], frags)); t.prog = Math.min(acc.length, falta); pintaProgreso(); }
+  for (let ronda = 1; ronda <= 3 && acc.length < falta; ronda++) {
+    if (PARAR) throw PARADO();
+    const faltan = falta - acc.length, usados = new Set(acc.map(q => q.frag)); let pend = frags.filter(f => !usados.has(f.n)); if (pend.length < 2) pend = frags;
+    log(`  🔁 Ronda extra ${ronda}: faltan ${faltan}`);
+    for (const L of planLotes(pend, faltan, B)) { if (PARAR) throw PARADO(); acc.push(...await pideLote(t, L.frags, L.k + 1, [...previas, ...acc], frags)); t.prog = Math.min(acc.length, falta); pintaProgreso(); if (acc.length >= falta) break; }
+  }
+  if (acc.length > falta) { const orden = [...acc].sort((a, b) => a.avisos.length - b.avisos.length).slice(0, falta), keep = new Set(orden.map(q => q.id)); acc.splice(0, acc.length, ...acc.filter(q => keep.has(q.id))); }
+  if (acc.length < falta) log(`⚠ «${t.titulo}»: ${acc.length} de ${falta}. El tema tiene poco texto para tantas preguntas distintas o el modelo repite: prueba con menos preguntas o un modelo superior.`, 'warn');
+  else log(`✅ «${t.titulo}»: ${acc.length} preguntas`, 'ok');
+}
+let EJEC = false;
+async function generar(soloId = null) {
+  if (EJEC) return;
+  if (!S.libro?.paginas?.length) { toast(S.libro ? 'Este banco se importó sin el texto del libro: sube el PDF para generar más preguntas.' : 'Sube primero el libro.', 6000); showView('libro'); return; }
+  const sel = S.temas.filter(t => (soloId ? t.id === soloId : t.activo) && numIn(t.n) > 0);
+  if (!sel.length) { toast('Indica cuántas preguntas quieres en al menos un tema.'); showView('temas'); return; }
+  if (getProv() !== 'demo' && !getKey()) { abreIA(); toast('Pega tu clave de IA para continuar'); return; }
+  const muestra = fragmentaTema(sel[0])[0]?.text || ''; if (!(await confirmaEnvio(muestra))) return;
+  if (VIEW !== 'gen') showView('gen');
+  EJEC = true; PARAR = false; usoReset(); LOGS.length = 0; $('logPanel').innerHTML = ''; botones();
+  const t0 = Date.now(), sust = S.opt.modo === 'sustituir'; let total = 0;
+  sel.forEach(t => { t.prog = sust ? 0 : S.preguntas.filter(q => q.tema === t.id).length; t.estado = 'pendiente'; }); pintaProgreso();
+  log(`▶ ${sel.length} temas · ${PROV[getProv()].n} (${getMod()}) · ${sust ? 'sustituir' : 'completar'}`);
+  try {
+    for (const t of sel) {
+      if (PARAR) throw PARADO();
+      const ya = S.preguntas.filter(q => q.tema === t.id), falta = sust ? numIn(t.n) : numIn(t.n) - ya.length;
+      if (falta <= 0) { t.estado = 'hecho'; log(`✔ «${t.titulo}» ya tiene ${ya.length} preguntas`, 'ok'); pintaProgreso(); continue; }
+      t.estado = 'generando'; t.prog = 0; t.meta = falta; pintaProgreso();
+      const acc = []; let completo = false;
+      try { await generaTema(t, falta, sust ? [] : ya, acc); completo = true; }
+      finally {
+        if (acc.length) { equilibra(acc); if (sust && completo) S.preguntas = S.preguntas.filter(q => q.tema !== t.id); S.preguntas.push(...acc); total += acc.length; await guardaYa(); }
+        t.estado = completo ? 'hecho' : 'parado'; pintaProgreso();
+      }
+    }
+    S.run = {ts: new Date().toISOString(), prov: getProv(), model: getMod(), tiempo: Math.round((Date.now() - t0) / 1000), nuevas: total, uso: {in: USO.in, out: USO.out, calls: USO.calls, coste: coste(USO.in, USO.out), porAgente: USO.by}};
+    await guardaYa();
+    log(`🎉 ${total} preguntas nuevas en ${S.run.tiempo} s`, 'ok'); toast(`${total} preguntas generadas`); showView('banco');
+  } catch (e) {
+    if (e.message === '__STOP__') log('⏹ Generación detenida. Las preguntas ya validadas se han guardado.', 'warn');
+    else { log('❌ ' + e.message, 'err'); toast(e.message, 7000); }
+  } finally { EJEC = false; PARAR = false; botones(); pintaDots(); guarda(); }
+}
+function estimacion() {
+  const o = S.opt, B = Math.max(3, Math.min(20, numIn(o.lote) || 8)); let tin = 0, tout = 0, nq = 0;
+  S.temas.filter(t => t.activo).forEach(t => {
+    const ya = S.preguntas.filter(q => q.tema === t.id).length, falta = o.modo === 'sustituir' ? numIn(t.n) : Math.max(0, numIn(t.n) - ya); if (!falta || !S.libro?.paginas) return;
+    nq += falta; const ch = fragmentaTema(t).reduce((a, f) => a + f.text.length, 0), nb = Math.ceil(falta / B);
+    tin += nb * (Math.min(MAXC, ch / Math.max(1, Math.min(nb, fragmentaTema(t).length))) / 3.6 + 1100); tout += falta * 200;
+    if (o.revisar) { tin += falta * 450; tout += falta * 50; }
+  });
+  return {nq, tin: tin * 1.2, tout: tout * 1.2};
+}
+
+/* ══ Exportación ══ */
+const slug = () => (norm(S.libro?.nombre?.replace(/\.(pdf|json)$/i, '') || 'banco').replace(/ /g, '_').slice(0, 40) || 'banco');
+function bancoJSON() {
+  return {formato: 'banco-preguntas', version: 1, generado: new Date().toISOString(), app: `Preguntas Test ${VERSION}`,
+    libro: {titulo: S.libro?.nombre?.replace(/\.(pdf|json)$/i, '') || '', paginas: S.libro?.nPag || 0}, idioma: S.opt.lang, nivel: S.opt.nivel,
+    temas: S.temas.filter(t => S.preguntas.some(q => q.tema === t.id)).map((t, i) => ({id: t.id, orden: i + 1, titulo: t.titulo, paginas: [t.ini, t.fin],
+      preguntas: S.preguntas.filter(q => q.tema === t.id).map(q => ({id: q.id, tipo: q.tipo === 'vf' ? 'verdadero_falso' : 'opcion_multiple', enunciado: q.enunciado, opciones: q.opciones, correcta: q.correcta, explicacion: q.explicacion, dificultad: q.dificultad, pagina: q.pagina, cita: q.cita, verificada: q.verificada, revisada: q.revisada, avisos: q.avisos}))}))};
+}
+const csvCell = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+function bancoCSV() {
+  const N = Math.max(2, ...S.preguntas.map(q => q.opciones.length)), head = ['tema', 'tipo', 'enunciado', ...LET.slice(0, N).map(l => 'opcion_' + l), 'correcta', 'explicacion', 'dificultad', 'pagina', 'cita', 'avisos'];
+  const rows = S.temas.flatMap(t => S.preguntas.filter(q => q.tema === t.id).map(q => [t.titulo, q.tipo === 'vf' ? 'verdadero_falso' : 'opcion_multiple', q.enunciado, ...Array.from({length: N}, (_, i) => q.opciones[i] || ''), LET[q.correcta], q.explicacion, q.dificultad, q.pagina || '', q.cita, q.avisos.join(' | ')]));
+  return '﻿' + [head, ...rows].map(r => r.map(csvCell).join(';')).join('\r\n');
+}
+const giftEsc = s => String(s ?? '').replace(/([~=#{}:\\])/g, '\\$1').replace(/\r?\n/g, ' ');
+function bancoGIFT() {
+  const L = ['// Banco de preguntas generado con Preguntas Test', `// Libro: ${S.libro?.nombre || ''}`, ''];
+  S.temas.forEach(t => {
+    const qs = S.preguntas.filter(q => q.tema === t.id); if (!qs.length) return;
+    L.push(`$CATEGORY: $course$/${giftEsc(S.libro?.nombre?.replace(/\.(pdf|json)$/i, '') || 'Libro').replace(/\//g, '-')}/${giftEsc(t.titulo).replace(/\//g, '-')}`, '');
+    qs.forEach((q, i) => {
+      const fb = q.explicacion ? ` ####${giftEsc(q.explicacion)}` : '', nombre = `::${giftEsc(t.titulo).slice(0, 40)} ${i + 1}::`;
+      if (q.tipo === 'vf') L.push(`${nombre}${giftEsc(q.enunciado)} {${q.correcta === 0 ? 'TRUE' : 'FALSE'}${fb}}`, '');
+      else L.push(`${nombre}${giftEsc(q.enunciado)} {`, ...q.opciones.map((o, j) => `\t${j === q.correcta ? '=' : '~'}${giftEsc(o)}`), `\t${fb.trim()}`, '}', '');
+    });
+  });
+  return L.join('\n');
+}
+function importaBanco(j) {
+  if (j?.formato !== 'banco-preguntas' || !Array.isArray(j.temas)) throw new Error('El JSON no es un banco exportado por esta app.');
+  if (S.preguntas.length && !confirm('Se sustituirá el banco actual por el importado. ¿Continuar?')) return false;
+  S = estadoInicial(); S.libro = {nombre: (j.libro?.titulo || 'banco') + '.json', paginas: null, nPag: j.libro?.paginas || 0, marcadores: [], repes: [], origen: 'importado'};
+  if (j.idioma) S.opt.lang = j.idioma; if (j.nivel) S.opt.nivel = j.nivel;
+  j.temas.forEach(t => { const id = t.id || uid('t'); S.temas.push({id, titulo: t.titulo || 'Tema', ini: t.paginas?.[0] || 1, fin: t.paginas?.[1] || 1, n: (t.preguntas || []).length, activo: true, verificado: true});
+    (t.preguntas || []).forEach(q => S.preguntas.push({id: q.id || uid('q'), tema: id, tipo: /verdad/.test(q.tipo) ? 'vf' : 'mc', enunciado: q.enunciado || '', opciones: q.opciones || [], correcta: q.correcta || 0, explicacion: q.explicacion || '', dificultad: q.dificultad || 'media', frag: null, pagina: q.pagina || null, cita: q.cita || '', verificada: !!q.verificada, revisada: q.revisada ?? null, avisos: q.avisos || [], editada: false})); });
+  _repes = null; TEMA_CACHE.clear(); guardaYa(); return true;
+}
+
+/* ══ Libro de ejemplo (texto original, sin derechos de terceros) ══ */
+function cargaEjemplo() {
+  if (S.preguntas.length && !confirm('Se sustituirán el libro y las preguntas actuales por el ejemplo. ¿Continuar?')) return;
+  const P = [
+    'CIENCIAS NATURALES · LIBRO DE EJEMPLO\nÍNDICE\nTema 1. La célula .......... 2\nTema 2. La fotosíntesis .......... 4\nTema 3. Los ecosistemas .......... 6\nBibliografía .......... 8',
+    'Ciencias naturales · Ejemplo\nTema 1. La célula\nLa célula es la unidad más pequeña de un ser vivo capaz de realizar por sí misma las funciones de nutrición, relación y reproducción. Todos los seres vivos están formados por una o por muchas células, y toda célula procede de otra célula anterior.\nLas células procariotas no tienen un núcleo definido: su material genético está disperso en el citoplasma. Las bacterias son el ejemplo más conocido de organismos procariotas.\nLas células eucariotas tienen un núcleo rodeado por una membrana que protege el material genético. Los animales, las plantas, los hongos y los protozoos están formados por células eucariotas.\n2',
+    'Ciencias naturales · Ejemplo\nLa membrana plasmática rodea la célula y controla el paso de sustancias entre el interior y el exterior. El citoplasma es el medio acuoso donde se encuentran los orgánulos celulares.\nLas mitocondrias son los orgánulos donde se realiza la respiración celular, que obtiene energía a partir de la glucosa y del oxígeno. Los ribosomas fabrican las proteínas que necesita la célula.\nLas células vegetales tienen una pared celular de celulosa que les da rigidez, y cloroplastos, que son los orgánulos donde se realiza la fotosíntesis. Las células animales carecen de pared celular y de cloroplastos.\n3',
+    'Ciencias naturales · Ejemplo\nTema 2. La fotosíntesis\nLa fotosíntesis es el proceso mediante el cual las plantas, las algas y algunas bacterias transforman la energía de la luz en energía química. Gracias a ella fabrican materia orgánica a partir de sustancias inorgánicas sencillas.\nPara realizar la fotosíntesis, las plantas toman dióxido de carbono del aire a través de los estomas de las hojas y absorben agua y sales minerales del suelo a través de las raíces.\nLa clorofila es el pigmento verde que capta la energía luminosa. Se encuentra en el interior de los cloroplastos, sobre todo en las células de las hojas.\n4',
+    'Ciencias naturales · Ejemplo\nComo resultado de la fotosíntesis se producen glucosa y oxígeno. La glucosa se utiliza como fuente de energía y para fabricar otras moléculas, como el almidón y la celulosa, mientras que el oxígeno se libera a la atmósfera.\nLa savia bruta, formada por agua y sales minerales, asciende desde las raíces hasta las hojas por los vasos leñosos. La savia elaborada, rica en materia orgánica, se distribuye por toda la planta a través de los vasos liberianos.\nLa intensidad de la fotosíntesis depende de la cantidad de luz, de la temperatura y de la concentración de dióxido de carbono en el aire.\n5',
+    'Ciencias naturales · Ejemplo\nTema 3. Los ecosistemas\nUn ecosistema es el conjunto formado por los seres vivos de un lugar, llamado biocenosis, y el medio físico en el que viven, llamado biotopo, junto con las relaciones que se establecen entre ellos.\nLos productores son los organismos que fabrican su propia materia orgánica, como las plantas y las algas. Los consumidores se alimentan de otros seres vivos: los herbívoros comen productores y los carnívoros comen otros consumidores.\nLos descomponedores, como muchos hongos y bacterias, transforman los restos de seres vivos en sustancias inorgánicas que vuelven al suelo y pueden aprovechar de nuevo los productores.\n6',
+    'Ciencias naturales · Ejemplo\nUna cadena trófica representa quién se alimenta de quién dentro de un ecosistema. Cuando varias cadenas se entrecruzan forman una red trófica, que describe mejor la complejidad de las relaciones alimentarias.\nEn cada nivel trófico se pierde una gran parte de la energía en forma de calor, por lo que en los ecosistemas suele haber muchos más productores que consumidores.\nLa competencia, la depredación, el parasitismo y el mutualismo son ejemplos de relaciones entre especies diferentes que influyen en el equilibrio del ecosistema.\n7',
+    'Ciencias naturales · Ejemplo\nBibliografía\nTexto de ejemplo redactado para probar la aplicación. No procede de ningún libro publicado.\n8'
+  ];
+  S = estadoInicial(); S.ejemplo = true;
+  S.libro = {nombre: 'Ciencias naturales (ejemplo).pdf', paginas: P, nPag: P.length, marcadores: [], repes: lineasRepetidas(P)}; _repes = null;
+  detectaTemas(); S.temas.forEach(t => t.n = 5); guardaYa();
+  toast('Libro de ejemplo cargado: revisa los temas'); showView('temas');
+}
+
+/* ══ Interfaz ══ */
+const VIEWS = ['inicio', 'libro', 'temas', 'gen', 'banco', 'ag'], PASOS = ['libro', 'temas', 'gen'];
+const NAV = {
+  inicio: ['Empezar', 'libro', ''], libro: ['Siguiente: temas', 'temas', 'Sube el libro en PDF'], temas: ['Siguiente: generar', 'gen', 'Elige cuántas preguntas quieres en cada tema'],
+  gen: ['Ver el banco', 'banco', 'Genera y revisa el registro'], banco: ['Generar más', 'gen', 'Revisa, edita y exporta'], ag: ['Volver al inicio', 'inicio', 'Prompts de cada agente']
+};
+const PREV = {libro: 'inicio', temas: 'libro', gen: 'temas', banco: 'gen', ag: 'inicio'};
+let VIEW = 'inicio';
+const RENDER = {inicio: renderInicio, libro: renderLibro, temas: renderTemas, gen: renderGen, banco: renderBanco, ag: renderAg};
+function showView(v) {
+  if (!VIEWS.includes(v)) v = 'inicio'; VIEW = v;
+  VIEWS.forEach(x => { $('v-' + x).hidden = x !== v; }); $$('.tb-btn.tab').forEach(t => { if (t.dataset.v === v) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current'); });
+  const ip = PASOS.indexOf(v); $('progBar').style.width = ip < 0 ? (v === 'inicio' ? '0%' : '100%') : ((ip + 1) / PASOS.length * 100) + '%';
+  const N = NAV[v]; $('navNextTxt').textContent = N[0]; $('navHint').textContent = N[2]; $('navBack').hidden = v === 'inicio'; pintaDots();
+  RENDER[v](); try { if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v); } catch {}
+  window.scrollTo({top: 0});
+}
+function pintaDots() {
+  const ok = {libro: !!S.libro, temas: S.temas.some(t => t.activo && numIn(t.n) > 0), gen: S.preguntas.length > 0};
+  $$('.sdot').forEach(b => b.dataset.state = b.dataset.v === VIEW ? 'now' : ok[b.dataset.v] ? 'done' : '');
+  $$('.sline').forEach(l => l.classList.toggle('on', !!ok[PASOS[+l.dataset.line - 1]]));
+}
+const pill = (estado, txt) => `<span class="pill ${estado}">${esc(txt)}</span>`;
+function renderInicio() {
+  const d = $('draftBox');
+  if (S.libro) { d.hidden = false; d.innerHTML = `<span><b>${esc(S.libro.nombre)}</b> · ${S.temas.length} temas · ${S.preguntas.length} preguntas</span><span class="spacer"></span><button class="btn small tab" data-v="${S.preguntas.length ? 'banco' : 'temas'}" type="button">Continuar</button>`; }
+  else d.hidden = true;
+}
+function renderLibro() {
+  const L = S.libro, b = $('libroBox');
+  if (!L) { b.innerHTML = `<h3>Sin libro</h3><p class="hint">Cuando subas el PDF verás aquí cuántas páginas tiene, cuánto texto se ha podido leer y qué temas se han detectado.</p><button class="btn" id="btnEj2" type="button"><svg class="i"><use href="#i-play"/></svg> Probar con un libro de ejemplo</button>`; $('btnEj2').onclick = cargaEjemplo; return; }
+  if (!L.paginas) { b.innerHTML = `<h3>${esc(L.nombre)}</h3><p class="note warn">Banco importado sin el texto del libro. Puedes revisarlo y exportarlo; para generar más preguntas, sube el PDF.</p>`; return; }
+  const palabras = L.paginas.reduce((a, p) => a + wc(p), 0), vacias = L.paginas.filter(p => wc(p) < 15).length, media = palabras / Math.max(1, L.nPag);
+  const ORI = {marcadores: 'marcadores del PDF', encabezados: 'encabezados del texto', ia: 'índice leído por IA', manual: 'a mano', ninguno: 'sin detectar', unico: 'todo el libro'};
+  b.innerHTML = `<h3>${esc(L.nombre)}</h3>
+    <div class="stats"><div class="stat"><b>${fmtN(L.nPag)}</b><span>páginas</span></div><div class="stat"><b>${fmtN(palabras)}</b><span>palabras leídas</span></div><div class="stat"><b>${S.temas.length}</b><span>temas (${ORI[L.origen] || '—'})</span></div></div>
+    ${media < 40 ? `<p class="note warn">Hay muy poco texto por página (${fmtN(media)} palabras de media). Parece un PDF escaneado: pásalo por un OCR para que el texto sea seleccionable.</p>` : vacias > L.nPag * 0.2 ? `<p class="note warn">${vacias} páginas casi no tienen texto (portadas, imágenes o escaneos).</p>` : '<p class="note">El texto se ha leído correctamente.</p>'}
+    ${L.repes?.length ? `<p class="hint">Se ignorarán ${L.repes.length} cabeceras o pies de página repetidos.</p>` : ''}
+    <div class="row"><button class="btn primary tab" data-v="temas" type="button">Revisar los temas <svg class="i"><use href="#i-right"/></svg></button></div>`;
+}
+function renderTemas() {
+  const L = S.libro, tb = $('tbTemas');
+  const ORI = {marcadores: pill('ok', 'Detectados por marcadores del PDF'), encabezados: pill('ok', 'Detectados por encabezados'), ia: pill('ok', 'Índice leído por IA'), unico: pill('neu', 'Todo el libro'), manual: pill('neu', 'A mano'), importado: pill('neu', 'Banco importado'), ninguno: pill('warn', 'No se detectaron temas')};
+  $('origenTemas').innerHTML = L ? (ORI[L.origen] || '') : '';
+  $$('#v-temas .panel button').forEach(x => { if (['detMarc', 'detEnc', 'detIA', 'detUno'].includes(x.id)) x.disabled = !L?.paginas; });
+  if (!L) { tb.innerHTML = '<tr><td colspan="8" class="hint">Sube primero el libro.</td></tr>'; resumenTemas(); return; }
+  if (!S.temas.length) { tb.innerHTML = '<tr><td colspan="8" class="hint">No hay temas. Prueba «Leer el índice con IA», «Todo el libro en un tema» o añádelos a mano.</td></tr>'; resumenTemas(); return; }
+  const hechas = id => S.preguntas.filter(q => q.tema === id).length;
+  tb.innerHTML = S.temas.map((t, i) => `<tr class="${t.activo ? '' : 'off'}" data-row="${i}">
+    <td><input type="checkbox" data-t="tema" data-i="${i}" data-k="activo" ${t.activo ? 'checked' : ''} aria-label="Incluir"></td>
+    <td><input type="text" data-t="tema" data-i="${i}" data-k="titulo" value="${esc(t.titulo)}" aria-label="Título" style="min-width:16em">${t.verificado === false ? '<div class="hint" style="color:var(--ambar)">Página estimada: compruébala</div>' : ''}</td>
+    <td class="num"><input type="number" min="1" max="${L.nPag}" data-t="tema" data-i="${i}" data-k="ini" value="${t.ini}" aria-label="Página de inicio"></td>
+    <td class="num"><input type="number" min="1" max="${L.nPag}" data-t="tema" data-i="${i}" data-k="fin" value="${t.fin}" aria-label="Página de fin"></td>
+    <td class="num" data-pal="${i}">${L.paginas ? fmtN(palabrasTema(t)) : '—'}</td>
+    <td class="num"><input type="number" min="0" max="300" data-t="tema" data-i="${i}" data-k="n" value="${t.n}" aria-label="Número de preguntas"></td>
+    <td class="num">${hechas(t.id)}</td>
+    <td style="white-space:nowrap">${L.paginas ? `<button class="btn small" data-vertxt="${i}" type="button">Ver texto</button>` : ''}<button class="btn small danger" data-deltema="${i}" type="button" aria-label="Eliminar tema">✕</button></td></tr>`).join('');
+  resumenTemas();
+}
+function resumenTemas() {
+  const act = S.temas.filter(t => t.activo), tot = act.reduce((a, t) => a + numIn(t.n), 0);
+  $('temasResumen').textContent = S.temas.length ? `${act.length} de ${S.temas.length} temas · ${fmtN(tot)} preguntas pedidas` : '';
+  const av = [];
+  if (S.libro?.paginas) {
+    act.forEach(t => { if (numIn(t.fin) < numIn(t.ini)) av.push(`«${t.titulo}»: la página final es anterior a la inicial.`); else { const p = palabrasTema(t), n = numIn(t.n); if (n && p < 60) av.push(`«${t.titulo}»: casi no tiene texto en esas páginas.`); else if (n && p / n < 70) av.push(`«${t.titulo}»: ${n} preguntas para ${fmtN(p)} palabras son muchas; pueden salir repetitivas.`); } });
+    const sol = []; act.forEach((a, i) => act.slice(i + 1).forEach(b => { if (numIn(a.ini) <= numIn(b.fin) && numIn(b.ini) <= numIn(a.fin) && !(numIn(a.fin) === numIn(b.ini))) sol.push(`«${a.titulo}» y «${b.titulo}»`); }));
+    if (sol.length) av.push(`Estos temas comparten páginas: ${sol.slice(0, 3).join('; ')}${sol.length > 3 ? '…' : ''}.`);
+  }
+  $('temasAvisos').innerHTML = av.length ? `<div class="note warn">${av.slice(0, 6).map(esc).join('<br>')}</div>` : '';
+}
+function renderGen() {
+  const e = estimacion(), act = S.temas.filter(t => t.activo && numIn(t.n) > 0), c = coste(e.tin, e.tout), sumD = numIn(S.opt.facil) + numIn(S.opt.media) + numIn(S.opt.dificil);
+  $('genResumen').innerHTML = !S.libro ? '<p class="hint">Sube primero el libro.</p>' : `
+    <div class="stats"><div class="stat"><b>${act.length}</b><span>temas</span></div><div class="stat"><b>${fmtN(e.nq)}</b><span>preguntas por generar</span></div><div class="stat"><b>~${fmtN((e.tin + e.tout) / 1000)}k</b><span>tokens estimados${c != null ? ` · ~$${c.toFixed(2)}` : ''}</span></div></div>
+    <p class="hint">Proveedor: <b>${esc(PROV[getProv()].n)}</b>${getProv() !== 'demo' ? ` · ${esc(getMod())}` : ' (preguntas simuladas: pulsa «IA» para usar una clave real)'}. ${sumD !== 100 ? `<span style="color:var(--ambar)">Los porcentajes de dificultad suman ${sumD}: se usarán en proporción.</span>` : ''}</p>`;
+  botones(); pintaProgreso(); pintaCoste();
+}
+function pintaProgreso() {
+  const box = $('progTemas'); if (!box) return;
+  const ts = S.temas.filter(t => t.estado); if (!ts.length) { box.innerHTML = ''; return; }
+  const EST = {pendiente: ['neu', 'Pendiente'], generando: ['warn', 'Generando'], hecho: ['ok', 'Hecho'], parado: ['bad', 'Detenido']};
+  box.innerHTML = ts.map(t => { const meta = t.meta || numIn(t.n), p = Math.min(t.prog || 0, meta), e = EST[t.estado] || EST.pendiente; return `<div class="ptema"><span>${esc(t.titulo)} <span class="hint">${p} / ${meta}</span></span>${pill(e[0], e[1])}<div class="bar"><span style="width:${meta ? Math.round(p / meta * 100) : 0}%"></span></div></div>`; }).join('');
+}
+function botones() { $('btnGen').disabled = EJEC; $('btnParar').disabled = !EJEC; }
+
+/* ── banco ── */
+let BANCO_MAX = 60;
+function renderBanco() {
+  const qs = S.preguntas, sel = $('fTema'), prev = sel.value;
+  sel.innerHTML = '<option value="">Todos los temas</option>' + S.temas.filter(t => qs.some(q => q.tema === t.id)).map(t => `<option value="${t.id}">${esc(t.titulo)} (${qs.filter(q => q.tema === t.id).length})</option>`).join('');
+  sel.value = [...sel.options].some(o => o.value === prev) ? prev : '';
+  const mc = qs.filter(q => q.tipo === 'mc'), dist = LET.slice(0, Math.max(0, ...mc.map(q => q.opciones.length))).map((l, i) => `${l} ${mc.length ? pct(mc.filter(q => q.correcta === i).length / mc.length) : '—'}`).join(' · ');
+  const conAv = qs.filter(q => q.avisos.length).length, verif = qs.filter(q => q.verificada).length;
+  $('bancoStats').innerHTML = `<div class="stat"><b>${fmtN(qs.length)}</b><span>preguntas en ${S.temas.filter(t => qs.some(q => q.tema === t.id)).length} temas</span></div><div class="stat"><b>${qs.length ? pct(verif / qs.length) : '—'}</b><span>con cita encontrada en el libro</span></div><div class="stat"><b>${fmtN(conAv)}</b><span>con avisos para revisar</span></div><div class="stat"><b style="font-size:16px;line-height:1.6">${dist || '—'}</b><span>posición de la respuesta correcta</span></div>`;
+  pintaBanco();
+}
+function qCard(q, i) {
+  const t = S.temas.find(x => x.id === q.tema), name = 'c_' + q.id;
+  return `<div class="qcard${q.avisos.length ? ' flag' : ''}" data-qid="${q.id}">
+    <div class="qtop"><span class="qnum">#${i + 1}</span>${pill('neu', q.tipo === 'vf' ? 'Verdadero / falso' : 'Opción múltiple')}
+      <select data-qk="dificultad" data-q="${q.id}" aria-label="Dificultad" style="width:auto;padding:4px 8px;font-size:13px">${[['facil', 'Fácil'], ['media', 'Media'], ['dificil', 'Difícil']].map(([v, l]) => `<option value="${v}"${q.dificultad === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
+      ${q.verificada ? pill('ok', 'Cita verificada') : pill('warn', 'Cita sin verificar')}${q.revisada === true ? pill('ok', 'Revisada') : q.revisada === false ? pill('warn', 'Revisor: dudosa') : ''}${q.editada ? pill('neu', 'Editada') : ''}
+      <span class="spacer"></span><span class="hint">${esc(t?.titulo || '')}</span><button class="btn small danger" data-qdel="${q.id}" type="button" aria-label="Eliminar pregunta">✕</button></div>
+    <textarea data-qk="enunciado" data-q="${q.id}" aria-label="Enunciado">${esc(q.enunciado)}</textarea>
+    ${q.opciones.map((o, j) => `<div class="qopt${j === q.correcta ? ' ok' : ''}"><label class="let" title="Marcar como correcta"><input type="radio" name="${name}" data-qc="${q.id}" value="${j}" ${j === q.correcta ? 'checked' : ''} hidden>${LET[j]}</label><input type="text" data-qo="${j}" data-q="${q.id}" value="${esc(o)}" aria-label="Opción ${LET[j]}" ${q.tipo === 'vf' ? 'readonly' : ''}></div>`).join('')}
+    <div class="qexp"><textarea data-qk="explicacion" data-q="${q.id}" aria-label="Explicación" placeholder="Explicación de la respuesta">${esc(q.explicacion)}</textarea></div>
+    ${q.cita ? `<div class="cita"><i>«${esc(q.cita)}»</i>${q.pagina ? ` · pág. ${q.pagina}` : ''}</div>` : ''}
+    ${q.avisos.length ? `<div class="avisos">${q.avisos.map(a => `<span>⚠ ${esc(a)}</span>`).join('')}</div>` : ''}
+  </div>`;
+}
+function pintaBanco() {
+  const ft = $('fTema').value, fe = $('fEstado').value, fb = norm($('fBusca').value), box = $('bancoBox');
+  if (!S.preguntas.length) { box.innerHTML = `<div class="panel"><p class="hint">Todavía no hay preguntas. Ve a «Generar» o importa un banco exportado (.json) desde el paso «Libro».</p><div class="row"><button class="btn primary tab" data-v="gen" type="button">Ir a generar</button></div></div>`; return; }
+  const filtra = q => (!ft || q.tema === ft) && (fe === 'todas' || (fe === 'avisos' ? q.avisos.length > 0 : q.avisos.length === 0)) && (!fb || norm(q.enunciado + ' ' + q.opciones.join(' ')).includes(fb));
+  let mostradas = 0, html = '';
+  for (const t of S.temas) {
+    const todas = S.preguntas.filter(q => q.tema === t.id); if (!todas.length) continue;
+    const qs = todas.filter(filtra); if (!qs.length) continue;
+    const resto = Math.max(0, BANCO_MAX - mostradas), vis = qs.slice(0, resto); mostradas += vis.length;
+    const faltan = numIn(t.n) - todas.length;
+    html += `<div class="tgroup"><div class="tgroup-h"><h3>${esc(t.titulo)}</h3>${pill(todas.length >= numIn(t.n) ? 'ok' : 'warn', `${todas.length} / ${numIn(t.n)}`)}${faltan > 0 && S.libro?.paginas ? `<button class="btn small" data-gentema="${t.id}" type="button"><svg class="i"><use href="#i-gen"/></svg> Generar las ${faltan} que faltan</button>` : ''}</div>${vis.map(q => qCard(q, todas.indexOf(q))).join('')}</div>`;
+    if (mostradas >= BANCO_MAX) break;
+  }
+  const total = S.preguntas.filter(filtra).length;
+  if (total > mostradas) html += `<div class="row"><button class="btn" id="verMas" type="button">Mostrar más (${mostradas} de ${total})</button></div>`;
+  box.innerHTML = html || '<div class="panel"><p class="hint">Ninguna pregunta coincide con el filtro.</p></div>';
+  const vm = $('verMas'); if (vm) vm.onclick = () => { BANCO_MAX += 60; pintaBanco(); };
+}
+['fTema', 'fEstado'].forEach(id => $(id).onchange = () => { BANCO_MAX = 60; pintaBanco(); });
+let _busT; $('fBusca').oninput = () => { clearTimeout(_busT); _busT = setTimeout(() => { BANCO_MAX = 60; pintaBanco(); }, 250); };
+
+/* ── agentes ── */
+function renderAg() {
+  $('agBox').innerHTML = AGENTS.map(a => `<div class="panel"><div class="row"><h3 class="mono">${a.id}</h3><span class="hint">${esc(a.role)}</span><span class="spacer"></span><label class="hint" for="tk_${a.id}">Tokens</label><input type="number" id="tk_${a.id}" data-tok="${a.id}" value="${tokensDe(a.id)}" style="width:7em"><button class="btn small" data-reset="${a.id}" type="button">Restaurar</button></div><textarea id="pr_${a.id}" data-prompt="${a.id}" style="min-height:220px;font-family:var(--mono);font-size:.8rem">${esc(promptDe(a.id))}</textarea></div>`).join('');
+  $$('[data-prompt]').forEach(t => t.oninput = () => LS.set('prompt_' + t.dataset.prompt, t.value === DEFAULT_PROMPTS[t.dataset.prompt] ? '' : t.value));
+  $$('[data-tok]').forEach(t => t.oninput = () => LS.set('tok_' + t.dataset.tok, t.value));
+  $$('[data-reset]').forEach(b => b.onclick = () => { LS.set('prompt_' + b.dataset.reset, ''); LS.set('tok_' + b.dataset.reset, ''); renderAg(); });
+}
+
+/* ── formularios: data-bind="ruta.del.estado" ── */
+const getPath = p => p.split('.').reduce((o, k) => o?.[k], S);
+const setPath = (p, v) => { const ks = p.split('.'), last = ks.pop(); ks.reduce((o, k) => o[k], S)[last] = v; };
+function pintaBinds() { $$('[data-bind]').forEach(el => { const v = getPath(el.dataset.bind); if (el.type === 'checkbox') el.checked = !!v; else el.value = v ?? ''; }); }
+const buscaQ = id => S.preguntas.find(q => q.id === id);
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset.bind) { setPath(el.dataset.bind, el.type === 'checkbox' ? el.checked : el.hasAttribute('data-num') ? numIn(el.value) : el.value); guarda(); if (VIEW === 'gen' && !EJEC) renderGen(); return; }
+  if (el.dataset.t === 'tema') {
+    const t = S.temas[+el.dataset.i]; if (!t) return; const k = el.dataset.k;
+    t[k] = el.type === 'checkbox' ? el.checked : el.type === 'number' ? numIn(el.value) : el.value;
+    if (k === 'ini' || k === 'fin') { t.verificado = true; const c = $$(`[data-pal="${el.dataset.i}"]`)[0]; if (c && S.libro?.paginas) c.textContent = fmtN(palabrasTema(t)); }
+    if (k === 'activo') el.closest('tr').classList.toggle('off', !el.checked);
+    guarda(); resumenTemas(); pintaDots(); return;
+  }
+  if (el.dataset.qk) { const q = buscaQ(el.dataset.q); if (!q) return; q[el.dataset.qk] = el.value; q.editada = true; guarda(); return; }
+  if (el.dataset.qo) { const q = buscaQ(el.dataset.q); if (!q) return; q.opciones[+el.dataset.qo] = el.value; q.editada = true; guarda(); return; }
+});
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.dataset.bind && el.tagName === 'SELECT') { setPath(el.dataset.bind, el.hasAttribute('data-num') ? numIn(el.value) : el.value); guarda(); if (VIEW === 'gen' && !EJEC) renderGen(); return; }
+  if (el.dataset.bind && el.type === 'checkbox') { setPath(el.dataset.bind, el.checked); guarda(); if (VIEW === 'gen' && !EJEC) renderGen(); return; }
+  if (el.dataset.qc) { const q = buscaQ(el.dataset.qc); if (!q) return; q.correcta = +el.value; q.editada = true; guarda(); const card = el.closest('.qcard'); card.querySelectorAll('.qopt').forEach((d, j) => d.classList.toggle('ok', j === q.correcta)); return; }
+});
+document.addEventListener('click', e => {
+  const tab = e.target.closest('.tab'); if (tab) { showView(tab.dataset.v); return; }
+  const cl = e.target.closest('[data-close]'); if (cl) { cl.closest('.modal').hidden = true; pintaProv(); if (VIEW === 'gen') renderGen(); return; }
+  if (e.target.classList.contains('modal') && e.target.id !== 'mEnvio') { e.target.hidden = true; pintaProv(); return; }
+  const dt = e.target.closest('[data-deltema]'); if (dt) { const t = S.temas[+dt.dataset.deltema]; const n = S.preguntas.filter(q => q.tema === t.id).length; if (n && !confirm(`«${t.titulo}» tiene ${n} preguntas. ¿Eliminar el tema y sus preguntas?`)) return; S.preguntas = S.preguntas.filter(q => q.tema !== t.id); S.temas.splice(+dt.dataset.deltema, 1); guarda(); renderTemas(); pintaDots(); return; }
+  const vt = e.target.closest('[data-vertxt]'); if (vt) { const t = S.temas[+vt.dataset.vertxt], fr = fragmentaTema(t); $('mTt').textContent = t.titulo; $('txtInfo').textContent = `Páginas ${t.ini}–${t.fin} · ${fr.length} fragmentos · ${fmtN(palabrasTema(t))} palabras. Así es el texto que recibirá la IA (sin cabeceras ni números de página):`; $('txtTema').textContent = fr.map(f => `[F${f.n}] (pág. ${f.pag}) ${f.text}`).join('\n\n').slice(0, 12000) || '(sin texto)'; $('mTexto').hidden = false; return; }
+  const qd = e.target.closest('[data-qdel]'); if (qd) { S.preguntas = S.preguntas.filter(q => q.id !== qd.dataset.qdel); guarda(); renderBanco(); return; }
+  const gt = e.target.closest('[data-gentema]'); if (gt) { generar(gt.dataset.gentema); return; }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $$('.modal').forEach(m => { if (!m.hidden && m.id !== 'mEnvio') { m.hidden = true; pintaProv(); } }); });
+
+/* ── acciones ── */
+$('btnEmpezar').onclick = () => showView('libro');
+$('btnEjemplo').onclick = cargaEjemplo;
+$('navNext').onclick = () => showView(NAV[VIEW][1]);
+$('navBack').onclick = () => showView(PREV[VIEW] || 'inicio');
+$('btnHelp').onclick = () => $('mHelp').hidden = false;
+$('btnIA').onclick = () => abreIA();
+$('btnGen').onclick = () => generar();
+$('btnParar').onclick = () => { PARAR = true; log('⏹ Parando tras la llamada en curso…', 'warn'); };
+$('detMarc').onclick = () => { if (!(S.libro.marcadores?.length >= 2)) { toast('Este PDF no tiene marcadores con los temas.'); return; } if (confirmaCambio()) { construyeTemas(S.libro.marcadores, 'marcadores'); renderTemas(); pintaDots(); } };
+$('detEnc').onclick = () => { const e = temasDeEncabezados(S.libro.paginas); if (!e.length) { toast('No se encontraron encabezados del tipo «Tema 1», «Unidad 2» o «Capítulo 3».'); return; } if (confirmaCambio()) { construyeTemas(e, 'encabezados'); renderTemas(); pintaDots(); } };
+$('detIA').onclick = () => { if (confirmaCambio()) temasConIA(); };
+$('detUno').onclick = () => { if (confirmaCambio()) { construyeTemas([{titulo: S.libro.nombre.replace(/\.pdf$/i, ''), ini: 1}], 'unico'); S.temas[0].activo = true; renderTemas(); pintaDots(); } };
+function confirmaCambio() {
+  if (!S.preguntas.length) return true;
+  if (!confirm(`Al volver a detectar los temas se borrarán las ${S.preguntas.length} preguntas ya generadas. Exporta antes el banco si lo quieres conservar. ¿Continuar?`)) return false;
+  S.preguntas = []; return true;
+}
+$('addTema').onclick = () => { if (!S.libro) { toast('Sube primero el libro.'); return; } const last = S.temas.at(-1); S.temas.push({id: uid('t'), titulo: 'Nuevo tema', ini: last ? Math.min(S.libro.nPag, numIn(last.fin) + 1) : 1, fin: S.libro.nPag, n: numIn($('nTodos').value) || S.opt.defN, activo: true, verificado: true}); if (!S.libro.origen || S.libro.origen === 'ninguno') S.libro.origen = 'manual'; guarda(); renderTemas(); };
+$('aplicaTodos').onclick = () => { const n = Math.max(0, Math.round(numIn($('nTodos').value))); S.opt.defN = n; S.temas.forEach(t => { if (t.activo) t.n = n; }); guarda(); renderTemas(); pintaDots(); };
+$('reparte').onclick = () => { const act = S.temas.filter(t => t.activo); if (!act.length) return; const tot = Math.max(0, Math.round(numIn($('nTotal').value))), ks = reparto(act.map(t => S.libro?.paginas ? palabrasTema(t) : 1), tot, 1); act.forEach((t, i) => t.n = ks[i]); guarda(); renderTemas(); pintaDots(); };
+$('exJson').onclick = () => { if (!S.preguntas.length) return toast('No hay preguntas que exportar.'); dl(`${slug()}_preguntas.json`, JSON.stringify(bancoJSON(), null, 2), 'application/json'); };
+$('exCsv').onclick = () => { if (!S.preguntas.length) return toast('No hay preguntas que exportar.'); dl(`${slug()}_preguntas.csv`, bancoCSV(), 'text/csv;charset=utf-8'); };
+$('exGift').onclick = () => { if (!S.preguntas.length) return toast('No hay preguntas que exportar.'); dl(`${slug()}_moodle.gift.txt`, bancoGIFT(), 'text/plain;charset=utf-8'); };
+
+/* subida del PDF o de un banco JSON */
+async function subeArchivo(file) {
+  if (!file) return;
+  if (/\.json$/i.test(file.name)) { try { if (importaBanco(JSON.parse(await file.text()))) { toast('Banco importado'); showView('banco'); } } catch (e) { toast(e.message, 6000); } return; }
+  if (!/\.pdf$/i.test(file.name)) { toast('Sube un archivo PDF.'); return; }
+  if (S.preguntas.length && !confirm('Al cargar otro libro se sustituirán los temas y las preguntas actuales. Exporta antes el banco si lo quieres conservar. ¿Continuar?')) return;
+  $('pdfStatus').textContent = 'Abriendo el PDF…';
+  try {
+    const L = await leePDF(file), opt = S.opt; S = estadoInicial(); S.opt = opt;
+    L.repes = lineasRepetidas(L.paginas); S.libro = L; _repes = null; TEMA_CACHE.clear();
+    const o = detectaTemas(); await guardaYa();
+    $('pdfStatus').textContent = `${L.nPag} páginas leídas.`;
+    toast(o === 'ninguno' ? 'Libro leído. No se detectaron temas: usa «Leer el índice con IA» o añádelos a mano.' : `Libro leído: ${S.temas.length} temas detectados por ${o}.`, 6000);
+    renderLibro(); pintaDots();
+  } catch (e) { $('pdfStatus').textContent = ''; toast('No se pudo leer el PDF: ' + e.message, 7000); }
+}
+const drop = $('dropPdf');
+drop.onclick = () => $('filePdf').click();
+drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('filePdf').click(); } };
+drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+drop.ondragleave = () => drop.classList.remove('over');
+drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); subeArchivo(e.dataTransfer.files[0]); };
+$('filePdf').onchange = e => { subeArchivo(e.target.files[0]); e.target.value = ''; };
+
+/* ── IA y aviso de envío ── */
+function pintaProv() { const p = getProv(); $('provPill').textContent = p === 'demo' ? 'demostración' : `${PROV[p].n} · ${getMod()}`; }
+function cargaIA() { const pv = getProv(); $('selProv').value = pv; const d = pv === 'demo'; $('keyField').hidden = d; $('modelField').hidden = d; $('apiKey').value = getKey(pv); $('modelo').value = getMod(pv); $('priceIn').value = LS.get('priceIn'); $('priceOut').value = LS.get('priceOut'); $('iaEstado').textContent = ''; let ml = []; try { ml = JSON.parse(LS.get('models_' + pv) || '[]'); } catch {} $('modelos').innerHTML = [...new Set([PROV[pv].m, ...ml])].map(m => `<option value="${esc(m)}">`).join(''); }
+function abreIA() { cargaIA(); $('mIA').hidden = false; }
+$('selProv').onchange = () => { LS.set('prov', $('selProv').value); cargaIA(); pintaProv(); };
+$('apiKey').oninput = () => { const pv = getProv(); if (PROV[pv].k) LS.set(PROV[pv].k, $('apiKey').value.trim()); };
+$('modelo').oninput = () => LS.set('model_' + getProv(), $('modelo').value.trim());
+$('priceIn').oninput = () => LS.set('priceIn', $('priceIn').value.trim());
+$('priceOut').oninput = () => LS.set('priceOut', $('priceOut').value.trim());
+$('btnEye').onclick = () => { const k = $('apiKey'); k.type = k.type === 'password' ? 'text' : 'password'; };
+$('btnModelos').onclick = async () => { const st = $('iaEstado'); st.textContent = '…'; try { const l = await listaModelos(); LS.set('models_' + getProv(), JSON.stringify(l)); $('modelos').innerHTML = l.map(m => `<option value="${esc(m)}">`).join(''); st.textContent = `${l.length} modelos disponibles; escribe o elige uno.`; } catch (e) { st.textContent = e.message; } };
+let ENVIO_OK = false;
+function confirmaEnvio(muestra = '') {
+  if (getProv() === 'demo' || ENVIO_OK) return Promise.resolve(true);
+  return new Promise(ok => {
+    $('envProv').textContent = `${PROV[getProv()].n} (${getMod()})`; $('envMuestra').textContent = scrub(muestra).slice(0, 900) + '\n…'; $('mEnvio').hidden = false;
+    $('envSi').onclick = () => { ENVIO_OK = true; $('mEnvio').hidden = true; ok(true); };
+    $('envNo').onclick = () => { $('mEnvio').hidden = true; ok(false); };
+  });
+}
+
+/* ── arranque ── */
+(async () => {
+  $('ver').textContent = VERSION;
+  const st = await cargaEstado();
+  if (st && typeof st === 'object') { const base = estadoInicial(); S = {...base, ...st, opt: {...base.opt, ...(st.opt || {})}}; S.temas.forEach(t => { delete t.estado; delete t.prog; delete t.meta; }); }
+  pintaBinds(); pintaProv();
+  const h = location.hash.slice(1); showView(VIEWS.includes(h) ? h : 'inicio');
+})();
+</script>
+</body>
+</html>
