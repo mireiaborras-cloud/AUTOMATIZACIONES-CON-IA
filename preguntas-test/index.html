@@ -409,7 +409,7 @@ input[type=color]{width:56px;height:42px;border:1.5px solid var(--linea);border-
     <div class="grid3">
       <div class="field"><label for="p_ico">Icono (emoji)</label><input type="text" id="p_ico" data-bind="pub.icono" maxlength="4"></div>
       <div class="field"><label for="p_col">Color</label><input type="color" id="p_col" data-bind="pub.color"></div>
-      <div class="field"><label for="p_lec">Ejercicios por lección</label><input type="number" id="p_lec" min="3" max="20" data-bind="pub.porLeccion" data-num></div>
+      <div class="field"><label for="p_lec">Preguntas por test</label><input type="number" id="p_lec" min="5" max="50" data-bind="pub.porTest" data-num><span class="hint">Cada test de un tema elige estas preguntas al azar.</span></div>
     </div>
     <div class="field"><label for="p_res">Dirección para enviar resultados (opcional)</label><input type="text" id="p_res" data-bind="pub.resultados" placeholder="URL de un flujo de Power Automate «Cuando se recibe una solicitud HTTP»"><span class="hint">Déjalo vacío para que los alumnos solo practiquen. Si pones una dirección, la app pedirá el nombre al alumno y enviará el resultado de cada lección.</span></div>
     <div class="lbl">Enlace para tus alumnos</div><div class="enlace" id="pubUrl"></div>
@@ -483,7 +483,7 @@ input[type=color]{width:56px;height:42px;border:1.5px solid var(--linea);border-
 /* ══════════════════════════════════════════════════════════════════════════════════════════════
    Preguntas Test · núcleo. Principio heredado de Doctoralia: la IA propone, el código comprueba.
    ══════════════════════════════════════════════════════════════════════════════════════════════ */
-const APP = 'preguntastest', VERSION = '0.2.0';
+const APP = 'preguntastest', VERSION = '0.3.0';
 
 /* ── utilidades ── */
 const $ = id => document.getElementById(id), $$ = s => [...document.querySelectorAll(s)];
@@ -542,7 +542,7 @@ const estadoInicial = () => ({
   libro: null, temas: [], preguntas: [], run: null, ejemplo: false,
   opt: {lang: 'castellano', nivel: 'ciclo formativo de Formación Profesional', nopc: 4, pares: 4, lote: 8, facil: 50, media: 40, dificil: 10,
     mezcla: {mc: 40, imagen: 20, completar: 15, emparejar: 10, ordenar: 10, vf: 5}, revisar: true, estricto: true, modo: 'completar', instr: '', defN: 10, extraeImg: true},
-  pub: {titulo: '', descripcion: '', icono: '📘', color: '#00A499', porLeccion: 8, archivo: '', resultados: ''}
+  pub: {titulo: '', descripcion: '', icono: '📘', color: '#00A499', porTest: 15, archivo: '', resultados: ''}
 });
 let S = estadoInicial(), IMGS = {};
 const dbP = new Promise((ok, ko) => { try { const r = indexedDB.open(APP, 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); } catch (e) { ko(e); } });
@@ -1243,7 +1243,7 @@ const archivoPub = () => slugify(S.pub.archivo || S.pub.titulo || nombreLibro())
 function bancoJSON() {
   const usadas = new Set(S.preguntas.map(q => q.imagen).filter(Boolean)), imagenes = {}; usadas.forEach(id => { if (IMGS[id]) imagenes[id] = IMGS[id]; });
   const p = S.pub, out = {formato: 'banco-preguntas', version: 2, generado: new Date().toISOString(), app: `Preguntas Test ${VERSION}`,
-    presentacion: {titulo: p.titulo || nombreLibro(), descripcion: p.descripcion || '', icono: p.icono || '📘', color: p.color || '#00A499', porLeccion: numIn(p.porLeccion) || 8},
+    presentacion: {titulo: p.titulo || nombreLibro(), descripcion: p.descripcion || '', icono: p.icono || '📘', color: p.color || '#00A499', porTest: numIn(p.porTest) || 15},
     libro: {titulo: nombreLibro(), paginas: S.libro?.nPag || 0, tipo: S.libro?.tipo || ''}, idioma: S.opt.lang, nivel: S.opt.nivel,
     temas: S.temas.filter(t => S.preguntas.some(q => q.tema === t.id)).map((t, i) => ({id: t.id, orden: i + 1, titulo: t.titulo, paginas: [t.ini, t.fin],
       ejercicios: S.preguntas.filter(q => q.tema === t.id).map(q => { const e = {id: q.id, tipo: TIPO_JSON[q.tipo], enunciado: q.enunciado};
@@ -1282,7 +1282,7 @@ function importaBanco(j) {
   if (S.preguntas.length && !confirm('Se sustituirá el banco actual por el importado. ¿Continuar?')) return false;
   S = estadoInicial(); IMGS = {}; S.libro = {nombre: (j.libro?.titulo || 'banco') + '.json', tipo: 'importado', paginas: null, nPag: j.libro?.paginas || 0, marcadores: [], repes: [], origen: 'importado', imagenes: []};
   if (j.idioma) S.opt.lang = j.idioma; if (j.nivel) S.opt.nivel = j.nivel;
-  if (j.presentacion) Object.assign(S.pub, {titulo: j.presentacion.titulo || '', descripcion: j.presentacion.descripcion || '', icono: j.presentacion.icono || '📘', color: j.presentacion.color || '#00A499', porLeccion: j.presentacion.porLeccion || 8});
+  if (j.presentacion) Object.assign(S.pub, {titulo: j.presentacion.titulo || '', descripcion: j.presentacion.descripcion || '', icono: j.presentacion.icono || '📘', color: j.presentacion.color || '#00A499', porTest: j.presentacion.porTest || 15});
   if (j.resultados?.url) S.pub.resultados = j.resultados.url;
   Object.entries(j.imagenes || {}).forEach(([id, src]) => { IMGS[id] = src; S.libro.imagenes.push({id, pag: 0, w: 0, h: 0, pie: '', etiquetas: '', usar: true}); });
   j.temas.forEach(t => { const id = t.id || uid('t'), lista = t.ejercicios || t.preguntas || []; S.temas.push({id, titulo: t.titulo || 'Tema', ini: t.paginas?.[0] || 1, fin: t.paginas?.[1] || 1, n: lista.length, activo: true, verificado: true});
@@ -1315,7 +1315,7 @@ async function cargaEjemplo() {
   const figs = [['prohibicion', 4, 'Figura 1. Señal de prohibición: prohibido fumar.'], ['advertencia', 4, 'Figura 2. Señal de advertencia: riesgo eléctrico.'], ['obligacion', 5, 'Figura 3. Señal de obligación: uso obligatorio del casco.'], ['salvamento', 5, 'Figura 4. Señal de salvamento: salida de emergencia.']], imagenes = [];
   for (const [k, pag, pie] of figs) { const id = 'I' + (imagenes.length + 1); IMGS[id] = await svgAJPEG(SVG_SENALES[k]); imagenes.push({id, pag, w: 480, h: 480, pie, etiquetas: '', usar: true}); }
   S.libro = {nombre: 'Prevención de riesgos laborales (ejemplo).pdf', tipo: 'pdf', paginas: P, nPag: P.length, marcadores: [], repes: lineasRepetidas(P), imagenes}; _repes = null; TEMA_CACHE.clear();
-  S.pub = {...S.pub, titulo: 'Prevención de riesgos laborales', descripcion: 'Ejemplo · FOL', icono: '🦺', archivo: 'ejemplo-prl', porLeccion: 6};
+  S.pub = {...S.pub, titulo: 'Prevención de riesgos laborales', descripcion: 'Ejemplo · FOL', icono: '🦺', archivo: 'ejemplo-prl', porTest: 10};
   detectaTemas(); S.temas.forEach(t => t.n = 6); await guardaYa(); await guardaImgs();
   toast('Libro de ejemplo cargado: revisa los temas'); showView('temas');
 }

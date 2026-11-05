@@ -8,7 +8,7 @@
   "descripcion": "Ejemplo · FOL · Formación Profesional",
   "icono": "🦺",
   "color": "#00A499",
-  "porLeccion": 4
+  "porTest": 8
  },
  "libro": {
   "titulo": "Prevención de riesgos laborales (ejemplo)",

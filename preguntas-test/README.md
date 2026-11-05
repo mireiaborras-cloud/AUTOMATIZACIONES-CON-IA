@@ -32,7 +32,7 @@ Sin clave funciona en **modo demostración**, con ejercicios simulados hechos co
 
 Después, en **Banco**:
 - revisas y editas cada ejercicio;
-- lo **publicas en la app de práctica** con título, icono, color y número de ejercicios por lección, o lo pruebas antes con «Vista previa»;
+- lo **publicas en la app de práctica** con título, icono, color y número de **preguntas por test** (15 por defecto), o lo pruebas antes con «Vista previa»;
 - o lo exportas a CSV (Excel) y GIFT (Moodle). GIFT no admite los ejercicios de ordenar ni los de imagen, así que esos se omiten.
 
 ## Cómo se comprueban los ejercicios
@@ -59,7 +59,7 @@ Los prompts de los cuatro agentes (`indexador`, `generador`, `imagenes`, `reviso
 ```json
 {
   "formato": "banco-preguntas", "version": 2,
-  "presentacion": {"titulo": "…", "descripcion": "…", "icono": "🦺", "color": "#00A499", "porLeccion": 8},
+  "presentacion": {"titulo": "…", "descripcion": "…", "icono": "🦺", "color": "#00A499", "porTest": 15},
   "resultados": {"url": "https://…"},
   "temas": [{"id": "…", "titulo": "Tema 1. …", "paginas": [5, 22], "ejercicios": [
     {"tipo": "opcion_multiple", "enunciado": "…", "opciones": ["…"], "correcta": 2},

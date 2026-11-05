@@ -8,7 +8,7 @@
   "descripcion": "",
   "icono": "📘",
   "color": "#9a19be",
-  "porLeccion": 8
+  "porTest": 15
  },
  "libro": {
   "titulo": "Anatomía funcional del aparato locomotor",
