@@ -1,0 +1,1555 @@
+{
+ "formato": "banco-preguntas",
+ "version": 2,
+ "generado": "2026-11-05T20:42:30.576Z",
+ "app": "Preguntas Test 0.2.0",
+ "presentacion": {
+  "titulo": "Anatomía funcional del aparato locomotor",
+  "descripcion": "",
+  "icono": "📘",
+  "color": "#9a19be",
+  "porLeccion": 8
+ },
+ "libro": {
+  "titulo": "Anatomía funcional del aparato locomotor",
+  "paginas": 117,
+  "tipo": "pdf"
+ },
+ "idioma": "castellano",
+ "nivel": "ciclo formativo de Formación Profesional",
+ "temas": [
+  {
+   "id": "tmw402g5cy5znp",
+   "orden": 1,
+   "titulo": "1. CONCEPTOS PREVIOS",
+   "paginas": [
+    12,
+    23
+   ],
+   "ejercicios": [
+    {
+     "id": "qmw405su5dqeen",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué indica la dirección \"caudal\" en anatomía?",
+     "opciones": [
+      "Hacia arriba, cerca de la cabeza",
+      "Hacia abajo, cercana a los pies",
+      "Hacia la superficie corporal",
+      "Hacia delante, parte delantera del cuerpo"
+     ],
+     "correcta": 1,
+     "explicacion": "La dirección caudal indica hacia abajo o cercana a los pies.",
+     "dificultad": "media",
+     "pagina": 12,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw405su5nlhk4",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es el plano que divide el cuerpo en dos mitades simétricas izquierda y derecha?",
+     "opciones": [
+      "Plano frontal",
+      "Plano transversal",
+      "Plano sagital",
+      "Plano longitudinal"
+     ],
+     "correcta": 2,
+     "explicacion": "El plano sagital divide el cuerpo en dos mitades simétricas.",
+     "dificultad": "media",
+     "pagina": 14,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw405su50mvlz",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué movimiento corporal reduce el ángulo articular aproximando dos segmentos de una articulación?",
+     "opciones": [
+      "Abducción",
+      "Extensión",
+      "Rotación",
+      "Flexión"
+     ],
+     "correcta": 3,
+     "explicacion": "La flexión es el movimiento que reduce el ángulo articular aproximando segmentos.",
+     "dificultad": "media",
+     "pagina": 15,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw405su5a9hdc",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué eje atraviesa el cuerpo de delante hacia atrás?",
+     "opciones": [
+      "Eje longitudinal",
+      "Eje anteroposterior",
+      "Eje transversal",
+      "Eje sagital"
+     ],
+     "correcta": 1,
+     "explicacion": "El eje sagital, también llamado anteroposterior, cruza el cuerpo de delante atrás.",
+     "dificultad": "media",
+     "pagina": 14,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw405su6z6q8m",
+     "tipo": "completar",
+     "enunciado": "Completa la frase",
+     "opciones": [
+      "extremidad",
+      "músculo",
+      "articulación",
+      "dirección"
+     ],
+     "correcta": 2,
+     "frase": "Para definir un ejercicio, debemos denominar la acción articular seguida de la ___ correspondiente.",
+     "explicacion": "La correcta denominación incluye la acción articular y la articulación correspondiente para evitar confusiones.",
+     "dificultad": "media",
+     "pagina": 18,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw405su8d2c3f",
+     "tipo": "emparejar",
+     "enunciado": "Une cada término con su definición",
+     "pares": [
+      {
+       "a": "Flexión",
+       "b": "Movimiento que reduce el ángulo entre segmentos articulares"
+      },
+      {
+       "a": "Extensión",
+       "b": "Movimiento que aumenta el ángulo articular tendiendo a la posición anatómica"
+      },
+      {
+       "a": "Abducción",
+       "b": "Separación lateral de un segmento respecto a la línea media del cuerpo"
+      },
+      {
+       "a": "Rotación",
+       "b": "Giro de un segmento sobre su propio eje longitudinal"
+      }
+     ],
+     "explicacion": "Relaciona cada movimiento corporal con su definición correcta.",
+     "dificultad": "media",
+     "pagina": 15,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw405suab6t63",
+     "tipo": "ordenar",
+     "enunciado": "Ordena los pasos para describir correctamente un movimiento articular en un ejercicio",
+     "pasos": [
+      "Indicar la acción articular",
+      "Nombrar la articulación correspondiente",
+      "Evitar términos ambiguos como solo 'flexión de piernas'",
+      "Especificar claramente el segmento de movimiento"
+     ],
+     "explicacion": "Para evitar confusiones es necesario seguir estos pasos para nombrar un movimiento.",
+     "dificultad": "media",
+     "pagina": 18,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    }
+   ]
+  },
+  {
+   "id": "tmw402g5calw2j",
+   "orden": 2,
+   "titulo": "2. ASPECTOS GENERALES DEL APARATO LOCOMOTOR",
+   "paginas": [
+    24,
+    35
+   ],
+   "ejercicios": [
+    {
+     "id": "qmw4061qtzar16",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué tipo de hueso predomina en longitud sobre anchura y espesor y actúa como palanca?",
+     "opciones": [
+      "Hueso plano",
+      "Hueso largo",
+      "Hueso irregular",
+      "Hueso corto"
+     ],
+     "correcta": 1,
+     "explicacion": "Los huesos largos tienen predominancia de longitud y actúan como palancas para el movimiento.",
+     "dificultad": "facil",
+     "pagina": 25,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4061qu4t0fu",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función principal de la membrana sinovial en las articulaciones?",
+     "opciones": [
+      "Unir los huesos de forma rígida",
+      "Formar el cartílago hialino",
+      "Segregar líquido lubricante",
+      "Proteger el cerebro"
+     ],
+     "correcta": 2,
+     "explicacion": "La membrana sinovial segrega el líquido sinovial que lubrica la articulación.",
+     "dificultad": "facil",
+     "pagina": 26,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4061qvrgmn2",
+     "tipo": "completar",
+     "enunciado": "Completa la frase",
+     "opciones": [
+      "tendones",
+      "ligamentos",
+      "cartílagos",
+      "huesos"
+     ],
+     "correcta": 0,
+     "frase": "El aparato locomotor activo está formado por: músculos y los elementos auxiliares como ___, vainas tendinosas y bolsas serosas.",
+     "explicacion": "Los tendones son elementos auxiliares del aparato locomotor activo.",
+     "dificultad": "media",
+     "pagina": 24,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4067dcyncpu",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la unidad estructural del músculo?",
+     "opciones": [
+      "Fascículo",
+      "Endomisio",
+      "Fibra muscular",
+      "Epimisio"
+     ],
+     "correcta": 2,
+     "explicacion": "La fibra muscular es la unidad estructural del músculo.",
+     "dificultad": "facil",
+     "pagina": 30,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4067dccydj3",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué tipo de músculo está mejor dotado para movimientos veloces y puede acortarse hasta un 50% de su longitud?",
+     "opciones": [
+      "Músculo penniforme",
+      "Músculo bipenniforme",
+      "Músculo plano",
+      "Músculo fusiforme"
+     ],
+     "correcta": 3,
+     "explicacion": "Los músculos fusiformes están diseñados para movimientos rápidos y amplios.",
+     "dificultad": "media",
+     "pagina": 31,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4067dcbxtq5",
+     "tipo": "completar",
+     "enunciado": "Completa la frase",
+     "opciones": [
+      "perimisio",
+      "endomisio",
+      "sarcomero",
+      "epimisio"
+     ],
+     "correcta": 1,
+     "frase": "Cada fibra está rodeada por el ___.",
+     "explicacion": "Cada fibra muscular está rodeada por el endomisio.",
+     "dificultad": "facil",
+     "pagina": 29,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw406dufthjhh",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función principal del rodete fibrocartilaginoso en una articulación?",
+     "opciones": [
+      "Proporcionar una superficie lisa para disminuir la fricción",
+      "Rellenar la incongruencia entre los extremos óseos para un mejor ajuste",
+      "Unir dos huesos entre sí",
+      "Permitir el movimiento en un solo eje"
+     ],
+     "correcta": 1,
+     "explicacion": "El rodete fibrocartilaginoso rellena la incongruencia de los huesos para que los extremos óseos se ajusten en el movimiento.",
+     "dificultad": "facil",
+     "pagina": 25,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw406dugbx1iz",
+     "tipo": "verdadero_falso",
+     "enunciado": "La articulación tipo trocoide permite movimientos de flexo-extensión y abducción-aducción.",
+     "opciones": [
+      "Verdadero",
+      "Falso"
+     ],
+     "correcta": 1,
+     "explicacion": "La articulación trocoide solo permite el movimiento de giro, no flexo-extensión ni abducción-aducción.",
+     "dificultad": "facil",
+     "pagina": 27,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw406ilcxly0z",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cómo se denomina el espacio entre dos líneas Z que constituye la unidad estructural de contracción de la fibra muscular?",
+     "opciones": [
+      "Sarcómero",
+      "Línea M",
+      "Miofibrilla",
+      "A banda"
+     ],
+     "correcta": 0,
+     "explicacion": "El sarcómero es la unidad estructural de contracción de la fibra muscular entre dos líneas Z.",
+     "dificultad": "facil",
+     "pagina": 30,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw406ild85236",
+     "tipo": "opcion_multiple",
+     "enunciado": "Según el número de articulaciones que cruza un músculo, ¿cuál de estos ejemplos corresponde a un músculo biarticular?",
+     "opciones": [
+      "Músculo braquial",
+      "Braquial anterior",
+      "Flexores de los dedos",
+      "Sartorio"
+     ],
+     "correcta": 3,
+     "explicacion": "Los músculos biarticulares cruzan dos articulaciones, como el sartorio.",
+     "dificultad": "media",
+     "pagina": 32,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    }
+   ]
+  },
+  {
+   "id": "tmw402g5cbyylf",
+   "orden": 3,
+   "titulo": "3. TRONCO",
+   "paginas": [
+    36,
+    53
+   ],
+   "ejercicios": [
+    {
+     "id": "qmw406ufxqzxuj",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué característica tiene la apófisis transversa en la región dorsal?",
+     "opciones": [
+      "Son puntos de contacto donde se apoyan las costillas",
+      "Se proyectan hacia atrás y abajo",
+      "Son zonas de inserción muscular",
+      "Forman los orificios transversos para vasos sanguíneos"
+     ],
+     "correcta": 0,
+     "explicacion": "En la región dorsal, las apófisis transversas son puntos de contacto para las costillas.",
+     "dificultad": "media",
+     "pagina": 38,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw406ufx5wyb6",
+     "tipo": "completar",
+     "enunciado": "Completa la frase",
+     "opciones": [
+      "longitudinalmente",
+      "circularmente",
+      "diagonalmente",
+      "transversalmente"
+     ],
+     "correcta": 0,
+     "frase": "La columna vertebral está reforzada por una serie de ligamentos que la recorren ___ adheridos unas veces a los cuerpos vertebrales y otras a las apófisis transversas o espinosas.",
+     "explicacion": "Los ligamentos recorren longitudinalmente la columna vertebral.",
+     "dificultad": "media",
+     "pagina": 39,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw406ug0h7d0z",
+     "tipo": "ordenar",
+     "enunciado": "Ordena las estructuras que forman la cintura pelviana según el texto",
+     "pasos": [
+      "Dos huesos coxales",
+      "Sacro",
+      "Fosa acetabular",
+      "Articulaciones sacroilíacas y sínfisis del pubis"
+     ],
+     "explicacion": "La cintura pelviana está formada por coxales unidos al sacro y sus articulaciones.",
+     "dificultad": "dificil",
+     "pagina": 40,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4073xjw4g9l",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función bilateral de los músculos escalenos?",
+     "opciones": [
+      "Flexionan el tronco hacia un lado",
+      "Flexionan la columna cervical lateralmente",
+      "Descienden las costillas para la espiración",
+      "Elevan el tórax ayudando a la inspiración"
+     ],
+     "correcta": 3,
+     "explicacion": "La función bilateral de los escalenos es elevar el tórax ayudando a la inspiración.",
+     "dificultad": "facil",
+     "pagina": 43,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4073xkimb7s",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué dirección tienen las fibras de los músculos intercostales externos?",
+     "opciones": [
+      "Desde la cresta ilíaca a la 12ª costilla",
+      "Desde la zona anterosuperior a la anteroinferior",
+      "Desde la parte posterosuperior a la posteroinferior",
+      "Desde la parte interna a la externa de las costillas"
+     ],
+     "correcta": 1,
+     "explicacion": "Las fibras de los intercostales externos discurren desde la zona anterosuperior a la anteroinferior.",
+     "dificultad": "facil",
+     "pagina": 44,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4073xltwrip",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función principal del diafragma durante la inspiración?",
+     "opciones": [
+      "Contrae el abdomen para expulsar aire",
+      "Flexiona lateralmente la columna cervical",
+      "Se contrae y aplana aumentando el diámetro torácico",
+      "Se eleva para reducir el diámetro torácico"
+     ],
+     "correcta": 2,
+     "explicacion": "El diafragma se contrae y aplana para aumentar el diámetro torácico en la inspiración.",
+     "dificultad": "media",
+     "pagina": 45,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4073xqhevik",
+     "tipo": "completar",
+     "enunciado": "Completa la frase",
+     "opciones": [
+      "contrario",
+      "opuesto",
+      "izquierdo",
+      "contraído"
+     ],
+     "correcta": 3,
+     "frase": "El músculo cuadrado lumbar en acción unilateral flexiona el tronco hacia el lado ___.",
+     "explicacion": "El músculo cuadrado lumbar en acción unilateral flexiona el tronco hacia el lado contraído.",
+     "dificultad": "media",
+     "pagina": 48,
+     "verificada": true,
+     "revisada": false,
+     "avisos": [
+      "Revisor: La solución propuesta 'C) contraído' no es adecuada; según el fragmento, la respuesta correcta sería 'A) contrario' o 'B) opuesto', ya que el músculo flexiona el tronco hacia el lado contrario al que actúa."
+     ]
+    },
+    {
+     "id": "qmw4073xthbq9d",
+     "tipo": "opcion_multiple",
+     "enunciado": "En un ejercicio práctico para fortalecer el recto anterior del abdomen, ¿qué movimiento es el más adecuado para aislar su activación?",
+     "opciones": [
+      "Levantar sólo la pelvis del suelo",
+      "Subir el tronco aproximadamente 30 grados",
+      "Elevar el tronco hasta 90 grados",
+      "Realizar abdominales con rotación"
+     ],
+     "correcta": 1,
+     "explicacion": "Elevar el tronco unos 30 grados activa el recto anterior sin involucrar demasiado el psoas mayor.",
+     "dificultad": "dificil",
+     "pagina": 50,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw407avignj09",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la forma del cuerpo vertebral en la región dorsal?",
+     "opciones": [
+      "Triangular",
+      "Rectangular",
+      "Circular",
+      "En forma de haba"
+     ],
+     "correcta": 0,
+     "explicacion": "El cuerpo vertebral presenta en el área cervical una forma rectangular, en la dorsal es triangular y en la lumbar tiene una superficie en forma de haba o riñón.",
+     "dificultad": "facil",
+     "pagina": 37,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw407avjqmdse",
+     "tipo": "verdadero_falso",
+     "enunciado": "La apófisis espinosa se encuentra en la zona dorsal del arco vertebral y sirve para la inserción de ligamentos y músculos.",
+     "opciones": [
+      "Verdadero",
+      "Falso"
+     ],
+     "correcta": 0,
+     "explicacion": "La apófisis espinosa es un punto de inserción muscular y ligamentoso en la zona dorsal del arco vertebral.",
+     "dificultad": "facil",
+     "pagina": 38,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw407gczahu74",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuántas vértebras dorsales forman el tórax?",
+     "opciones": [
+      "14",
+      "7",
+      "12",
+      "10"
+     ],
+     "correcta": 2,
+     "explicacion": "El tórax se compone de 12 vértebras dorsales.",
+     "dificultad": "facil",
+     "pagina": 41,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw407gd065joa",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función principal del músculo cuadrado lumbar cuando actúa bilateralmente?",
+     "opciones": [
+      "Rota el tronco hacia el lado contrario",
+      "Flexiona el tronco hacia adelante",
+      "Flexiona lateralmente el tronco",
+      "Extiende el tronco ayudando a los erectores de la columna"
+     ],
+     "correcta": 3,
+     "explicacion": "El músculo cuadrado lumbar extiende el tronco en acción bilateral.",
+     "dificultad": "facil",
+     "pagina": 47,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw407gd2jwydj",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué movimientos realiza el músculo oblicuo externo del abdomen al contraerse unilateralmente?",
+     "opciones": [
+      "Flexión lateral y rotación hacia el mismo lado",
+      "Flexión lateral y rotación hacia el lado contrario",
+      "Rotación y extensión del tronco",
+      "Extensión y flexión lateral"
+     ],
+     "correcta": 1,
+     "explicacion": "El oblicuo externo rota el tronco hacia el lado contrario al músculo que actúa.",
+     "dificultad": "media",
+     "pagina": 50,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw407gd35o1dc",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué músculos forman parte del músculo erector de la columna (sacroespinal)?",
+     "opciones": [
+      "Iliocostal, dorsal largo, semiespinoso",
+      "Trapecio, dorsal ancho, romboides",
+      "Cuadrado lumbar, recto abdominal, dorsal ancho",
+      "Oblicuo interno, transverso abdominal, recto abdominal"
+     ],
+     "correcta": 0,
+     "explicacion": "El músculo erector de la columna incluye iliocostal, dorsal largo y semiespinoso.",
+     "dificultad": "media",
+     "pagina": 45,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    }
+   ]
+  },
+  {
+   "id": "tmw402g5cnogxx",
+   "orden": 4,
+   "titulo": "4. EXTREMIDAD SUPERIOR",
+   "paginas": [
+    54,
+    85
+   ],
+   "ejercicios": [
+    {
+     "id": "qmw407zhe1wony",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función del rodete glenoideo en la articulación del hombro?",
+     "opciones": [
+      "Ajustar la cabeza del húmero a la cavidad glenoidea",
+      "Unir la clavícula con la escápula",
+      "Fijar los ligamentos glenohumerales",
+      "Proteger la cápsula sinovial"
+     ],
+     "correcta": 0,
+     "explicacion": "El rodete glenoideo es un rodete fibrocartilaginoso que sirve para ajustar la cabeza del húmero.",
+     "dificultad": "facil",
+     "pagina": 55,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw407zhe7vcuj",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué movimientos permiten las articulaciones de la cintura escapular?",
+     "opciones": [
+      "Movimientos exclusivos en la articulación del codo",
+      "Movimientos solo en el plano frontal",
+      "Movimientos limitados a la flexión y extensión",
+      "Gran movilidad que casi duplica el campo de movimiento del brazo"
+     ],
+     "correcta": 3,
+     "explicacion": "La cintura escapular es una unión con mucha movilidad, casi duplicando el campo de movilidad de los brazos.",
+     "dificultad": "media",
+     "pagina": 56,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw407zhh2wdq4",
+     "tipo": "verdadero_falso",
+     "enunciado": "La espina escapular divide la escápula en la fosa supraespinosa y la fosa subescapular.",
+     "opciones": [
+      "Verdadero",
+      "Falso"
+     ],
+     "correcta": 1,
+     "explicacion": "La espina escapular divide la escápula en fosa supraespinosa y fosa infraespinosa, no subescapular.",
+     "dificultad": "facil",
+     "pagina": 55,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw407zhhsqdmn",
+     "tipo": "completar",
+     "enunciado": "Completa la frase",
+     "opciones": [
+      "clavícula",
+      "húmero",
+      "tórax",
+      "brazo"
+     ],
+     "correcta": 2,
+     "frase": "La cara anterior es cóncava a fin de adaptarse a la convexidad del ___ y se denomina fosa subescapular.",
+     "explicacion": "La cara anterior de la escápula es cóncava para adaptarse a la convexidad del tórax y se llama fosa subescapular.",
+     "dificultad": "facil",
+     "pagina": 54,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw407zhkez4si",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es el orden correcto para levantar el brazo por encima de la cabeza?",
+     "opciones": [
+      "Abducción del hombro, rotación de la escápula, campaneo exterior",
+      "Flexión del codo, rotación de la escápula, abducción del hombro",
+      "Rotación del codo, flexión del hombro, campaneo interior",
+      "Campaneo exterior, aducción del omóplato, extensión del codo"
+     ],
+     "correcta": 0,
+     "explicacion": "La restricción ósea se compensa con la rotación de la escápula, permitiendo levantar el brazo hasta la vertical mediante abducción y campaneo exterior.",
+     "dificultad": "dificil",
+     "pagina": 59,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4086qhgrdtn",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función principal del músculo serrato anterior?",
+     "opciones": [
+      "Elevación de la escápula con campaneo interior",
+      "Abducción y campaneo exterior de la escápula",
+      "Aproximar y levantar la escápula hacia la columna vertebral",
+      "Rotación externa y abducción horizontal del hombro"
+     ],
+     "correcta": 1,
+     "explicacion": "El serrato anterior tiene como función principal la abducción y campaneo exterior de la escápula.",
+     "dificultad": "facil",
+     "pagina": 62,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4086qiqo07u",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué músculo es un rotador interno y aductor del hombro?",
+     "opciones": [
+      "Músculo redondo menor",
+      "Músculo infraespinoso",
+      "Músculo deltoides posterior",
+      "Músculo subescapular"
+     ],
+     "correcta": 3,
+     "explicacion": "El músculo subescapular actúa como rotador interno y aductor del hombro.",
+     "dificultad": "facil",
+     "pagina": 65,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4086qlxsbem",
+     "tipo": "completar",
+     "enunciado": "Completa la frase sobre el músculo romboides menor",
+     "opciones": [
+      "abducir",
+      "elevar",
+      "rotar",
+      "aproximar"
+     ],
+     "correcta": 3,
+     "frase": "Ambos músculos poseen la función de ___ y levantar la escápula hacia la columna vertebral.",
+     "explicacion": "El músculo romboides menor aproxima y levanta la escápula hacia la columna vertebral.",
+     "dificultad": "media",
+     "pagina": 61,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw4086qppkidj",
+     "tipo": "opcion_multiple",
+     "enunciado": "Para fortalecer el músculo romboides menor, ¿qué ejercicio es especialmente recomendado?",
+     "opciones": [
+      "Fondos tendido prono",
+      "Lanzamientos de balón",
+      "Dominadas",
+      "Elevaciones laterales con mancuernas"
+     ],
+     "correcta": 2,
+     "explicacion": "Las dominadas son un excelente ejercicio para trabajar el músculo romboides menor.",
+     "dificultad": "dificil",
+     "pagina": 61,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw408eaxk6s02",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función principal del músculo bíceps braquial en la articulación del codo?",
+     "opciones": [
+      "Flexiona el antebrazo y supina el antebrazo",
+      "Aduce el brazo",
+      "Extiende el antebrazo",
+      "Rota externamente el hombro"
+     ],
+     "correcta": 0,
+     "explicacion": "El bíceps braquial flexiona el antebrazo sobre el brazo y supina el antebrazo.",
+     "dificultad": "facil",
+     "pagina": 74,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw408eb5urnoy",
+     "tipo": "completar",
+     "enunciado": "Completa la frase sobre el músculo dorsal ancho:",
+     "opciones": [
+      "móvil",
+      "fijo",
+      "posterior",
+      "proximal"
+     ],
+     "correcta": 1,
+     "frase": "Si el lugar de inserción está ___, actúa junto con el resto de aductores de hombro aproximando el tronco hacia los brazos.",
+     "explicacion": "El músculo dorsal ancho actúa cuando el lugar de inserción está fijo.",
+     "dificultad": "media",
+     "pagina": 69,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw408eb67ahnn",
+     "tipo": "completar",
+     "enunciado": "Completa la función del músculo tríceps braquial:",
+     "opciones": [
+      "extensión",
+      "rotación interna",
+      "flexión",
+      "abducción"
+     ],
+     "correcta": 0,
+     "frase": "La porción larga parte de la tuberosidad infraglenoidea escapular y realiza la extensión del codo y la ___ del hombro.",
+     "explicacion": "La porción larga del tríceps actúa como extensor del hombro además de la extensión del codo.",
+     "dificultad": "dificil",
+     "pagina": 75,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw408m1oij4jq",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función principal del músculo pronador redondo?",
+     "opciones": [
+      "Extensor del codo y pronador del antebrazo",
+      "Débil flexor del codo y pronador del antebrazo",
+      "Flexor del codo y supinador del antebrazo",
+      "Flexor del codo y extensor del antebrazo"
+     ],
+     "correcta": 1,
+     "explicacion": "El pronador redondo actúa como débil flexor del codo y pronador o rotación interna del codo.",
+     "dificultad": "facil",
+     "pagina": 76,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw408m1q2vral",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué movimiento permite principalmente la articulación radiocubitocarpiana?",
+     "opciones": [
+      "Supinación y pronación",
+      "Flexión y extensión de dedos",
+      "Flexión-extensión y abducción-aducción",
+      "Rotación interna y externa"
+     ],
+     "correcta": 2,
+     "explicacion": "La articulación radiocubitocarpiana es una condiloartrosis con dos ejes de movimiento: flexión-extensión y abducción-aducción.",
+     "dificultad": "facil",
+     "pagina": 78,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw408m1sf9nqr",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función del músculo flexor común profundo de los dedos?",
+     "opciones": [
+      "Abduce el índice",
+      "Flexiona la segunda falange de los dedos",
+      "Extiende los dedos y la muñeca",
+      "Flexiona la tercera falange de los dedos 2º a 5º"
+     ],
+     "correcta": 3,
+     "explicacion": "Este músculo flexiona la tercera y última falange sobre el resto de la mano.",
+     "dificultad": "media",
+     "pagina": 82,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw408m1vfnkns",
+     "tipo": "completar",
+     "enunciado": "Completa la frase sobre la articulación del pulgar",
+     "opciones": [
+      "polea",
+      "silla",
+      "troclear",
+      "encaje"
+     ],
+     "correcta": 3,
+     "frase": "La articulación carpo metacarpiana del pulgar está formada por una articulación en ___ recíproco, y a una cápsula articular laxa.",
+     "explicacion": "La articulación carpo metacarpiana del pulgar es una articulación en encaje recíproco.",
+     "dificultad": "media",
+     "pagina": 80,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw408m221ga1s",
+     "tipo": "opcion_multiple",
+     "enunciado": "Para fortalecer el músculo tríceps braquial en halterofilia, ¿qué acción es crucial?",
+     "opciones": [
+      "Supinación del antebrazo",
+      "Extensión total de los brazos",
+      "Pronación del antebrazo con codo flexionado",
+      "Flexión del codo en contracción excéntrica"
+     ],
+     "correcta": 1,
+     "explicacion": "La acción crucial del tríceps braquial en halterofilia es la extensión total de los brazos.",
+     "dificultad": "dificil",
+     "pagina": 76,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw408xdfrbg7c",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué estructura une la escápula con la clavícula en la articulación externa?",
+     "opciones": [
+      "Acromion",
+      "Ligamento anular del radio",
+      "Tuberosidad supraglenoidea",
+      "Ligamento coracohumeral"
+     ],
+     "correcta": 0,
+     "explicacion": "La articulación externa está unida por fuertes ligamentos y pone en comunicación la escápula a través del acromion con la clavícula.",
+     "dificultad": "facil",
+     "pagina": 57,
+     "verificada": true,
+     "revisada": false,
+     "avisos": [
+      "Revisor: El fragmento indica que la escápula se une a la clavícula a través del acromion, que es una parte ósea, no una estructura ligamentosa; la pregunta pide la estructura que une ambas en la articulación externa, y la opción C (Acromion) es correcta como estructura ósea, pero no es una estructura que 'une' sino una parte de la escápula. Además, las otras opciones no son correctas. Sin embargo, el fragmento no menciona un ligamento específico que una escápula y clavícula, por lo que la pregunta puede inducir a confusión."
+     ]
+    },
+    {
+     "id": "qmw408xdgt0x1j",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función principal del músculo supinador corto?",
+     "opciones": [
+      "Rotación interna del hombro",
+      "Pronación del antebrazo",
+      "Supinación",
+      "Flexión de hombro"
+     ],
+     "correcta": 2,
+     "explicacion": "El músculo supinador tiene como función principal la supinación y también ayuda en la flexión del codo.",
+     "dificultad": "media",
+     "pagina": 77,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw409758xciap",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué ligamento se origina en la base de la apófisis coracoides y refuerza la cápsula articular del hombro?",
+     "opciones": [
+      "Ligamento glenohumeral superior",
+      "Ligamento coracohumeral",
+      "Ligamento esternoclavicular",
+      "Ligamento acromioclavicular"
+     ],
+     "correcta": 1,
+     "explicacion": "El ligamento coracohumeral se origina en la base de la apófisis coracoides y refuerza la cápsula articular del hombro.",
+     "dificultad": "facil",
+     "pagina": 58,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw409759xi3ma",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué cavidad se encuentra sobre la tróclea en la cara posterior del húmero y permite la extensión total del codo?",
+     "opciones": [
+      "Cavidad coronoidea",
+      "Cavidad glenoidea",
+      "Cavidad cubital",
+      "Cavidad olecraniana"
+     ],
+     "correcta": 3,
+     "explicacion": "La cavidad olecraniana está situada sobre la tróclea en la cara posterior del húmero y permite la extensión total del codo.",
+     "dificultad": "facil",
+     "pagina": 57,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40975aiviv6",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función principal del músculo trapecio en su porción media?",
+     "opciones": [
+      "Flexión del hombro",
+      "Rotación interna del brazo",
+      "Aducción del omóplato hacia la columna vertebral",
+      "Elevación de la escápula"
+     ],
+     "correcta": 2,
+     "explicacion": "La porción media del trapecio proporciona la aducción del omóplato hacia la columna vertebral.",
+     "dificultad": "facil",
+     "pagina": 60,
+     "verificada": true,
+     "revisada": true,
+     "avisos": [
+      "La opción correcta es mucho más larga que las demás (da una pista)"
+     ]
+    },
+    {
+     "id": "qmw40975cwcvwr",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué función tiene la cabeza larga del bíceps braquial en la articulación del hombro?",
+     "opciones": [
+      "Abducción y rotación interna",
+      "Flexión y rotación externa",
+      "Extensión y aducción",
+      "Rotación externa y abducción"
+     ],
+     "correcta": 0,
+     "explicacion": "La porción larga del bíceps braquial realiza la abducción y rotación interna en el hombro.",
+     "dificultad": "media",
+     "pagina": 73,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40975edb21m",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es el movimiento principal que permite la articulación humero-cubital?",
+     "opciones": [
+      "Circunducción",
+      "Abducción",
+      "Rotación",
+      "Flexoextensión"
+     ],
+     "correcta": 3,
+     "explicacion": "La articulación humero-cubital es troclear y permite movimientos de flexoextensión.",
+     "dificultad": "media",
+     "pagina": 71,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40975go15ot",
+     "tipo": "opcion_multiple",
+     "enunciado": "En un paciente con luxación anteroinferior del hombro, ¿qué estructura protege la zona posterosuperior limitando la flexión y abducción?",
+     "opciones": [
+      "Tendón del bíceps y corredera bicipital",
+      "Rodete glenoideo y cápsula sinovial",
+      "Acromion y ligamentos posterosuperiores",
+      "Ligamento coracohumeral y tuberosidad mayor"
+     ],
+     "correcta": 2,
+     "explicacion": "El acromion y los ligamentos posterosuperiores limitan el movimiento de flexión y abducción en la zona posterosuperior, evitando luxaciones superiores.",
+     "dificultad": "dificil",
+     "pagina": 58,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    }
+   ]
+  },
+  {
+   "id": "tmw402g5c1fs1q",
+   "orden": 5,
+   "titulo": "5. EXTREMIDAD INFERIOR",
+   "paginas": [
+    86,
+    115
+   ],
+   "ejercicios": [
+    {
+     "id": "qmw409nnq5yms5",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es el hueso que forma la cavidad cotiloidea en la pelvis y recibe la cabeza del fémur?",
+     "opciones": [
+      "El pubis",
+      "El isquion",
+      "El ilion",
+      "El hueso coxal"
+     ],
+     "correcta": 3,
+     "explicacion": "El hueso coxal forma la cavidad cotiloidea que recibe la cabeza del fémur.",
+     "dificultad": "facil",
+     "pagina": 86,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw409nnrtrgl0",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué músculo se inserta en la espina ilíaca anterosuperior y es importante para la flexión de la cadera?",
+     "opciones": [
+      "Psoas mayor",
+      "Sartorio",
+      "Recto anterior del cuádriceps",
+      "Tensor de la fascia lata"
+     ],
+     "correcta": 1,
+     "explicacion": "La espina ilíaca anterosuperior es el lugar de inserción del sartorio.",
+     "dificultad": "facil",
+     "pagina": 87,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw409nnrjehys",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función del ligamento iliofemoral en la articulación de la cadera?",
+     "opciones": [
+      "Mantener la cabeza del fémur dentro del acetábulo",
+      "Evitar la excesiva abducción",
+      "Limitar la rotación interna del fémur",
+      "Frenar la retroversión de la pelvis y la aducción excesiva"
+     ],
+     "correcta": 3,
+     "explicacion": "El ligamento iliofemoral frena la retroversión de la pelvis y la aducción excesiva.",
+     "dificultad": "media",
+     "pagina": 89,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw409nnuvf0ys",
+     "tipo": "completar",
+     "enunciado": "Completa la frase: \"El ligamento anular está situado rodeando el cuello del fémur con lo que la cabeza del fémur queda dentro de ese '___' que le impide la salida de la cavidad acetabular.\"",
+     "opciones": [
+      "ojal",
+      "puente",
+      "ojo",
+      "círculo"
+     ],
+     "correcta": 0,
+     "frase": "El ligamento anular está situado rodeando el cuello del fémur con lo que la cabeza del fémur queda dentro de ese \"___\" que le impide la salida de la cavidad acetabular.",
+     "explicacion": "El ligamento anular rodea el cuello del fémur formando un 'ojal'.",
+     "dificultad": "media",
+     "pagina": 90,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw409u1cpc6b3",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué músculo es el aductor más fuerte y tiene un efecto rotador interno?",
+     "opciones": [
+      "Aductor largo",
+      "Aductor mayor",
+      "Glúteo mayor",
+      "Aductor corto"
+     ],
+     "correcta": 1,
+     "explicacion": "El aductor mayor es el aductor más fuerte y tiene función rotadora interna.",
+     "dificultad": "facil",
+     "pagina": 94,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw409u1do9jcy",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es una función estática del músculo glúteo mayor?",
+     "opciones": [
+      "Abducir la pierna",
+      "Rotar internamente la cadera",
+      "Evitar la caída del tronco hacia adelante",
+      "Flexionar la rodilla"
+     ],
+     "correcta": 2,
+     "explicacion": "El glúteo mayor estabiliza la pelvis y evita la caída del tronco hacia adelante.",
+     "dificultad": "media",
+     "pagina": 95,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw409u1f8awd5",
+     "tipo": "completar",
+     "enunciado": "Completa la frase",
+     "opciones": [
+      "delante",
+      "atrás",
+      "abajo",
+      "arriba"
+     ],
+     "correcta": 0,
+     "frase": "El ligamento cruzado anterior une el área intercondílea anterior de la tibia con la superficie interna del cóndilo externo, e impide que la tibia se deslice hacia ___.",
+     "explicacion": "El ligamento cruzado anterior evita el desplazamiento anterior de la tibia respecto al fémur.",
+     "dificultad": "facil",
+     "pagina": 101,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw409u1ncxk1x",
+     "tipo": "ordenar",
+     "enunciado": "Ordena los pasos para evitar el desplazamiento anterior de la tibia en la articulación de la rodilla",
+     "pasos": [
+      "Ligamento cruzado anterior une área intercondílea anterior de la tibia con el cóndilo externo",
+      "El ligamento impide que la tibia se deslice hacia delante",
+      "Se estabiliza la rodilla en flexión evitando deslizamientos",
+      "Se protege la articulación de movimientos de 'cajón anterior'"
+     ],
+     "explicacion": "El ligamento cruzado anterior une la tibia con el fémur para evitar desplazamientos anteriores.",
+     "dificultad": "dificil",
+     "pagina": 101,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw409z55dg472",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál de estos músculos es biarticular y además actúa como flexor de la cadera y flexor de la rodilla?",
+     "opciones": [
+      "Músculo bíceps femoral",
+      "Músculo semitendinoso",
+      "Músculo vasto interno",
+      "Músculo sartorio"
+     ],
+     "correcta": 3,
+     "explicacion": "El sartorio es un músculo biarticular que flexiona cadera y rodilla.",
+     "dificultad": "media",
+     "pagina": 103,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw409z57hom52",
+     "tipo": "verdadero_falso",
+     "enunciado": "El músculo bíceps femoral se inserta exclusivamente en la tibia.",
+     "opciones": [
+      "Verdadero",
+      "Falso"
+     ],
+     "correcta": 1,
+     "explicacion": "El bíceps femoral se inserta en la cabeza del peroné, no en la tibia.",
+     "dificultad": "facil",
+     "pagina": 104,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40a5tx4elsy",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función principal del ligamento deltoideo en el tobillo?",
+     "opciones": [
+      "Une el peroné con el calcáneo",
+      "Permite la flexión dorsal del pie",
+      "Impide que el pie se exceda en la eversión",
+      "Facilita la rotación del pie"
+     ],
+     "correcta": 2,
+     "explicacion": "El ligamento deltoideo sujeta el pie para que no exceda el movimiento anatómico de eversión.",
+     "dificultad": "facil",
+     "pagina": 109,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40a5tzsfgci",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué músculos forman el tríceps sural?",
+     "opciones": [
+      "Flexor largo de los dedos y sóleo",
+      "Gastrocnemio y sóleo",
+      "Gastrocnemio y tibial anterior",
+      "Sóleo y peroneo largo"
+     ],
+     "correcta": 1,
+     "explicacion": "El tríceps sural está formado por los dos vientres del gastrocnemio y el sóleo.",
+     "dificultad": "facil",
+     "pagina": 111,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40a5u11fhnq",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué función tiene el músculo tibial posterior cuando el pie no está apoyado?",
+     "opciones": [
+      "Flexión plantar con supinación",
+      "Flexión dorsal con pronación",
+      "Rotación externa de la rodilla",
+      "Extensión de dedos"
+     ],
+     "correcta": 0,
+     "explicacion": "El tibial posterior realiza flexión plantar y supinación cuando el pie no está apoyado.",
+     "dificultad": "media",
+     "pagina": 114,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40a5u3pzg8a",
+     "tipo": "completar",
+     "enunciado": "Completa la frase:",
+     "opciones": [
+      "esferoidea",
+      "ginglimo",
+      "enartrosis",
+      "tróclea"
+     ],
+     "correcta": 3,
+     "frase": "La articulación supraastragalina es una ___ en la que se dan movimientos de flexo-extensión.",
+     "explicacion": "La articulación supraastragalina es una tróclea que permite flexo-extensión.",
+     "dificultad": "facil",
+     "pagina": 109,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40a5u7dhaqv",
+     "tipo": "completar",
+     "enunciado": "Completa la frase:",
+     "opciones": [
+      "pronación",
+      "supinación",
+      "flexión plantar",
+      "flexión dorsal"
+     ],
+     "correcta": 2,
+     "frase": "El gastrocnemio realiza la extensión de tobillo o lo que es lo mismo ___.",
+     "explicacion": "El gastrocnemio realiza la extensión de tobillo, es decir, la flexión plantar.",
+     "dificultad": "facil",
+     "pagina": 111,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40a5uddtz31",
+     "tipo": "ordenar",
+     "enunciado": "Ordena los pasos para fortalecer el tríceps sural con ejercicios de puntillas:",
+     "pasos": [
+      "Ponerse de puntillas para activar concéntricamente",
+      "Mantener la posición para aplicar fuerza",
+      "Bajar lentamente para activar excéntricamente",
+      "Repetir el movimiento varias veces"
+     ],
+     "explicacion": "El ejercicio fortalece el tríceps sural con contracción concéntrica al subir y excéntrica al bajar.",
+     "dificultad": "dificil",
+     "pagina": 113,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40ag6jd8xmf",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función principal del músculo glúteo mediano?",
+     "opciones": [
+      "Rotación interna del tobillo",
+      "Abducción de cadera",
+      "Extensión de la cadera",
+      "Flexión de rodilla"
+     ],
+     "correcta": 1,
+     "explicacion": "La función principal del glúteo mediano es la abducción de cadera.",
+     "dificultad": "facil",
+     "pagina": 96,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40ag6m4km4x",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función conjunta principal de los músculos rotadores externos de la cadera?",
+     "opciones": [
+      "Extensión de la cadera",
+      "Flexión de la rodilla",
+      "Rotación externa de la cadera",
+      "Abducción de la cadera"
+     ],
+     "correcta": 2,
+     "explicacion": "Los rotadores externos de la cadera realizan principalmente la rotación externa.",
+     "dificultad": "media",
+     "pagina": 97,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40ag6qyr94p",
+     "tipo": "completar",
+     "enunciado": "Completa la frase",
+     "opciones": [
+      "caudal",
+      "medial",
+      "lateral",
+      "craneal"
+     ],
+     "correcta": 0,
+     "frase": "La rótula es un hueso sesamoideo aplanado y de forma triangular, con el vértice orientado en sentido ___.",
+     "explicacion": "La rótula tiene el vértice orientado en sentido caudal.",
+     "dificultad": "facil",
+     "pagina": 88,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40ag71g1m5y",
+     "tipo": "ordenar",
+     "enunciado": "Ordena los pasos para fortalecer el músculo psoas ilíaco según el método descrito",
+     "pasos": [
+      "Trabajar primero la musculatura abdominal en el primer tercio del movimiento",
+      "Realizar el resto del movimiento en la articulación de la cadera",
+      "Fortalecer progresivamente el psoas ilíaco evitando sobrecargas",
+      "Evitar el fortalecimiento excesivo si no hay compensación abdominal"
+     ],
+     "explicacion": "El fortalecimiento comienza activando abdominales, luego la cadera, y debe evitarse excesos sin compensación abdominal.",
+     "dificultad": "dificil",
+     "pagina": 91,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40alzwxlwm7",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué estructura ósea del fémur une el trocánter mayor y el trocánter menor en su cara anterior?",
+     "opciones": [
+      "Cuello anatómico",
+      "Línea intertrocantérea",
+      "Cresta intertrocantérea",
+      "Ángulo cérvicodiafisiario"
+     ],
+     "correcta": 1,
+     "explicacion": "La línea intertrocantérea une el trocánter mayor y el trocánter menor en la cara anterior del fémur.",
+     "dificultad": "facil",
+     "pagina": 88,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40alzxow1or",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función principal del músculo psoas ilíaco?",
+     "opciones": [
+      "Extensión de la rodilla",
+      "Rotación interna de la rodilla",
+      "Abducción del tobillo",
+      "Flexión de la cadera"
+     ],
+     "correcta": 3,
+     "explicacion": "El psoas ilíaco tiene la función principal de anteversor o flexor de la cadera.",
+     "dificultad": "facil",
+     "pagina": 91,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40alzyhoxpm",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Dónde se inserta el tendón común del músculo cuádriceps femoral?",
+     "opciones": [
+      "Cabeza del fémur",
+      "Tuberosidad tibial anterior",
+      "Trocánter mayor",
+      "Cóndilo interno de la tibia"
+     ],
+     "correcta": 1,
+     "explicacion": "El tendón común del cuádriceps se ancla en la tuberosidad tibial anterior tras pasar por la rótula.",
+     "dificultad": "facil",
+     "pagina": 102,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40am00tn4cs",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué función dinámica tiene el músculo glúteo mayor?",
+     "opciones": [
+      "Flexión de rodilla",
+      "Flexión de la cadera",
+      "Extensión de la articulación coxofemoral",
+      "Rotación interna de cadera"
+     ],
+     "correcta": 2,
+     "explicacion": "El glúteo mayor realiza la extensión dinámica de la articulación coxofemoral.",
+     "dificultad": "media",
+     "pagina": 95,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "qmw40am02r8jnr",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál es la función del músculo semimembranoso en la rodilla?",
+     "opciones": [
+      "Extensión y rotación externa",
+      "Abducción y extensión",
+      "Flexión y rotación externa",
+      "Flexión y rotación interna"
+     ],
+     "correcta": 3,
+     "explicacion": "El semimembranoso produce flexión y rotación interna simultáneamente en la rodilla.",
+     "dificultad": "media",
+     "pagina": 104,
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    }
+   ]
+  }
+ ],
+ "imagenes": {}
+}

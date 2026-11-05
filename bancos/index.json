@@ -6,6 +6,13 @@
       "descripcion": "Ejemplo · FOL · Formación Profesional",
       "icono": "🦺",
       "color": "#00A499"
+    },
+    {
+      "archivo": "anatomia-aparato-locomotor",
+      "titulo": "Anatomía funcional del aparato locomotor",
+      "descripcion": "",
+      "icono": "📘",
+      "color": "#9a19be"
     }
   ]
 }
