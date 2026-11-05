@@ -1,0 +1,531 @@
+{
+ "formato": "banco-preguntas",
+ "version": 2,
+ "generado": "2026-11-05T20:00:00Z",
+ "app": "Preguntas Test 0.2.0 (ejemplo escrito a mano)",
+ "presentacion": {
+  "titulo": "Prevención de riesgos laborales",
+  "descripcion": "Ejemplo · FOL · Formación Profesional",
+  "icono": "🦺",
+  "color": "#00A499",
+  "porLeccion": 4
+ },
+ "libro": {
+  "titulo": "Prevención de riesgos laborales (ejemplo)",
+  "paginas": 8,
+  "tipo": "pdf"
+ },
+ "idioma": "castellano",
+ "nivel": "ciclo formativo de Formación Profesional",
+ "temas": [
+  {
+   "id": "t1",
+   "orden": 1,
+   "titulo": "Tema 1. Conceptos básicos de prevención",
+   "paginas": [
+    2,
+    3
+   ],
+   "ejercicios": [
+    {
+     "id": "ej1",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué ley regula principalmente la prevención de riesgos laborales en España?",
+     "opciones": [
+      "El Estatuto de los Trabajadores",
+      "La Ley 31/1995, de Prevención de Riesgos Laborales",
+      "La Ley General de Sanidad",
+      "La Ley de Seguridad Vial"
+     ],
+     "correcta": 1,
+     "explicacion": "Es la norma básica de prevención en España.",
+     "dificultad": "facil",
+     "pagina": 2,
+     "cita": "En España se regula principalmente en la Ley 31/1995, de Prevención de Riesgos Laborales.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej2",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Cuál de estos es un ejemplo de peligro?",
+     "opciones": [
+      "Un plan de emergencia",
+      "Una evaluación de riesgos",
+      "Un suelo mojado",
+      "Un equipo de protección individual"
+     ],
+     "correcta": 2,
+     "explicacion": "Un peligro es una fuente o situación que puede causar un daño.",
+     "dificultad": "facil",
+     "pagina": 2,
+     "cita": "Un peligro es cualquier fuente o situación con capacidad de producir un daño, como una máquina sin protección o un suelo mojado.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej3",
+     "tipo": "completar",
+     "enunciado": "Completa la frase",
+     "frase": "El accidente de trabajo es toda ___ corporal que el trabajador sufra con ocasión o por consecuencia del trabajo que ejecuta por cuenta ajena.",
+     "opciones": [
+      "sanción",
+      "lesión",
+      "baja",
+      "enfermedad"
+     ],
+     "correcta": 1,
+     "explicacion": "Así define la ley el accidente de trabajo.",
+     "dificultad": "facil",
+     "pagina": 3,
+     "cita": "El accidente de trabajo es toda lesión corporal que el trabajador sufra con ocasión o por consecuencia del trabajo que ejecuta por cuenta ajena.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej4",
+     "tipo": "emparejar",
+     "enunciado": "Une cada término con su definición",
+     "pares": [
+      {
+       "a": "Riesgo laboral",
+       "b": "Posibilidad de que un trabajador sufra un daño derivado del trabajo"
+      },
+      {
+       "a": "Peligro",
+       "b": "Fuente o situación con capacidad de producir un daño"
+      },
+      {
+       "a": "Accidente in itinere",
+       "b": "Accidente al ir o al volver del lugar de trabajo"
+      },
+      {
+       "a": "EPI",
+       "b": "Equipo de protección individual, última barrera frente al riesgo"
+      }
+     ],
+     "explicacion": "Son los conceptos básicos de la prevención.",
+     "dificultad": "media",
+     "pagina": 2,
+     "cita": "El riesgo laboral es la posibilidad de que un trabajador sufra un determinado daño derivado del trabajo.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej5",
+     "tipo": "opcion_multiple",
+     "enunciado": "Para valorar la gravedad de un riesgo laboral se tienen en cuenta…",
+     "opciones": [
+      "Solo el número de trabajadores expuestos",
+      "La antigüedad del trabajador en la empresa",
+      "La probabilidad de que ocurra el daño y su severidad",
+      "Solo el coste económico del daño"
+     ],
+     "correcta": 2,
+     "explicacion": "Gravedad = probabilidad del daño + severidad del daño.",
+     "dificultad": "media",
+     "pagina": 2,
+     "cita": "Para valorar su gravedad se tienen en cuenta conjuntamente la probabilidad de que se produzca el daño y la severidad del mismo.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej6",
+     "tipo": "opcion_multiple",
+     "enunciado": "Un técnico se cae de la moto cuando vuelve a casa desde el taller. ¿Cómo se considera?",
+     "opciones": [
+      "Accidente de trabajo in itinere",
+      "Enfermedad profesional",
+      "Accidente no laboral",
+      "Incidente sin consecuencias"
+     ],
+     "correcta": 0,
+     "explicacion": "Ir al trabajo o volver de él cuenta como accidente de trabajo in itinere.",
+     "dificultad": "media",
+     "pagina": 3,
+     "cita": "También se considera accidente de trabajo el accidente in itinere, que es el que se produce al ir o al volver del lugar de trabajo.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej7",
+     "tipo": "verdadero_falso",
+     "enunciado": "Los equipos de protección individual se utilizan antes que las medidas de protección colectiva.",
+     "opciones": [
+      "Verdadero",
+      "Falso"
+     ],
+     "correcta": 1,
+     "explicacion": "Los EPI son la última barrera: primero van las medidas colectivas.",
+     "dificultad": "media",
+     "pagina": 3,
+     "cita": "Los equipos de protección individual, o EPI, son la última barrera frente al riesgo y solo se utilizan cuando el riesgo no se puede evitar o limitar suficientemente con medidas de protección colectiva.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej8",
+     "tipo": "completar",
+     "enunciado": "Completa la frase",
+     "frase": "La enfermedad ___ es la contraída a consecuencia del trabajo en las actividades y por los agentes que recoge el cuadro oficial de enfermedades profesionales.",
+     "opciones": [
+      "común",
+      "profesional",
+      "temporal",
+      "contagiosa"
+     ],
+     "correcta": 1,
+     "explicacion": "Para que sea profesional debe figurar en el cuadro oficial.",
+     "dificultad": "dificil",
+     "pagina": 3,
+     "cita": "La enfermedad profesional es la contraída a consecuencia del trabajo en las actividades y por los agentes que recoge el cuadro oficial de enfermedades profesionales.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "orden": 2,
+   "titulo": "Tema 2. Señalización de seguridad",
+   "paginas": [
+    4,
+    5
+   ],
+   "ejercicios": [
+    {
+     "id": "ej9",
+     "tipo": "imagen",
+     "enunciado": "¿Qué tipo de señal es esta?",
+     "imagen": "I1",
+     "opciones": [
+      "Advertencia",
+      "Prohibición",
+      "Obligación",
+      "Salvamento o socorro"
+     ],
+     "correcta": 1,
+     "explicacion": "Redonda, borde rojo y banda diagonal: prohibición.",
+     "dificultad": "facil",
+     "pagina": 4,
+     "cita": "Las señales de prohibición tienen forma redonda, pictograma negro sobre fondo blanco y borde y banda diagonal de color rojo.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej10",
+     "tipo": "imagen",
+     "enunciado": "¿Qué indica esta señal?",
+     "imagen": "I2",
+     "opciones": [
+      "Prohibido el paso a personas",
+      "Uso obligatorio de guantes",
+      "Salida de emergencia",
+      "Advertencia de riesgo eléctrico"
+     ],
+     "correcta": 3,
+     "explicacion": "Triángulo amarillo: advertencia. El rayo indica riesgo eléctrico.",
+     "dificultad": "facil",
+     "pagina": 4,
+     "cita": "Las señales de advertencia tienen forma triangular, pictograma negro sobre fondo amarillo y borde negro.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej11",
+     "tipo": "imagen",
+     "enunciado": "¿Qué tipo de señal es esta?",
+     "imagen": "I3",
+     "opciones": [
+      "Obligación",
+      "Prohibición",
+      "Advertencia",
+      "Lucha contra incendios"
+     ],
+     "correcta": 0,
+     "explicacion": "Redonda y azul: obligación.",
+     "dificultad": "facil",
+     "pagina": 5,
+     "cita": "Las señales de obligación tienen forma redonda, con pictograma blanco sobre fondo azul.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej12",
+     "tipo": "imagen",
+     "enunciado": "¿Qué indica esta señal?",
+     "imagen": "I4",
+     "opciones": [
+      "Riesgo de caídas",
+      "Salida de emergencia",
+      "Prohibido correr",
+      "Extintor"
+     ],
+     "correcta": 1,
+     "explicacion": "Verde y rectangular: salvamento. Indica la salida de emergencia.",
+     "dificultad": "facil",
+     "pagina": 5,
+     "cita": "Las señales de salvamento o socorro son rectangulares o cuadradas, con pictograma blanco sobre fondo verde, e indican salidas de emergencia, botiquines o duchas de seguridad.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej13",
+     "tipo": "emparejar",
+     "enunciado": "Une cada tipo de señal con su forma y color",
+     "pares": [
+      {
+       "a": "Prohibición",
+       "b": "Redonda, con borde y banda diagonal rojos"
+      },
+      {
+       "a": "Advertencia",
+       "b": "Triangular, con fondo amarillo"
+      },
+      {
+       "a": "Obligación",
+       "b": "Redonda, con fondo azul"
+      },
+      {
+       "a": "Salvamento o socorro",
+       "b": "Rectangular o cuadrada, con fondo verde"
+      }
+     ],
+     "explicacion": "Forma y color identifican el tipo de señal.",
+     "dificultad": "media",
+     "pagina": 4,
+     "cita": "Las señales de obligación tienen forma redonda, con pictograma blanco sobre fondo azul.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej14",
+     "tipo": "verdadero_falso",
+     "enunciado": "La señalización de seguridad elimina el riesgo, por lo que puede sustituir a las medidas de prevención.",
+     "opciones": [
+      "Verdadero",
+      "Falso"
+     ],
+     "correcta": 1,
+     "explicacion": "La señal informa, pero no elimina el riesgo.",
+     "dificultad": "media",
+     "pagina": 4,
+     "cita": "La señalización no elimina el riesgo, por lo que nunca sustituye a las medidas de prevención.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej15",
+     "tipo": "completar",
+     "enunciado": "Completa la frase",
+     "frase": "Las señales relativas a los equipos de lucha contra incendios son rectangulares o cuadradas, con pictograma blanco sobre fondo ___.",
+     "opciones": [
+      "verde",
+      "azul",
+      "rojo",
+      "amarillo"
+     ],
+     "correcta": 2,
+     "explicacion": "Los equipos contra incendios se señalizan en rojo.",
+     "dificultad": "media",
+     "pagina": 5,
+     "cita": "Las señales relativas a los equipos de lucha contra incendios son rectangulares o cuadradas, con pictograma blanco sobre fondo rojo.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej16",
+     "tipo": "opcion_multiple",
+     "enunciado": "En el taller hay que indicar dónde está el botiquín. ¿Qué señal usarías?",
+     "opciones": [
+      "Redonda con fondo azul",
+      "Rectangular con pictograma blanco sobre fondo verde",
+      "Triangular con fondo amarillo",
+      "Rectangular con fondo rojo"
+     ],
+     "correcta": 1,
+     "explicacion": "El botiquín se indica con una señal de salvamento o socorro.",
+     "dificultad": "dificil",
+     "pagina": 5,
+     "cita": "Las señales de salvamento o socorro son rectangulares o cuadradas, con pictograma blanco sobre fondo verde, e indican salidas de emergencia, botiquines o duchas de seguridad.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "orden": 3,
+   "titulo": "Tema 3. Actuación en caso de emergencia",
+   "paginas": [
+    6,
+    7
+   ],
+   "ejercicios": [
+    {
+     "id": "ej17",
+     "tipo": "ordenar",
+     "enunciado": "Ordena los pasos de la conducta PAS ante un accidente",
+     "pasos": [
+      "Proteger al accidentado y a uno mismo",
+      "Avisar a los servicios de emergencia",
+      "Socorrer al accidentado"
+     ],
+     "explicacion": "Primero Proteger, después Avisar y por último Socorrer.",
+     "dificultad": "facil",
+     "pagina": 6,
+     "cita": "Ante un accidente, la actuación básica se resume en la conducta PAS: Proteger, Avisar y Socorrer.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej18",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿A qué número se llama para avisar a los servicios de emergencia?",
+     "opciones": [
+      "091",
+      "112",
+      "062",
+      "010"
+     ],
+     "correcta": 1,
+     "explicacion": "El 112 es el teléfono único de emergencias.",
+     "dificultad": "facil",
+     "pagina": 6,
+     "cita": "Después se avisa a los servicios de emergencia llamando al 112, indicando el lugar exacto, el número de heridos y su estado.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej19",
+     "tipo": "opcion_multiple",
+     "enunciado": "¿Qué información hay que dar al llamar al 112?",
+     "opciones": [
+      "Solo el nombre de la empresa",
+      "El número de la Seguridad Social del herido",
+      "El lugar exacto, el número de heridos y su estado",
+      "La hora de inicio de la jornada"
+     ],
+     "correcta": 2,
+     "explicacion": "Lugar, número de heridos y su estado.",
+     "dificultad": "media",
+     "pagina": 6,
+     "cita": "Después se avisa a los servicios de emergencia llamando al 112, indicando el lugar exacto, el número de heridos y su estado.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej20",
+     "tipo": "verdadero_falso",
+     "enunciado": "Si hay un incendio cerca, se puede mover al herido para ponerlo a salvo.",
+     "opciones": [
+      "Verdadero",
+      "Falso"
+     ],
+     "correcta": 0,
+     "explicacion": "Solo se mueve al herido si hay un peligro inminente, como un incendio.",
+     "dificultad": "media",
+     "pagina": 7,
+     "cita": "Durante el socorro se debe mantener la calma y no mover al herido salvo que exista un peligro inminente, como un incendio o una explosión.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej21",
+     "tipo": "completar",
+     "enunciado": "Completa la frase",
+     "frase": "En una evacuación se deben seguir las indicaciones de los equipos de emergencia y utilizar las salidas señalizadas, sin usar los ___.",
+     "opciones": [
+      "pasillos",
+      "extintores",
+      "ascensores",
+      "botiquines"
+     ],
+     "correcta": 2,
+     "explicacion": "En una evacuación nunca se usan los ascensores.",
+     "dificultad": "facil",
+     "pagina": 7,
+     "cita": "En una evacuación se deben seguir las indicaciones de los equipos de emergencia y utilizar las salidas señalizadas, sin usar los ascensores.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej22",
+     "tipo": "opcion_multiple",
+     "enunciado": "Un compañero no responde y no respira con normalidad. ¿Qué hay que hacer?",
+     "opciones": [
+      "Darle agua",
+      "Iniciar la reanimación cardiopulmonar",
+      "Sentarlo en una silla",
+      "Esperar sin hacer nada"
+     ],
+     "correcta": 1,
+     "explicacion": "Si no responde y no respira con normalidad, se inicia la RCP.",
+     "dificultad": "dificil",
+     "pagina": 7,
+     "cita": "Si el accidentado no responde y no respira con normalidad, hay que iniciar la reanimación cardiopulmonar.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    },
+    {
+     "id": "ej23",
+     "tipo": "emparejar",
+     "enunciado": "Une cada paso con lo que hay que hacer",
+     "pares": [
+      {
+       "a": "Proteger",
+       "b": "Asegurar el lugar para evitar nuevos accidentes"
+      },
+      {
+       "a": "Avisar",
+       "b": "Llamar al 112 e indicar el lugar y los heridos"
+      },
+      {
+       "a": "Socorrer",
+       "b": "Aplicar los primeros auxilios hasta que llegue la ayuda"
+      },
+      {
+       "a": "Plan de emergencia",
+       "b": "Establece cómo actuar ante un incendio o una evacuación"
+      }
+     ],
+     "explicacion": "Cada letra de PAS es una acción.",
+     "dificultad": "media",
+     "pagina": 6,
+     "cita": "Primero hay que proteger al accidentado y a uno mismo, asegurando el lugar para evitar nuevos accidentes.",
+     "verificada": true,
+     "revisada": true,
+     "avisos": []
+    }
+   ]
+  }
+ ],
+ "imagenes": {
+  "I1": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgMjQwIj48cmVjdCB3aWR0aD0iMjQwIiBoZWlnaHQ9IjI0MCIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjEyMCIgY3k9IjEyMCIgcj0iMTAwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNEMzJGMkYiIHN0cm9rZS13aWR0aD0iMjIiLz48cmVjdCB4PSI2MiIgeT0iMTE0IiB3aWR0aD0iOTYiIGhlaWdodD0iMTgiIGZpbGw9IiMxMTEiLz48cmVjdCB4PSIxNjAiIHk9IjExNCIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE4IiBmaWxsPSIjMTExIi8+PHBhdGggZD0iTTE2OCAxMDZjLTgtMTAgOC0xNiAwLTI4TTE4MCAxMDZjLTgtMTAgOC0xNiAwLTI4IiBzdHJva2U9IiMxMTEiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIvPjxsaW5lIHgxPSI1MCIgeTE9IjUwIiB4Mj0iMTkwIiB5Mj0iMTkwIiBzdHJva2U9IiNEMzJGMkYiIHN0cm9rZS13aWR0aD0iMjAiLz48L3N2Zz4=",
+  "I2": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgMjQwIj48cmVjdCB3aWR0aD0iMjQwIiBoZWlnaHQ9IjI0MCIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0xMjAgMjIgMjI2IDIwOEgxNFoiIGZpbGw9IiNGRkNDMDAiIHN0cm9rZT0iIzExMSIgc3Ryb2tlLXdpZHRoPSIxMiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMjggNzggOTYgMTQ2aDI0bC0xMiA0NiA0MC03MmgtMjZsMTQtNDJaIiBmaWxsPSIjMTExIi8+PC9zdmc+",
+  "I3": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgMjQwIj48cmVjdCB3aWR0aD0iMjQwIiBoZWlnaHQ9IjI0MCIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjEyMCIgY3k9IjEyMCIgcj0iMTA4IiBmaWxsPSIjMTU2NUMwIi8+PHBhdGggZD0iTTYyIDE1MGMwLTQwIDI2LTY2IDU4LTY2czU4IDI2IDU4IDY2WiIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjUwIiB5PSIxNDgiIHdpZHRoPSIxNDAiIGhlaWdodD0iMTYiIHJ4PSI4IiBmaWxsPSIjZmZmIi8+PHJlY3QgeD0iMTEzIiB5PSI3MiIgd2lkdGg9IjE0IiBoZWlnaHQ9IjMwIiByeD0iNiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==",
+  "I4": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgMjAwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjIwMCIgcng9IjEwIiBmaWxsPSIjMkU3RDMyIi8+PHJlY3QgeD0iMjAwIiB5PSIzMCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEwIi8+PGNpcmNsZSBjeD0iMTIwIiBjeT0iNTIiIHI9IjE2IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTExOCA3MiA5NiAxMTJsMjYgOC0xNCA0NE0xMTggNzJsMzAgMzAgMjgtNk0xMDQgMTA0bC0zMCA0TTEyMiAxMjBsMzIgMjIiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBmaWxsPSJub25lIi8+PC9zdmc+"
+ }
+}

@@ -1,0 +1,11 @@
+{
+  "bancos": [
+    {
+      "archivo": "ejemplo-prl",
+      "titulo": "Prevención de riesgos laborales",
+      "descripcion": "Ejemplo · FOL · Formación Profesional",
+      "icono": "🦺",
+      "color": "#00A499"
+    }
+  ]
+}
