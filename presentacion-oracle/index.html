@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oracle SQL · Historia y funcionamiento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ===== Paleta (cambia aquí los colores si quieres ajustarlos) ===== */
+:root{
+  --navy:#0a2240;        /* azul institucional */
+  --navy-2:#13335c;
+  --accent:#e2333f;      /* rojo de acento */
+  --oracle:#c74634;      /* rojo Oracle */
+  --sand:#f5f2ec;        /* fondo cálido */
+  --paper:#ffffff;
+  --ink:#16202e;
+  --muted:#5b6676;
+  --line:#dfe3ea;
+  --mono:"JetBrains Mono", ui-monospace, monospace;
+  --sans:"Archivo", system-ui, sans-serif;
+  --hdr:118px; --ftr:54px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--sans);color:var(--ink);background:var(--sand);overflow:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+
+/* ===== Cabecera estilo web universitaria ===== */
+header{position:fixed;inset:0 0 auto 0;z-index:20;background:var(--paper);box-shadow:0 1px 0 var(--line)}
+.topbar{background:var(--navy);color:#cfd8e6;font-size:12px;display:flex;justify-content:space-between;align-items:center;padding:0 24px;height:30px;gap:16px}
+.topbar .links{display:flex;gap:18px;overflow:hidden;white-space:nowrap}
+.topbar .links span{opacity:.85}
+.topbar .who{display:flex;gap:6px;white-space:nowrap}
+.topbar .who b{color:#fff;font-weight:600}
+.mainbar{display:flex;align-items:center;gap:22px;padding:0 24px;height:56px}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.mono-mark{width:34px;height:34px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:900;font-size:15px;letter-spacing:-.5px;position:relative}
+.mono-mark::after{content:"";position:absolute;right:-3px;bottom:-3px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2px solid #fff}
+.brand-txt{line-height:1.05}
+.brand-txt b{display:block;font-size:15px;font-weight:800;color:var(--navy)}
+.brand-txt small{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+nav.menu{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1}
+nav.menu::-webkit-scrollbar{display:none}
+nav.menu button{font-size:13px;font-weight:600;color:var(--navy);padding:8px 10px;border-radius:6px;white-space:nowrap;position:relative}
+nav.menu button:hover{background:var(--sand)}
+nav.menu button.on{color:var(--accent)}
+nav.menu button.on::after{content:"";position:absolute;left:10px;right:10px;bottom:2px;height:2px;background:var(--accent);border-radius:2px}
+.cta{background:var(--accent);color:#fff;font-weight:700;font-size:13px;padding:9px 14px;border-radius:999px;white-space:nowrap;flex-shrink:0}
+.searchbar{display:flex;align-items:center;gap:10px;padding:0 24px;height:32px;background:#f0f3f7;border-top:1px solid var(--line);font-family:var(--mono);font-size:12.5px;color:var(--navy)}
+.searchbar .lbl{font-family:var(--sans);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
+.searchbar .q{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.searchbar .q .kw{color:var(--accent);font-weight:600}
+.caret{display:inline-block;width:7px;height:14px;background:var(--navy);vertical-align:-2px;margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.searchbar .rows{font-size:11px;color:var(--muted);white-space:nowrap}
+
+/* ===== Escenario ===== */
+main{position:fixed;top:var(--hdr);bottom:var(--ftr);left:0;right:0;overflow:hidden}
+.slide{position:absolute;inset:0;overflow-y:auto;padding:22px 48px 30px;opacity:0;visibility:hidden;transform:translateY(14px);transition:opacity .45s ease,transform .45s ease,visibility .45s}
+.slide.on{opacity:1;visibility:visible;transform:none}
+.crumbs{font-size:12px;color:var(--muted);margin-bottom:14px}
+.crumbs b{color:var(--navy);font-weight:600}
+.crumbs i{font-style:normal;margin:0 6px;opacity:.6}
+.wrap{max-width:1180px;margin:0 auto}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+h1{font-size:clamp(34px,5.4vw,72px);line-height:.98;font-weight:900;letter-spacing:-.03em;color:var(--navy)}
+h2{font-size:clamp(28px,3.6vw,46px);line-height:1.04;font-weight:800;letter-spacing:-.02em;color:var(--navy);margin-bottom:16px}
+h3{font-size:18px;font-weight:800;color:var(--navy);margin-bottom:6px}
+p{font-size:16.5px;line-height:1.55;color:#2c3746}
+.lead{font-size:clamp(16px,1.5vw,19px);color:var(--muted);max-width:760px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1.1fr .9fr;align-items:start}
+.g3{grid-template-columns:repeat(3,1fr)}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.card.dark{background:var(--navy);color:#e6ecf5;border-color:var(--navy)}
+.card.dark h3{color:#fff}
+.card.dark p{color:#c6d1e2}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:5px;background:#fde8e9;color:var(--accent);margin-bottom:10px}
+code,.code{font-family:var(--mono)}
+pre.code{background:#0d1726;color:#d7e1f0;border-radius:12px;padding:16px 18px;font-size:13.5px;line-height:1.6;overflow-x:auto}
+pre.code .k{color:#ff8a8f;font-weight:600}
+pre.code .s{color:#9fe0b0}
+pre.code .c{color:#7a8aa3;font-style:italic}
+.fact{border-left:4px solid var(--accent);padding:6px 0 6px 14px;margin-top:14px}
+.fact b{color:var(--navy)}
+
+/* ===== Portada (hero) ===== */
+.hero{border-radius:22px;padding:56px 52px;min-height:calc(100% - 30px);background:
+  radial-gradient(900px 400px at 85% 10%, rgba(226,51,63,.35), transparent 60%),
+  radial-gradient(700px 500px at 0% 100%, rgba(255,255,255,.08), transparent 60%),
+  linear-gradient(135deg,var(--navy) 0%, #0f2d55 55%, #1a3f70 100%);
+  color:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.hero h1{color:#fff;max-width:880px}
+.hero h1 em{font-style:normal;color:#ff9aa0}
+.hero .lead{color:#c9d4e5;margin-top:16px}
+.hero .meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.pill{border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:7px 14px;font-size:13px;color:#e8eef7}
+.pill.solid{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.eye{position:absolute;right:48px;top:40px;width:min(36vw,360px);opacity:.95}
+.tablebg{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(180deg,#000,transparent 80%)}
+
+/* ===== Línea de tiempo ===== */
+.timeline{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:8px}
+.tl{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;position:relative;transition:transform .2s,border-color .2s}
+.tl:hover{transform:translateY(-3px);border-color:var(--accent)}
+.tl .y{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600}
+.tl .v{font-size:20px;font-weight:900;color:var(--navy);letter-spacing:-.02em}
+.tl p{font-size:13.5px;line-height:1.4;margin-top:4px;color:var(--muted)}
+.tl.big{background:var(--navy);border-color:var(--navy)}
+.tl.big .v{color:#fff}.tl.big p{color:#c6d1e2}.tl.big .y{color:#ff9aa0}
+
+/* ===== Personas ===== */
+.person{display:flex;gap:14px;align-items:flex-start}
+.avatar{width:58px;height:58px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;font-weight:900;font-size:20px;color:#fff}
+.person small{display:block;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.person p{font-size:14.5px}
+
+/* ===== Arquitectura ===== */
+.arch{display:grid;grid-template-columns:1fr;gap:12px}
+.layer{border-radius:14px;padding:14px 16px;border:2px dashed var(--line);background:var(--paper)}
+.layer > .lt{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between}
+.boxes{display:flex;flex-wrap:wrap;gap:8px}
+.box{flex:1 1 120px;border-radius:10px;padding:10px 12px;background:#eef2f8;border:1px solid #d6deea;cursor:pointer;transition:all .2s}
+.box b{display:block;font-size:14px;color:var(--navy)}
+.box span{font-size:12px;color:var(--muted)}
+.box.mem{background:#fff4f4;border-color:#f6cdd0}
+.box.proc{background:#0d1726;border-color:#0d1726}.box.proc b{color:#fff}.box.proc span{color:#9fb0c8}
+.box.disk{background:#f1f6ee;border-color:#d3e3c7}
+.box.hl{outline:3px solid var(--accent);outline-offset:1px;transform:translateY(-2px)}
+.explain{min-height:110px}
+
+/* ===== Stepper de consulta ===== */
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+.step{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;background:var(--paper);border:1px solid var(--line);font-weight:700;font-size:14px;color:var(--navy);transition:all .2s}
+.step i{font-style:normal;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;background:var(--sand)}
+.step.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.step.on i{background:var(--accent);color:#fff}
+.stage{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.plan{font-family:var(--mono);font-size:13px;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.plan .row{display:grid;grid-template-columns:30px 1fr 60px;padding:7px 12px;border-bottom:1px solid var(--line)}
+.plan .row.h{background:#f0f3f7;font-weight:600;color:var(--muted);font-size:11.5px}
+.plan .row:last-child{border:0}
+
+/* ===== Transacciones ===== */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:stretch}
+.fstep{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;position:relative}
+.fstep .n{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600}
+.fstep h3{font-size:16px;margin-top:2px}
+.fstep p{font-size:13.5px;line-height:1.45;color:var(--muted)}
+.fstep:not(:last-child)::after{content:"→";position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--accent);font-weight:900;z-index:2}
+
+/* ===== Quiz ===== */
+.quiz{display:grid;gap:12px}
+.qa{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.qa .opts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.qa .opts button{padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#f7f8fb;font-size:14px;font-weight:600;color:var(--navy)}
+.qa .opts button.ok{background:#e6f5ea;border-color:#79c08d;color:#1d6b35}
+.qa .opts button.ko{background:#fde8e9;border-color:#ef9aa0;color:#9b1c25}
+.qa .why{font-size:13.5px;color:var(--muted);margin-top:8px;display:none}
+.qa.done .why{display:block}
+
+/* ===== Pie de navegación ===== */
+footer{position:fixed;inset:auto 0 0 0;height:var(--ftr);background:var(--navy);color:#cfd8e6;display:flex;align-items:center;gap:16px;padding:0 24px;z-index:20;font-size:12.5px}
+.ctrl{display:flex;gap:6px}
+.ctrl button{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.1);color:#fff;font-size:16px;font-weight:700}
+.ctrl button:hover{background:var(--accent)}
+.prog{flex:1;height:4px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden}
+.prog i{display:block;height:100%;width:10%;background:var(--accent);transition:width .4s}
+.count{font-family:var(--mono);white-space:nowrap}
+.disc{opacity:.6;white-space:nowrap}
+
+/* ===== Responsive ===== */
+@media (max-width:980px){
+  .g2,.g3,.stage{grid-template-columns:1fr}
+  .timeline{grid-template-columns:repeat(2,1fr)}
+  .flow{grid-template-columns:1fr 1fr}
+  .fstep::after{display:none}
+  .eye{opacity:.25}
+  .cta,.topbar .links{display:none}
+  .disc{display:none}
+}
+@media (max-width:640px){
+  :root{--hdr:118px}
+  .slide{padding:16px 16px 24px}
+  .hero{padding:32px 22px}
+  .mainbar{padding:0 12px;gap:10px}
+  .brand-txt small{display:none}
+  .searchbar,.topbar{padding:0 12px}
+  .searchbar .rows{display:none}
+  .flow{grid-template-columns:1fr}
+  footer{padding:0 12px}
+}
+@media print{
+  body{overflow:visible} header,footer{display:none}
+  main{position:static}
+  .slide{position:relative;opacity:1;visibility:visible;transform:none;page-break-after:always;height:100vh}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="topbar">
+    <div class="links"><span>Campus Valencia</span><span>Máster en IA Aplicada</span><span>Bases de datos</span><span>Recursos</span></div>
+    <div class="who">Presenta: <b>Mireia Borrás Antón</b></div>
+  </div>
+  <div class="mainbar">
+    <div class="brand">
+      <div class="mono-mark">UE</div>
+      <div class="brand-txt"><b>Universidad Europea</b><small>Valencia · Aula de datos</small></div>
+    </div>
+    <nav class="menu" id="menu"></nav>
+    <button class="cta" onclick="go(9)">Solicita información</button>
+  </div>
+  <div class="searchbar">
+    <span class="lbl">¿Qué estás buscando?</span>
+    <span class="q" id="q"></span>
+    <span class="rows" id="rows"></span>
+  </div>
+</header>
+
+<main id="stage">
+
+<!-- 1 · PORTADA -->
+<section class="slide" data-name="Inicio" data-sql="SELECT * FROM presentaciones WHERE tema = 'Oracle';">
+  <div class="hero">
+    <div class="tablebg"></div>
+    <svg class="eye" viewBox="0 0 360 260" aria-hidden="true">
+      <defs><linearGradient id="gl" x1="0" x2="1"><stop offset="0" stop-color="#ff9aa0"/><stop offset="1" stop-color="#e2333f"/></linearGradient></defs>
+      <ellipse cx="180" cy="80" rx="120" ry="34" fill="none" stroke="url(#gl)" stroke-width="5"/>
+      <path d="M60 80v100c0 19 54 34 120 34s120-15 120-34V80" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3"/>
+      <path d="M60 130c0 19 54 34 120 34s120-15 120-34" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3"/>
+      <circle cx="180" cy="80" r="14" fill="#e2333f"/><circle cx="180" cy="80" r="5" fill="#fff"/>
+      <text x="180" y="250" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" fill="#c9d4e5">SELECT futuro FROM datos;</text>
+    </svg>
+    <div class="kicker" style="color:#ff9aa0">Bases de datos · Clase magistral</div>
+    <h1>Oracle: la base de datos que <em>nació de una profecía</em></h1>
+    <p class="lead">Cómo tres programadores leyeron un artículo de IBM, se adelantaron a IBM y construyeron el motor SQL que hoy sostiene bancos, aerolíneas y gobiernos.</p>
+    <div class="meta">
+      <span class="pill solid">Máster en IA Aplicada</span>
+      <span class="pill">Mireia Borrás Antón</span>
+      <span class="pill">10 consultas · ← → para navegar</span>
+    </div>
+  </div>
+</section>
+
+<!-- 2 · ANTES DE ORACLE -->
+<section class="slide" data-name="Orígenes" data-sql="SELECT idea FROM ibm_research WHERE año = 1970;">
+  <div class="wrap">
+    <div class="kicker">Capítulo 1 · La semilla</div>
+    <h2>Todo empezó con un artículo que IBM no supo aprovechar</h2>
+    <div class="grid g2">
+      <div>
+        <p class="lead">En 1970, el matemático <b>Edgar F. Codd</b>, investigador de IBM, publica <i>“A Relational Model of Data for Large Shared Data Banks”</i>. Propone algo radical: guardar los datos en <b>tablas</b> relacionadas entre sí y consultarlos con lógica matemática, sin saber cómo están almacenados físicamente.</p>
+        <div class="fact"><b>El giro de guion:</b> IBM construye el prototipo <b>System R</b> y, con él, el lenguaje <b>SEQUEL</b> (Chamberlin y Boyce, 1974), luego rebautizado <b>SQL</b>. Pero tarda años en venderlo: su negocio estrella era IMS, una base de datos jerárquica.</div>
+        <div class="fact"><b>La oportunidad:</b> los papers de System R eran públicos. Cualquiera podía leerlos… y alguien lo hizo.</div>
+      </div>
+      <div class="grid">
+        <div class="card"><span class="tag">Antes · modelo jerárquico</span><p style="font-size:14.5px">Los datos viven en árboles. Para consultar hay que “navegar” por punteros, y el programa depende de la estructura física.</p></div>
+        <div class="card dark"><span class="tag">Después · modelo relacional</span><p style="font-size:14.5px">Tablas, filas y columnas. Dices <b>qué</b> quieres, no <b>cómo</b> obtenerlo. El motor decide el camino.</p></div>
+        <pre class="code"><span class="c">-- La promesa de Codd en una línea</span>
+<span class="k">SELECT</span> nombre <span class="k">FROM</span> alumnos <span class="k">WHERE</span> nota &gt; <span class="s">9</span>;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · CREADORES -->
+<section class="slide" data-name="Creadores" data-sql="SELECT nombre, rol FROM fundadores ORDER BY aportacion DESC;">
+  <div class="wrap">
+    <div class="kicker">Capítulo 2 · Los fundadores</div>
+    <h2>1977: tres programadores, 2.000 dólares y una idea robada a plena luz</h2>
+    <p class="lead" style="margin-bottom:18px">Tras trabajar juntos en Ampex, fundan <b>Software Development Laboratories (SDL)</b> en Santa Clara, California, con unos 2.000 $ de capital inicial. Su plan: construir un sistema relacional compatible con SQL antes que IBM.</p>
+    <div class="grid g3">
+      <div class="card person"><div class="avatar" style="background:var(--accent)">LE</div><div><small>El visionario</small><h3>Larry Ellison</h3><p>Nacido en Nueva York en 1944, sin terminar la universidad. Leyó los papers de Codd y System R y vio el negocio. Puso la mayor parte del dinero. Fue CEO hasta 2014; hoy es presidente y CTO.</p></div></div>
+      <div class="card person"><div class="avatar" style="background:var(--navy)">BM</div><div><small>El ingeniero</small><h3>Bob Miner</h3><p>Escribió gran parte del código de las primeras versiones. Arquitecto técnico del producto durante años. Falleció en 1994.</p></div></div>
+      <div class="card person"><div class="avatar" style="background:#4a6a93">EO</div><div><small>El tercer socio</small><h3>Ed Oates</h3><p>Programador cofundador, clave en el desarrollo inicial y en las relaciones con los primeros clientes.</p></div></div>
+    </div>
+    <div class="fact"><b>Curiosidad para la clase:</b> el usuario de pruebas <code>scott / tiger</code> viene de <b>Bruce Scott</b>, uno de los primeros empleados; “tiger” era el nombre de su gato.</div>
+  </div>
+</section>
+
+<!-- 4 · EL NOMBRE -->
+<section class="slide" data-name="El nombre" data-sql="SELECT origen FROM nombres WHERE nombre = 'ORACLE';">
+  <div class="wrap">
+    <div class="kicker">Capítulo 3 · La profecía</div>
+    <h2>¿Por qué “Oracle”? Un proyecto para la CIA y una versión 1 que nunca existió</h2>
+    <div class="grid g2">
+      <div>
+        <p class="lead">En Ampex, Ellison y Miner habían trabajado en un proyecto para la <b>CIA</b> cuyo nombre en clave era <b>“Oracle”</b>: un sistema que debía responder a cualquier pregunta. Como el oráculo de Delfos… pero con tablas.</p>
+        <div class="fact"><b>1979 · Oracle V2.</b> Se convierte en la primera base de datos relacional comercial basada en SQL. No hubo V1: la llamaron “versión 2” para que los clientes no desconfiaran de un producto recién nacido.</div>
+        <div class="fact"><b>Primer cliente:</b> la Base Aérea de Wright-Patterson (Fuerza Aérea de EE. UU.).</div>
+      </div>
+      <div class="card dark">
+        <span class="tag">Cambio de nombre = cambio de destino</span>
+        <div class="timeline" style="grid-template-columns:1fr;gap:10px;margin-top:6px">
+          <div class="tl big"><div class="y">1977</div><div class="v">Software Development Laboratories</div></div>
+          <div class="tl big"><div class="y">1979</div><div class="v">Relational Software, Inc.</div></div>
+          <div class="tl big"><div class="y">1982</div><div class="v">Oracle Systems Corporation</div><p>La empresa adopta el nombre de su producto estrella.</p></div>
+          <div class="tl big"><div class="y">1986</div><div class="v">Sale a bolsa</div><p>Un día antes que Microsoft.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · VERSIONES -->
+<section class="slide" data-name="Versiones" data-sql="SELECT version, hito FROM oracle_releases ORDER BY año;">
+  <div class="wrap">
+    <div class="kicker">Capítulo 4 · Cinco décadas de versiones</div>
+    <h2>De un programa en ensamblador a una base de datos con IA</h2>
+    <div class="timeline">
+      <div class="tl"><div class="y">1983</div><div class="v">V3</div><p>Reescrita en C: la misma base de datos en mainframes, minis y PCs.</p></div>
+      <div class="tl"><div class="y">1984</div><div class="v">V4</div><p>Lectura consistente: leer sin bloquear a quien escribe.</p></div>
+      <div class="tl"><div class="y">1985</div><div class="v">V5</div><p>Arquitectura cliente-servidor y consultas distribuidas.</p></div>
+      <div class="tl"><div class="y">1988</div><div class="v">V6</div><p>Bloqueo a nivel de fila y nace PL/SQL.</p></div>
+      <div class="tl"><div class="y">1992</div><div class="v">7</div><p>Procedimientos almacenados y triggers.</p></div>
+      <div class="tl"><div class="y">1997–99</div><div class="v">8 / 8i</div><p>Objetos, Java en la base de datos y la “i” de Internet.</p></div>
+      <div class="tl"><div class="y">2001</div><div class="v">9i</div><p>RAC: varios servidores, una misma base de datos.</p></div>
+      <div class="tl"><div class="y">2003–07</div><div class="v">10g / 11g</div><p>La “g” de Grid: computación en malla y autoajuste.</p></div>
+      <div class="tl"><div class="y">2013–19</div><div class="v">12c / 19c</div><p>La “c” de Cloud: arquitectura multitenant. 19c, versión de soporte largo.</p></div>
+      <div class="tl big"><div class="y">2024–25</div><div class="v">23ai → 26ai</div><p>Búsqueda vectorial e IA dentro del propio motor SQL.</p></div>
+    </div>
+    <div class="fact"><b>Para recordar:</b> las letras cuentan la historia de la informática: <b>i</b> (Internet), <b>g</b> (Grid), <b>c</b> (Cloud), <b>ai</b> (Inteligencia Artificial).</div>
+  </div>
+</section>
+
+<!-- 6 · ARQUITECTURA -->
+<section class="slide" data-name="Arquitectura" data-sql="DESCRIBE oracle_architecture;">
+  <div class="wrap">
+    <div class="kicker">Capítulo 5 · Cómo funciona (I)</div>
+    <h2>Instancia + base de datos: el cerebro y la memoria a largo plazo</h2>
+    <div class="grid g2">
+      <div class="arch" id="arch">
+        <div class="layer"><div class="lt"><span>Instancia · memoria</span><span>se pierde al apagar</span></div>
+          <div class="boxes">
+            <div class="box mem" data-k="sga"><b>SGA</b><span>memoria compartida</span></div>
+            <div class="box mem" data-k="buffer"><b>Buffer cache</b><span>bloques de datos</span></div>
+            <div class="box mem" data-k="pool"><b>Shared pool</b><span>SQL ya analizado</span></div>
+            <div class="box mem" data-k="redobuf"><b>Redo log buffer</b><span>cambios recientes</span></div>
+            <div class="box mem" data-k="pga"><b>PGA</b><span>memoria privada</span></div>
+          </div>
+        </div>
+        <div class="layer"><div class="lt"><span>Instancia · procesos</span><span>trabajan en segundo plano</span></div>
+          <div class="boxes">
+            <div class="box proc" data-k="dbw"><b>DBWn</b><span>escribe datos</span></div>
+            <div class="box proc" data-k="lgwr"><b>LGWR</b><span>escribe redo</span></div>
+            <div class="box proc" data-k="ckpt"><b>CKPT</b><span>checkpoints</span></div>
+            <div class="box proc" data-k="smon"><b>SMON · PMON</b><span>recuperación</span></div>
+          </div>
+        </div>
+        <div class="layer"><div class="lt"><span>Base de datos · disco</span><span>persistente</span></div>
+          <div class="boxes">
+            <div class="box disk" data-k="data"><b>Datafiles</b><span>tablas e índices</span></div>
+            <div class="box disk" data-k="redo"><b>Redo logs</b><span>diario de cambios</span></div>
+            <div class="box disk" data-k="ctl"><b>Control files</b><span>el “mapa”</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card dark explain" id="explain"><span class="tag">Toca una pieza</span><h3>Piensa en una biblioteca</h3><p>La <b>base de datos</b> son las estanterías (ficheros en disco). La <b>instancia</b> es el equipo de bibliotecarios y la mesa de trabajo (memoria y procesos). Puedes tener la biblioteca cerrada con los libros dentro; para consultarlos hay que “arrancar la instancia”.</p></div>
+        <div class="fact"><b>Idea clave:</b> Oracle intenta trabajar siempre en memoria y escribir en disco de forma diferida y ordenada. Por eso es rápido… y por eso necesita los redo logs para no perder nada.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 · VIDA DE UNA CONSULTA -->
+<section class="slide" data-name="Consulta" data-sql="EXPLAIN PLAN FOR SELECT * FROM alumnos WHERE nota > 9;">
+  <div class="wrap">
+    <div class="kicker">Capítulo 6 · Cómo funciona (II)</div>
+    <h2>La vida de una consulta SQL, paso a paso</h2>
+    <div class="steps" id="steps">
+      <button class="step on" data-i="0"><i>1</i>Parse</button>
+      <button class="step" data-i="1"><i>2</i>Optimize</button>
+      <button class="step" data-i="2"><i>3</i>Row source</button>
+      <button class="step" data-i="3"><i>4</i>Execute</button>
+      <button class="step" data-i="4"><i>5</i>Fetch</button>
+    </div>
+    <div class="stage">
+      <div class="card" id="stepTxt"></div>
+      <div>
+        <pre class="code"><span class="k">SELECT</span> a.nombre, c.titulo
+  <span class="k">FROM</span> alumnos a
+  <span class="k">JOIN</span> cursos c <span class="k">ON</span> c.id = a.curso_id
+ <span class="k">WHERE</span> a.nota &gt; <span class="s">9</span>;</pre>
+        <div class="plan" style="margin-top:12px">
+          <div class="row h"><span>Id</span><span>Operación (plan elegido)</span><span>Coste</span></div>
+          <div class="row"><span>0</span><span>SELECT STATEMENT</span><span>6</span></div>
+          <div class="row"><span>1</span><span>&nbsp;HASH JOIN</span><span>6</span></div>
+          <div class="row"><span>2</span><span>&nbsp;&nbsp;INDEX RANGE SCAN idx_nota</span><span>2</span></div>
+          <div class="row"><span>3</span><span>&nbsp;&nbsp;TABLE ACCESS FULL cursos</span><span>3</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 · TRANSACCIONES -->
+<section class="slide" data-name="Transacciones" data-sql="UPDATE cuentas SET saldo = saldo - 100 WHERE id = 7; COMMIT;">
+  <div class="wrap">
+    <div class="kicker">Capítulo 7 · Cómo funciona (III)</div>
+    <h2>¿Qué pasa cuando haces un UPDATE y un COMMIT?</h2>
+    <div class="flow">
+      <div class="fstep"><div class="n">01 · UNDO</div><h3>Guarda el “antes”</h3><p>Oracle copia el valor antiguo en el <b>undo</b>. Sirve para hacer ROLLBACK y para que otros sigan viendo el dato original.</p></div>
+      <div class="fstep"><div class="n">02 · BUFFER</div><h3>Cambia en memoria</h3><p>El bloque se modifica en la <b>buffer cache</b>. El fichero en disco todavía no se toca.</p></div>
+      <div class="fstep"><div class="n">03 · REDO</div><h3>Apunta el cambio</h3><p>Se escribe una entrada en el <b>redo log buffer</b>: un diario de qué cambió.</p></div>
+      <div class="fstep"><div class="n">04 · COMMIT</div><h3>LGWR firma</h3><p>Al hacer COMMIT, <b>LGWR</b> vuelca el redo a disco. Desde ese instante, el cambio sobrevive a un apagón.</p></div>
+    </div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card dark"><span class="tag">Lectura consistente</span><h3>Los lectores no bloquean a los escritores</h3><p>Cada consulta ve los datos tal como estaban al empezar, usando un número de versión interno (<b>SCN</b>) y reconstruyendo desde el undo lo que haya cambiado entretanto. Esta idea, presente desde la V4, es una de las grandes ventajas históricas de Oracle.</p></div>
+      <div class="card"><span class="tag">ACID</span><p style="font-size:15px"><b>A</b>tomicidad: todo o nada (undo).<br><b>C</b>onsistencia: reglas e integridad.<br><b>I</b>slamiento: cada sesión ve su foto (SCN).<br><b>D</b>urabilidad: lo confirmado no se pierde (redo).</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 · ORACLE HOY -->
+<section class="slide" data-name="Hoy" data-sql="SELECT * FROM oracle WHERE año >= 2025 AND tema LIKE '%IA%';">
+  <div class="wrap">
+    <div class="kicker">Capítulo 8 · El oráculo, hoy</div>
+    <h2>De responder preguntas en SQL a responderlas con IA</h2>
+    <div class="grid g2">
+      <div>
+        <p class="lead">Medio siglo después, Oracle Database sigue siendo un estándar en banca, telecomunicaciones y administración pública. La empresa también es dueña de <b>MySQL</b> y <b>Java</b> desde la compra de Sun Microsystems (2010).</p>
+        <div class="fact"><b>Octubre de 2025 · Oracle AI Database 26ai.</b> Sustituye a 23ai e integra la IA dentro del motor: búsqueda vectorial, consultas en lenguaje natural y agentes que trabajan sobre los datos sin sacarlos de la base de datos.</div>
+        <div class="fact"><b>Liderazgo:</b> desde septiembre de 2025 la compañía tiene dos consejeros delegados, Clay Magouyrk y Mike Sicilia; Larry Ellison sigue como presidente y CTO.</div>
+      </div>
+      <div>
+        <pre class="code"><span class="c">-- SQL clásico + IA en la misma consulta</span>
+<span class="k">SELECT</span> titulo
+  <span class="k">FROM</span> apuntes
+ <span class="k">ORDER BY</span> <span class="k">VECTOR_DISTANCE</span>(
+         embedding,
+         :pregunta_vectorizada,
+         COSINE)
+ <span class="k">FETCH FIRST</span> <span class="s">3</span> <span class="k">ROWS ONLY</span>;</pre>
+        <div class="card" style="margin-top:12px"><span class="tag">Conexión con el máster</span><p style="font-size:14.5px">Es la idea de un sistema RAG, pero viviendo dentro del SQL: los embeddings se guardan en una columna y la “búsqueda por significado” se hace con la misma consulta que filtra, une y ordena.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 · COMMIT -->
+<section class="slide" data-name="COMMIT" data-sql="COMMIT;  -- Confirmación completa.">
+  <div class="wrap">
+    <div class="kicker">Cierre · Confirmamos la transacción</div>
+    <h2>COMMIT; Tres preguntas para comprobar que todo se ha guardado</h2>
+    <div class="grid g2">
+      <div class="quiz" id="quiz">
+        <div class="qa"><b>1. ¿Por qué la primera versión comercial se llamó V2?</b>
+          <div class="opts"><button data-ok="0">Hubo una V1 con errores</button><button data-ok="1">Por marketing</button><button data-ok="0">Era la 2.ª de IBM</button></div>
+          <p class="why">Una “versión 2” transmitía madurez: nadie quería comprar la primera versión de nada.</p></div>
+        <div class="qa"><b>2. ¿Qué proceso garantiza que un COMMIT no se pierda?</b>
+          <div class="opts"><button data-ok="0">DBWn</button><button data-ok="1">LGWR</button><button data-ok="0">PMON</button></div>
+          <p class="why">LGWR escribe el redo en disco al confirmar; los datos ya pueden reconstruirse aunque DBWn aún no haya escrito los bloques.</p></div>
+        <div class="qa"><b>3. ¿Qué artículo inspiró a los fundadores?</b>
+          <div class="opts"><button data-ok="1">El modelo relacional de Codd</button><button data-ok="0">El manual de COBOL</button><button data-ok="0">La patente de Ampex</button></div>
+          <p class="why">Codd (IBM, 1970) y los trabajos públicos de System R sobre SQL.</p></div>
+      </div>
+      <div class="card dark" style="display:flex;flex-direction:column;justify-content:space-between;gap:20px">
+        <div>
+          <span class="tag">Resumen</span>
+          <p>Una idea académica (Codd), un equipo que se atrevió a comercializarla antes que nadie (Ellison, Miner, Oates) y una arquitectura que prioriza memoria, consistencia y durabilidad. De la CIA a la IA.</p>
+        </div>
+        <div>
+          <div class="code" style="font-size:14px;color:#9fe0b0">SQL&gt; COMMIT;<br>Confirmación terminada.</div>
+          <h2 style="color:#fff;margin:14px 0 0">¿Preguntas?</h2>
+          <p style="color:#c6d1e2">Mireia Borrás Antón · Máster en IA Aplicada</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="ctrl"><button onclick="go(cur-1)" aria-label="Anterior">‹</button><button onclick="go(cur+1)" aria-label="Siguiente">›</button></div>
+  <div class="prog"><i id="bar"></i></div>
+  <span class="count" id="count">01 / 10</span>
+  <span class="disc">Presentación académica de estudiante · no es una web oficial</span>
+</footer>
+
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+const menu=document.getElementById('menu');
+let cur=0, typer=null;
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.textContent=s.dataset.name; b.onclick=()=>go(i); menu.appendChild(b);
+  const c=document.createElement('div'); c.className='crumbs';
+  c.innerHTML=`Inicio<i>›</i>Bases de datos<i>›</i>Oracle<i>›</i><b>${s.dataset.name}</b>`;
+  if(i>0) (s.querySelector('.wrap')||s).prepend(c);
+});
+
+const KW=/\b(SELECT|FROM|WHERE|ORDER BY|AND|LIKE|UPDATE|SET|COMMIT|DESCRIBE|EXPLAIN PLAN FOR|DESC)\b/g;
+function typeSQL(txt){
+  clearInterval(typer);
+  const q=document.getElementById('q'); let n=0;
+  const t0=performance.now();
+  document.getElementById('rows').textContent='';
+  typer=setInterval(()=>{
+    n+=2; const part=txt.slice(0,n);
+    q.innerHTML=part.replace(/</g,'&lt;').replace(KW,'<span class="kw">$1</span>')+'<span class="caret"></span>';
+    if(n>=txt.length){clearInterval(typer);
+      const ms=((performance.now()-t0)/1000).toFixed(2).replace('.',',');
+      document.getElementById('rows').textContent=`Diapositiva ${cur+1} recuperada · ${ms} s`;}
+  },22);
+}
+
+function go(i){
+  i=Math.max(0,Math.min(slides.length-1,i));
+  slides[cur].classList.remove('on'); cur=i; slides[cur].classList.add('on');
+  [...menu.children].forEach((b,j)=>b.classList.toggle('on',j===cur));
+  menu.children[cur].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+  document.getElementById('bar').style.width=((cur+1)/slides.length*100)+'%';
+  document.getElementById('count').textContent=String(cur+1).padStart(2,'0')+' / '+slides.length;
+  typeSQL(slides[cur].dataset.sql);
+  try{history.replaceState(null,'','#'+(cur+1))}catch(e){}
+}
+
+document.addEventListener('keydown',e=>{
+  if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(cur+1)}
+  if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(cur-1)}
+  if(e.key==='Home')go(0); if(e.key==='End')go(slides.length-1);
+});
+let tx=null;
+document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{if(tx===null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>60)go(cur+(d<0?1:-1));tx=null});
+
+/* Arquitectura interactiva */
+const ARCH={
+  sga:['SGA','System Global Area: la memoria compartida por todas las sesiones. Contiene la buffer cache, el shared pool y el redo log buffer.'],
+  buffer:['Buffer cache','Copia en memoria de los bloques de datos. Si el bloque ya está aquí (cache hit) no hace falta leer del disco.'],
+  pool:['Shared pool','Guarda las sentencias SQL ya analizadas y sus planes. Si llega una consulta idéntica, se reutiliza (soft parse) y se ahorra trabajo.'],
+  redobuf:['Redo log buffer','Pequeño búfer circular donde se apuntan todos los cambios antes de pasarlos a los redo logs en disco.'],
+  pga:['PGA','Memoria privada de cada proceso de servidor: ordenaciones, hash joins y variables de sesión.'],
+  dbw:['DBWn · Database Writer','Escribe en los datafiles los bloques modificados de la buffer cache. Lo hace por lotes y sin prisa: no tiene que esperar al COMMIT.'],
+  lgwr:['LGWR · Log Writer','Vuelca el redo log buffer a los redo logs. Es el que hace que un COMMIT sea definitivo.'],
+  ckpt:['CKPT · Checkpoint','Marca puntos de control para que, tras una caída, la recuperación sepa desde dónde empezar.'],
+  smon:['SMON y PMON','SMON recupera la instancia tras una caída; PMON limpia las sesiones que terminan de forma inesperada y libera sus bloqueos.'],
+  data:['Datafiles','Los ficheros donde viven de verdad las tablas, los índices y el undo, organizados en tablespaces.'],
+  redo:['Redo logs','El diario de todo lo que ha cambiado. Con ellos se puede rehacer cualquier transacción confirmada.'],
+  ctl:['Control files','El mapa de la base de datos: qué ficheros la forman, dónde están y en qué punto (SCN) se quedó.']
+};
+document.querySelectorAll('#arch .box').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#arch .box').forEach(x=>x.classList.remove('hl'));
+  b.classList.add('hl'); const [t,d]=ARCH[b.dataset.k];
+  document.getElementById('explain').innerHTML=`<span class="tag">Pieza seleccionada</span><h3>${t}</h3><p>${d}</p>`;
+});
+
+/* Stepper de consulta */
+const STEPS=[
+  ['1 · Parse (análisis)','Oracle comprueba la <b>sintaxis</b> (¿está bien escrito?) y la <b>semántica</b> (¿existen las tablas y tengo permisos?). Después busca la sentencia en el <b>shared pool</b>: si ya está, es un <i>soft parse</i>; si no, toca un <i>hard parse</i>, mucho más caro.'],
+  ['2 · Optimize (optimizador)','El <b>optimizador basado en costes</b> genera varios planes posibles y, usando estadísticas (cuántas filas hay, cómo se distribuyen los valores), elige el más barato: ¿índice o lectura completa? ¿hash join o nested loops?'],
+  ['3 · Row source generation','El plan elegido se convierte en un árbol de operaciones ejecutables (los <i>row sources</i>), como el que ves a la derecha.'],
+  ['4 · Execute (ejecución)','El motor recorre el árbol. Busca los bloques en la buffer cache y, si no están, los lee de disco. En un UPDATE, aquí se generan undo y redo.'],
+  ['5 · Fetch (entrega)','Las filas resultantes se envían al cliente por lotes. En un SELECT, este es el momento en que tú ves los datos en pantalla.']
+];
+function step(i){
+  document.querySelectorAll('.step').forEach((b,j)=>b.classList.toggle('on',j===i));
+  document.getElementById('stepTxt').innerHTML=`<span class="tag">Fase ${i+1} de 5</span><h3>${STEPS[i][0]}</h3><p>${STEPS[i][1]}</p>`;
+}
+document.querySelectorAll('.step').forEach(b=>b.onclick=()=>step(+b.dataset.i));
+step(0);
+
+/* Quiz */
+document.querySelectorAll('.qa').forEach(q=>q.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  if(q.classList.contains('done'))return;
+  q.classList.add('done');
+  q.querySelectorAll('button').forEach(x=>{if(x.dataset.ok==='1')x.classList.add('ok')});
+  if(b.dataset.ok!=='1')b.classList.add('ko');
+}));
+
+window.addEventListener('hashchange',()=>{const h=parseInt(location.hash.slice(1))-1;if(Number.isInteger(h)&&h!==cur)go(h)});
+const start=parseInt(location.hash.slice(1))-1;
+slides[0].classList.add('on');
+go(Number.isInteger(start)&&start>=0?start:0);
+</script>
+</body>
+</html>
