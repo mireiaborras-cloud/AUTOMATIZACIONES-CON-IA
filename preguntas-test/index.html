@@ -523,6 +523,8 @@ input[type=color]{width:56px;height:42px;border:1.5px solid var(--linea);border-
 const APP = 'preguntastest', VERSION = '0.4.0';
 
 /* ── utilidades ── */
+/* pide siempre la versión recién publicada, saltándose la caché de GitHub Pages */
+const fresco = u => { const x = new URL(u); x.searchParams.set('v', Date.now()); return x; };
 const $ = id => document.getElementById(id), $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -1432,7 +1434,7 @@ const GH = {
 GH.carga();
 async function remotos() {
   if (!GH.cfg) {
-    try { const r = await fetch(new URL('../bancos/index.json', location.href), {cache: 'no-cache'}); if (!r.ok) return {lista: [], soloLectura: true};
+    try { const r = await fetch(fresco(new URL('../bancos/index.json', location.href)), {cache: 'no-store'}); if (!r.ok) return {lista: [], soloLectura: true};
       return {soloLectura: true, lista: ((await r.json()).bancos || []).filter(b => b && b.archivo).map(e => ({archivo: e.archivo, entry: e, fichero: true}))}; }
     catch { return {lista: [], soloLectura: true, error: 'No se pudo leer el catálogo publicado.'}; }
   }
@@ -1552,7 +1554,7 @@ function pintaFilas(err) {
 async function jsonDeFila(f) {
   if (f.local) return f.local.json;
   if (GH.cfg) return JSON.parse(await GH.raw(`bancos/${f.archivo}.json`));
-  const r = await fetch(new URL(`../bancos/${f.archivo}.json`, location.href), {cache: 'no-cache'}); if (!r.ok) throw new Error('No se pudo descargar el banco.'); return r.json();
+  const r = await fetch(fresco(new URL(`../bancos/${f.archivo}.json`, location.href)), {cache: 'no-store'}); if (!r.ok) throw new Error('No se pudo descargar el banco.'); return r.json();
 }
 async function accionBanco(accion, archivo) {
   const f = BK.filas.find(x => x.archivo === archivo); if (!f || BK.ocupado) return;

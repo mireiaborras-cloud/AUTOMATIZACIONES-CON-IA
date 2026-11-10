@@ -201,6 +201,8 @@ h2.sec{font-size:22px;font-weight:900;margin:30px 0 12px}
 
 <script>
 'use strict';
+/* pide siempre la versión recién publicada, saltándose la caché de GitHub Pages */
+const fresco = u => { const x = new URL(u); x.searchParams.set('v', Date.now()); return x; };
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -262,7 +264,7 @@ async function verBiblioteca() {
   $('barra').hidden = true; document.title = 'Práctica'; L = null;
   $('app').innerHTML = `<div class="wrap"><div class="hero"><h1>¿Qué quieres practicar?</h1><p>Elige un banco de ejercicios.</p></div><div class="lista" id="lista"><p class="vacio">Cargando…</p></div><label class="subir" for="fBanco">Abrir un banco desde un archivo (.json)</label><p class="pieweb">Tu progreso se guarda en este navegador.</p></div>`;
   let cat = [];
-  try { const r = await fetch(new URL('../bancos/index.json', location.href), {cache: 'no-cache'}); if (r.ok) cat = (await r.json()).bancos || []; } catch {}
+  try { const r = await fetch(fresco(new URL('../bancos/index.json', location.href)), {cache: 'no-store'}); if (r.ok) cat = (await r.json()).bancos || []; } catch {}
   cat = cat.filter(b => b && /^[\w-]+$/.test(b.archivo || '') && b.visible !== false);
   $('lista').innerHTML = cat.length ? cat.map(b => { const col = /^#[0-9a-f]{6}$/i.test(b.color || '') ? b.color : '#00A499', pr = LSG('prog_' + b.archivo, null), n = pr ? (pr.historial || []).length : 0;
     return `<a class="b3 banco" href="?banco=${encodeURIComponent(b.archivo)}" style="--bc-s:color-mix(in srgb,${col} 18%,#fff)"><span class="bi">${esc(b.icono || '📘')}</span><span><b>${esc(b.titulo || b.archivo)}</b><span>${esc(b.descripcion || '')}${n ? `${b.descripcion ? ' · ' : ''}${n} test${n > 1 ? 's' : ''} hecho${n > 1 ? 's' : ''}` : ''}</span></span></a>`; }).join('')
@@ -487,10 +489,10 @@ async function inicio() {
   if (nombre) {
     if (!/^[\w-]+$/.test(nombre)) return error('El nombre del banco no es válido.');
     /* solo se abren los bancos del catálogo que el profesor tiene visibles */
-    let cat = null; try { const r = await fetch(new URL('../bancos/index.json', location.href), {cache: 'no-cache'}); if (r.ok) cat = (await r.json()).bancos || []; } catch {}
+    let cat = null; try { const r = await fetch(fresco(new URL('../bancos/index.json', location.href)), {cache: 'no-store'}); if (r.ok) cat = (await r.json()).bancos || []; } catch {}
     if (cat) { const e = cat.find(b => b && b.archivo === nombre); if (!e || e.visible === false) return error('Este banco no está disponible ahora mismo. Pregunta a tu profesor.'); }
     try {
-      const base = new URL('../bancos/', location.href), r = await fetch(new URL(nombre + '.json', base), {cache: 'no-cache'});
+      const base = new URL('../bancos/', location.href), r = await fetch(fresco(new URL(nombre + '.json', base)), {cache: 'no-store'});
       if (!r.ok) throw new Error(`No se encontró el banco «${nombre}». Comprueba el enlace con tu profesor.`);
       abreBanco(normaliza(await r.json()), nombre, base);
     } catch (e) { error(e.message.startsWith('No se') || e.message.startsWith('El ') ? e.message : 'No se pudo cargar el banco. Comprueba tu conexión.'); }
