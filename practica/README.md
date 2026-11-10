@@ -13,6 +13,7 @@ Una sola app para todos los bancos de ejercicios que genera [Preguntas Test](../
 
 - **Tests por tema.** Cada test tiene 15 preguntas al azar del tema (configurable en el generador con «Preguntas por test»).
   - La selección va por niveles: primero salen, al azar, las preguntas que el alumno aún no ha visto; después, las que ha fallado; y por último, las menos repetidas. Con 200 preguntas por tema, en unos 14 tests de 15 han salido todas.
+  - **Dificultad en escalera:** 40 % fáciles, 40 % medias y 20 % difíciles (con 15: 6 + 6 + 3), en ese orden y al azar dentro de cada nivel. Si un tema no tiene bastantes de un nivel, se completa con medias y después con fáciles, para que las difíciles sean siempre las menos. Cada pregunta muestra su nivel.
   - Se corrige cada pregunta al momento, con la solución y la explicación.
 - **Modelo de examen.** De 20, 40 o 60 preguntas (o todas), sacadas de todos los temas en proporción a su tamaño.
   - Por defecto se corrige **al final, como en un examen real**. Desmarcando la casilla, se corrige al momento.

@@ -113,6 +113,8 @@ h2.sec{font-size:22px;font-weight:900;margin:30px 0 12px}
 .cuerpo{flex:1;width:100%;max-width:820px;margin:0 auto;padding:18px 16px 210px;display:flex;flex-direction:column;gap:18px}
 .etq{font-size:13px;font-weight:900;letter-spacing:.08em;color:var(--c);text-transform:uppercase;display:flex;gap:10px;flex-wrap:wrap}
 .etq .tm{color:var(--tx2)}
+.niv{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:1px 10px;font-size:12px;letter-spacing:.06em}
+.niv.n0{background:var(--verde-suave);color:var(--verde-txt)}.niv.n1{background:#FFF1CC;color:#9A6B00}.niv.n2{background:var(--rojo-suave);color:var(--rojo-txt)}
 .enun{font-size:clamp(20px,2.6vw,25px);font-weight:900;margin:0;line-height:1.3}
 .img{align-self:center;max-width:100%;max-height:min(42vh,340px);border-radius:16px;border:2px solid var(--borde);background:#fff}
 .opts{display:grid;grid-template-columns:1fr;gap:12px}
@@ -242,6 +244,17 @@ const fallosVivos = () => { const ids = new Set(todos().map(q => q.id)); return 
 const dominadas = t => t.ej.filter(q => PROG.vistas[q.id]?.a === true).length;
 /* selección al azar por niveles: primero las que nunca han salido, después las falladas y por último las menos repetidas;
    dentro de cada nivel, al azar. Así, con 200 preguntas por tema, en unos 14 tests de 15 han salido todas. */
+/* test por tema: 15 preguntas (o las que haya) con la dificultad en escalera.
+   Cuota 40 % fáciles, 40 % medias, 20 % difíciles (15 → 6 + 6 + 3); si falta de un nivel se completa con medias y después
+   con fáciles, para que las difíciles sean siempre las menos. Orden: fáciles, medias y difíciles, al azar dentro de cada nivel. */
+const nivelDe = q => q.dificultad === 'facil' ? 0 : q.dificultad === 'dificil' ? 2 : 1;
+function eligeTema(t, n) {
+  const grupos = [0, 1, 2].map(k => t.ej.filter(q => nivelDe(q) === k)), cuota = [Math.round(n * 0.4), 0, Math.round(n * 0.2)]; cuota[1] = n - cuota[0] - cuota[2];
+  const sel = grupos.map((g, k) => eligeAleatorias(g, Math.min(cuota[k], g.length)));
+  let falta = n - sel.reduce((a, g) => a + g.length, 0);
+  for (const k of [1, 0, 2]) { if (falta <= 0) break; const extra = eligeAleatorias(grupos[k].filter(q => !sel[k].includes(q)), falta); sel[k].push(...extra); falta -= extra.length; }
+  return sel.flatMap(g => shuffle(g));
+}
 function eligeAleatorias(pool, n) {
   const nivel = q => { const v = PROG.vistas[q.id]; return !v ? 0 : v.a === false ? 1 : 2 + v.v; };
   return pool.map(q => [nivel(q), Math.random(), q]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, n).map(x => x[2]);
@@ -314,7 +327,7 @@ function verBanco() {
 /* ══ Test ══ */
 function empieza(modo, ti = null) {
   let qs, titulo;
-  if (modo === 'tema') { const t = B.temas[ti]; qs = eligeAleatorias(t.ej, Math.min(B.porTest, t.ej.length)); titulo = t.titulo; }
+  if (modo === 'tema') { const t = B.temas[ti]; qs = eligeTema(t, Math.min(B.porTest, t.ej.length)); titulo = t.titulo; }
   else if (modo === 'fallos') { const f = new Set(fallosVivos()); qs = shuffle(todos().filter(q => f.has(q.id))).slice(0, 15); titulo = 'Repaso de fallos'; }
   else { const n = Math.min(PROG.examenN, todos().length), cuotas = reparto(B.temas.map(t => t.ej.length), n); qs = shuffle(B.temas.flatMap((t, i) => eligeAleatorias(t.ej, cuotas[i]))); titulo = `Modelo de examen (${n} preguntas)`; }
   if (!qs.length) return;
@@ -340,7 +353,8 @@ function pintaEjercicio() {
   $('pb').style.width = Math.round(L.i / L.n * 100) + '%'; $('cont').textContent = `${L.i + 1} / ${L.n}`;
   EJ = {q, sel: null, hecho: false};
   const c = $('cuerpo'), tm = L.modo !== 'tema' ? `<span class="tm">· ${esc(temaDe(q)?.titulo || '')}</span>` : '';
-  let h = `<div class="etq">${ETQ[q.tipo]} ${tm}</div>`;
+  const nv = L.modo === 'tema' ? `<span class="niv n${nivelDe(q)}">${['● Fácil', '●● Media', '●●● Difícil'][nivelDe(q)]}</span>` : '';
+  let h = `<div class="etq">${ETQ[q.tipo]} ${tm} ${nv}</div>`;
   if (q.tipo === 'mc' || q.tipo === 'imagen') {
     EJ.orden = shuffle(q.opciones.map((_, i) => i)); const cortas = q.opciones.every(o => String(o).length <= 60);
     h += `<h2 class="enun">${esc(q.enunciado)}</h2>${q.tipo === 'imagen' ? `<img class="img" src="${esc(srcImg(q.imagen))}" alt="Imagen del ejercicio">` : ''}<div class="opts${cortas ? ' dos' : ''}">${EJ.orden.map((i, k) => `<button class="b3 opt" data-o="${i}" type="button"><span class="k">${k + 1}</span><span>${esc(q.opciones[i])}</span></button>`).join('')}</div>`;
