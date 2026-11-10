@@ -32,8 +32,27 @@ Sin clave funciona en **modo demostración**, con ejercicios simulados hechos co
 
 Después, en **Banco**:
 - revisas y editas cada ejercicio;
-- lo **publicas en la app de práctica** con título, icono, color y número de **preguntas por test** (15 por defecto), o lo pruebas antes con «Vista previa»;
+- lo **publicas en la app de práctica** con un clic (si has conectado GitHub en «Mis bancos») con título, icono, color y número de **preguntas por test** (15 por defecto), o lo pruebas antes con «Vista previa»;
 - o lo exportas a CSV (Excel) y GIFT (Moodle). GIFT no admite los ejercicios de ordenar ni los de imagen, así que esos se omiten.
+
+## Mis bancos: publicar, ocultar y eliminar
+
+La sección **Mis bancos** reúne en una lista:
+- los bancos guardados en este navegador (cada banco generado se guarda solo; con «Añadir archivos JSON» puedes traer los que descargaste antes);
+- los publicados en la carpeta `bancos/` del repositorio.
+
+Para cada banco puedes:
+- **Publicar en la app** (o publicar una versión nueva): se sube a `bancos/NOMBRE.json` sin las citas del libro y se añade al catálogo `bancos/index.json`.
+- **Ocultar / Mostrar:** un banco oculto no aparece en la biblioteca y su enlace muestra «no disponible». El archivo sigue en el repositorio, que es público.
+- **Meter en la app** un JSON que se subió a mano a `bancos/` pero no está en el catálogo.
+- **Editar** (lo abre en el generador), **Descargar** y **Eliminar** (borra el archivo y su entrada del catálogo; en GitHub queda en el historial).
+
+Sin conectar se ven los bancos publicados y se gestionan las copias del navegador. Para publicar, ocultar o eliminar hace falta conectar GitHub una vez con un **token de acceso de grano fino** (*fine-grained personal access token*):
+1. Ábrelo en <https://github.com/settings/personal-access-tokens/new>.
+2. En *Repository access*, elige *Only select repositories* y marca solo este repositorio.
+3. En *Permissions → Repository permissions*, pon **Contents: Read and write**. No hace falta nada más.
+
+El token se guarda solo en ese navegador (o solo en la sesión, si desmarcas «Recordar») y solo se envía a GitHub. Cada acción es un commit en el repositorio. GitHub Pages tarda uno o dos minutos en mostrar los cambios a los alumnos.
 
 ## Cómo se comprueban los ejercicios
 

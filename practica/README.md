@@ -6,6 +6,7 @@ Una sola app para todos los bancos de ejercicios que genera [Preguntas Test](../
 
 - **Biblioteca** (todos los bancos del catálogo): `https://mireiaborras-cloud.github.io/AUTOMATIZACIONES-CON-IA/practica/`
 - **Un banco concreto:** `…/practica/?banco=NOMBRE`, que carga `bancos/NOMBRE.json`. Por ejemplo, `…/practica/?banco=anatomia-aparato-locomotor`.
+- Solo se abren los bancos que están en `bancos/index.json` y no están ocultos; si no, la app muestra «Este banco no está disponible». Se gestionan desde «Mis bancos» en el generador.
 - **Vista previa** desde el generador, sin publicar: `…/practica/?vista=previa`. Solo funciona en el mismo navegador y sitio que el generador.
 
 ## Cómo funciona para el alumno

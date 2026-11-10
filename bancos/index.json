@@ -5,14 +5,20 @@
       "titulo": "Prevención de riesgos laborales",
       "descripcion": "Ejemplo · FOL · Formación Profesional",
       "icono": "🦺",
-      "color": "#00A499"
+      "color": "#00A499",
+      "visible": true,
+      "temas": 3,
+      "preguntas": 23
     },
     {
       "archivo": "anatomia-aparato-locomotor",
       "titulo": "Anatomía funcional del aparato locomotor",
       "descripcion": "",
       "icono": "📘",
-      "color": "#9a19be"
+      "color": "#9a19be",
+      "visible": true,
+      "temas": 5,
+      "preguntas": 81
     }
   ]
 }

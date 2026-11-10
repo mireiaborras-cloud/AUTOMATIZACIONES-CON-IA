@@ -221,6 +221,18 @@ tr.off td{opacity:.55}
 .mbody{padding:18px 20px 22px;display:flex;flex-direction:column;gap:14px}
 .mbody pre{background:var(--papel);padding:10px 12px;border-radius:10px;font:12px var(--mono);white-space:pre-wrap;max-height:360px;overflow:auto;margin:0}
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tinta);color:#fff;padding:11px 18px;border-radius:12px;font-size:14.5px;font-weight:600;z-index:70;max-width:90vw;text-align:center;box-shadow:var(--sombra-alta)}
+/* v0.4 · Mis bancos */
+.bkban{display:flex;gap:12px;align-items:center;min-width:0}
+.bkban .bi{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:21px;flex:none;background:color-mix(in srgb,var(--bc,#00A499) 16%,#fff)}
+.bkban b{display:block;font-size:14.5px;line-height:1.25}
+.bkban small{display:block;font:12px var(--mono);color:var(--gris)}
+.bkacc{display:flex;gap:6px;flex-wrap:wrap}
+.bkest{display:flex;gap:5px;flex-wrap:wrap}
+#tbBancos td{vertical-align:middle}
+.ghok{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+details.ayuda summary{cursor:pointer;font-weight:600;color:var(--acero)}
+details.ayuda ol{margin:8px 0 0;padding-left:1.3em;font-size:14px;color:var(--acero)}
+details.ayuda li{margin-bottom:4px}
 .foot{max-width:1180px;margin:0 auto;padding-top:28px;font-size:13px;color:#6A7F81;border-top:1px solid var(--linea);margin-top:28px}
 /* v0.2 · tipos de ejercicio, imágenes y publicación */
 .galeria{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:420px;overflow:auto;padding:2px}
@@ -269,6 +281,7 @@ input[type=color]{width:56px;height:42px;border:1.5px solid var(--linea);border-
 <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></symbol>
 <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></symbol>
 <symbol id="i-play" viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H7a5 5 0 1 1 1.4-9.8A6 6 0 0 1 20 11.5a3.8 3.8 0 0 1-2.5 7.5z"/></symbol>
 </defs></svg>
 
 <header class="top">
@@ -277,6 +290,7 @@ input[type=color]{width:56px;height:42px;border:1.5px solid var(--linea);border-
     <nav class="stepper" aria-label="Recorrido"><button class="sdot tab" data-v="libro" type="button"><span class="n"><span class="k">1</span><svg class="i ok"><use href="#i-check"/></svg></span><span class="lbl">Libro</span></button><span class="sline" data-line="1"></span><button class="sdot tab" data-v="temas" type="button"><span class="n"><span class="k">2</span><svg class="i ok"><use href="#i-check"/></svg></span><span class="lbl">Temas</span></button><span class="sline" data-line="2"></span><button class="sdot tab" data-v="gen" type="button"><span class="n"><span class="k">3</span><svg class="i ok"><use href="#i-check"/></svg></span><span class="lbl">Generar</span></button></nav>
     <div class="tb-tools">
       <button class="tb-btn tab" data-v="banco" type="button" title="Banco de ejercicios" aria-label="Banco de ejercicios"><svg class="i"><use href="#i-quiz"/></svg><span class="lbl">Banco</span></button>
+      <button class="tb-btn tab" data-v="bancos" type="button" title="Mis bancos" aria-label="Mis bancos"><svg class="i"><use href="#i-cloud"/></svg><span class="lbl">Mis bancos</span></button>
       <button class="tb-btn tab" data-v="ag" type="button" title="Agentes y prompts" aria-label="Agentes y prompts"><svg class="i"><use href="#i-ag"/></svg><span class="lbl">Agentes</span></button>
       <span class="tb-sep"></span>
       <span class="provpill" id="provPill">demostración</span>
@@ -413,13 +427,14 @@ input[type=color]{width:56px;height:42px;border:1.5px solid var(--linea);border-
     </div>
     <div class="field"><label for="p_res">Dirección para enviar resultados (opcional)</label><input type="text" id="p_res" data-bind="pub.resultados" placeholder="URL de un flujo de Power Automate «Cuando se recibe una solicitud HTTP»"><span class="hint">Déjalo vacío para que los alumnos solo practiquen. Si pones una dirección, la app pedirá el nombre al alumno y enviará el resultado de cada lección.</span></div>
     <div class="lbl">Enlace para tus alumnos</div><div class="enlace" id="pubUrl"></div>
-    <ol class="pasos">
+    <div id="pubAccion"></div>
+    <details class="ayuda"><summary>Publicar a mano, sin conectar GitHub</summary><ol class="pasos">
       <li>Descarga el banco con el botón de abajo.</li>
       <li>En tu repositorio de GitHub, entra en la carpeta <code>bancos</code> → <b>Add file</b> → <b>Upload files</b> y sube el archivo.</li>
       <li>Edita <code>bancos/index.json</code> y añade la entrada del catálogo (botón «Copiar entrada») para que aparezca en la biblioteca.</li>
       <li>Comparte el enlace con tus alumnos.</li>
-    </ol>
-    <div class="row"><button class="btn primary" id="exJson" type="button"><svg class="i"><use href="#i-download"/></svg> Descargar el banco (.json)</button><button class="btn" id="btnPrevia" type="button"><svg class="i"><use href="#i-play"/></svg> Vista previa en la app</button><button class="btn" id="btnCatalogo" type="button">Copiar entrada del catálogo</button></div>
+    </ol></details>
+    <div class="row"><button class="btn" id="exJson" type="button"><svg class="i"><use href="#i-download"/></svg> Descargar el banco (.json)</button><button class="btn" id="btnPrevia" type="button"><svg class="i"><use href="#i-play"/></svg> Vista previa en la app</button><button class="btn" id="btnCatalogo" type="button">Copiar entrada del catálogo</button></div>
   </div></details>
   <div class="stats" id="bancoStats"></div>
   <div class="panel">
@@ -432,6 +447,18 @@ input[type=color]{width:56px;height:42px;border:1.5px solid var(--linea);border-
     <p class="hint">Los cambios se guardan solos. En los ejercicios con opciones, pulsa una letra para marcar la correcta; en «ordenar», escribe los pasos en el orden correcto.</p>
   </div>
   <div id="bancoBox" class="view"></div>
+</section>
+
+<!-- MIS BANCOS -->
+<section class="view" id="v-bancos" hidden>
+  <div class="sh"><div class="sh-ico" style="--c:var(--c-banco)"><svg class="i"><use href="#i-cloud"/></svg></div><div><p class="sh-step">Gestión</p><h2>Mis bancos</h2><p class="sh-lede">Todos tus bancos de preguntas: los guardados en este navegador y los publicados en la app de práctica. Desde aquí decides cuáles ven tus alumnos, publicas los nuevos y eliminas los que sobran.</p></div></div>
+  <div class="panel" id="ghBox"></div>
+  <div class="panel">
+    <div class="row"><h3>Bancos</h3><span class="spacer"></span><button class="btn small" id="bkImport" type="button"><svg class="i"><use href="#i-upload"/></svg> Añadir archivos JSON</button><button class="btn small" id="bkRefresh" type="button">Actualizar</button></div>
+    <input type="file" id="fileBancos" accept=".json" multiple hidden>
+    <div class="tw"><table><thead><tr><th>Banco</th><th class="num">Temas</th><th class="num">Preguntas</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tbBancos"></tbody></table></div>
+    <p class="hint">«Visible» = aparece en la biblioteca de la app y su enlace funciona. «Oculto» = los alumnos no pueden abrirlo, pero el archivo sigue en tu repositorio (que es público). Los cambios tardan uno o dos minutos en llegar a la app, lo que tarda GitHub Pages en publicar. Cada banco generado se guarda solo en este navegador; con «Añadir archivos JSON» puedes traer los que descargaste antes.</p>
+  </div>
 </section>
 
 <!-- AGENTES -->
@@ -451,6 +478,16 @@ input[type=color]{width:56px;height:42px;border:1.5px solid var(--linea);border-
     <div class="field" id="modelField"><label for="modelo">Modelo</label><input type="text" id="modelo" list="modelos"><datalist id="modelos"></datalist><div class="row"><button class="btn small" id="btnModelos" type="button">Ver modelos de mi clave</button><span class="hint" id="iaEstado"></span></div><span class="hint">Para los ejercicios con imagen, el modelo debe admitir imágenes (visión). Los modelos por defecto de los tres proveedores la admiten.</span></div>
     <div class="grid3"><div class="field"><label for="priceIn">Precio entrada ($/M tokens)</label><input type="text" id="priceIn" placeholder="p. ej. 0,40"></div><div class="field"><label for="priceOut">Precio salida ($/M tokens)</label><input type="text" id="priceOut" placeholder="p. ej. 1,60"></div></div>
     <div class="row"><div class="spacer"></div><button class="btn primary" data-close type="button">Listo</button></div>
+  </div></div>
+</div>
+<div class="modal" id="mPub" hidden>
+  <div class="mbox" role="dialog" aria-labelledby="mPt"><div class="mhead"><h3 id="mPt">Publicar en la app</h3><button type="button" data-close aria-label="Cerrar">✕</button></div><div class="mbody">
+    <p id="mpTit"></p>
+    <div class="field"><label for="mpArch">Nombre del archivo</label><input type="text" id="mpArch" autocomplete="off"><span class="hint">Solo letras sin tilde, números y guiones. Enlace para tus alumnos:</span><div class="enlace" id="mpUrl"></div></div>
+    <label class="chk"><input type="checkbox" id="mpVis" checked> <span>Visible para los alumnos nada más publicarlo</span></label>
+    <p class="note warn" id="mpAviso" hidden></p>
+    <p class="hint">Se sube a la carpeta <code>bancos</code> de tu repositorio sin las citas del libro (los alumnos no las ven; la copia de este navegador las conserva). El repositorio es público: cualquiera puede descargar el archivo, imágenes incluidas, así que publica solo contenido que puedas compartir.</p>
+    <div class="row"><div class="spacer"></div><button class="btn" data-close type="button">Cancelar</button><button class="btn primary" id="mpOk" type="button"><svg class="i"><use href="#i-cloud"/></svg> Publicar</button></div>
   </div></div>
 </div>
 <div class="modal" id="mEnvio" hidden>
@@ -483,7 +520,7 @@ input[type=color]{width:56px;height:42px;border:1.5px solid var(--linea);border-
 /* ══════════════════════════════════════════════════════════════════════════════════════════════
    Preguntas Test · núcleo. Principio heredado de Doctoralia: la IA propone, el código comprueba.
    ══════════════════════════════════════════════════════════════════════════════════════════════ */
-const APP = 'preguntastest', VERSION = '0.3.0';
+const APP = 'preguntastest', VERSION = '0.4.0';
 
 /* ── utilidades ── */
 const $ = id => document.getElementById(id), $$ = s => [...document.querySelectorAll(s)];
@@ -1219,7 +1256,7 @@ async function generar(soloId = null) {
     }
     S.run = {ts: new Date().toISOString(), prov: getProv(), model: getMod(), tiempo: Math.round((Date.now() - t0) / 1000), nuevas: total, uso: {in: USO.in, out: USO.out, calls: USO.calls, coste: coste(USO.in, USO.out), porAgente: USO.by}};
     await guardaYa();
-    log(`🎉 ${total} ejercicios nuevos en ${S.run.tiempo} s`, 'ok'); toast(`${total} ejercicios generados`); showView('banco');
+    log(`🎉 ${total} ejercicios nuevos en ${S.run.tiempo} s`, 'ok'); await guardaLocal(); toast(`${total} ejercicios generados`); showView('banco');
   } catch (e) {
     if (e.message === '__STOP__') log('⏹ Generación detenida. Los ejercicios ya validados se han guardado.', 'warn');
     else { log('❌ ' + e.message, 'err'); toast(e.message, 7000); }
@@ -1243,7 +1280,7 @@ const archivoPub = () => slugify(S.pub.archivo || S.pub.titulo || nombreLibro())
 function bancoJSON() {
   const usadas = new Set(S.preguntas.map(q => q.imagen).filter(Boolean)), imagenes = {}; usadas.forEach(id => { if (IMGS[id]) imagenes[id] = IMGS[id]; });
   const p = S.pub, out = {formato: 'banco-preguntas', version: 2, generado: new Date().toISOString(), app: `Preguntas Test ${VERSION}`,
-    presentacion: {titulo: p.titulo || nombreLibro(), descripcion: p.descripcion || '', icono: p.icono || '📘', color: p.color || '#00A499', porTest: numIn(p.porTest) || 15},
+    archivo: archivoPub(), presentacion: {titulo: p.titulo || nombreLibro(), descripcion: p.descripcion || '', icono: p.icono || '📘', color: p.color || '#00A499', porTest: numIn(p.porTest) || 15},
     libro: {titulo: nombreLibro(), paginas: S.libro?.nPag || 0, tipo: S.libro?.tipo || ''}, idioma: S.opt.lang, nivel: S.opt.nivel,
     temas: S.temas.filter(t => S.preguntas.some(q => q.tema === t.id)).map((t, i) => ({id: t.id, orden: i + 1, titulo: t.titulo, paginas: [t.ini, t.fin],
       ejercicios: S.preguntas.filter(q => q.tema === t.id).map(q => { const e = {id: q.id, tipo: TIPO_JSON[q.tipo], enunciado: q.enunciado};
@@ -1320,15 +1357,254 @@ async function cargaEjemplo() {
   toast('Libro de ejemplo cargado: revisa los temas'); showView('temas');
 }
 
+/* ══ Mis bancos: copias en este navegador + publicación en GitHub (carpeta bancos/ y catálogo bancos/index.json) ══ */
+const hashStr = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0; return h.toString(36); };
+const huella = j => hashStr(JSON.stringify([j.presentacion, j.temas, Object.keys(j.imagenes || {}).sort(), j.resultados || null]));
+const ejerciciosDe = t => t.ejercicios || t.preguntas || [];
+const infoBanco = j => ({titulo: j.presentacion?.titulo || j.libro?.titulo || '', descripcion: j.presentacion?.descripcion || '', icono: j.presentacion?.icono || '📘', color: j.presentacion?.color || '#00A499', temas: (j.temas || []).length, preguntas: (j.temas || []).reduce((a, t) => a + ejerciciosDe(t).length, 0)});
+const ARCH_RE = /^[a-z0-9][a-z0-9-]{1,59}$/;
+const urlPracticaDe = a => { const u = new URL('../practica/', location.href); u.search = '?banco=' + a; return u.href; };
+
+/* copias locales: una por banco, en IndexedDB con la clave «bk:archivo» */
+const localLee = a => kv('readonly', s => s.get('bk:' + a)).catch(() => null);
+const localGuarda = e => kv('readwrite', s => s.put(e, 'bk:' + e.archivo));
+const localBorra = a => kv('readwrite', s => s.delete('bk:' + a));
+async function localesLista() {
+  const d = await dbP;
+  return new Promise((ok, ko) => { const out = [], tx = d.transaction('kv'), rq = tx.objectStore('kv').openCursor(); rq.onsuccess = () => { const c = rq.result; if (!c) return; if (String(c.key).startsWith('bk:')) out.push(c.value); c.continue(); }; tx.oncomplete = () => ok(out); tx.onerror = () => ko(tx.error); });
+}
+async function guardaLocal() {
+  if (!S.preguntas.length) return;
+  try { const j = bancoJSON(), archivo = archivoPub(), prev = await localLee(archivo), h = huella(j); if (prev && prev.hash === h) return; await localGuarda({archivo, json: j, hash: h, guardado: Date.now(), publicado: prev?.publicado || null}); } catch {}
+}
+
+/* GitHub: token de acceso del propio usuario, solo para su repositorio, guardado solo en este navegador */
+const b64 = str => { const b = new TextEncoder().encode(str); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = x => new TextDecoder().decode(Uint8Array.from(atob(String(x).replace(/\s/g, '')), c => c.charCodeAt(0)));
+function repoPorDefecto() { const h = location.hostname.match(/^([\w-]+)\.github\.io$/), seg = location.pathname.split('/').filter(Boolean)[0]; return h && seg ? `${h[1]}/${seg}` : 'mireiaborras-cloud/AUTOMATIZACIONES-CON-IA'; }
+function ghErr(st, tx) {
+  const e = new Error(st === 401 ? 'GitHub no acepta el token. Revísalo o crea uno nuevo.' : st === 403 ? (/rate limit/i.test(tx) ? 'GitHub ha limitado las peticiones. Espera unos minutos.' : 'El token no tiene permiso para escribir en este repositorio (hace falta «Contents: Read and write»).') : st === 404 ? 'No se encuentra el repositorio, o el token no tiene acceso a él.' : `GitHub ${st}: ${String(tx).slice(0, 160)}`);
+  e.status = st; return e;
+}
+const GH = {
+  cfg: null,
+  carga() { try { const v = sessionStorage.getItem(APP + '_gh') || localStorage.getItem(APP + '_gh'); this.cfg = v ? JSON.parse(v) : null; } catch { this.cfg = null; } },
+  guarda(cfg, recordar) { this.cfg = cfg; try { sessionStorage.removeItem(APP + '_gh'); localStorage.removeItem(APP + '_gh'); (recordar ? localStorage : sessionStorage).setItem(APP + '_gh', JSON.stringify(cfg)); } catch {} },
+  olvida() { this.cfg = null; try { sessionStorage.removeItem(APP + '_gh'); localStorage.removeItem(APP + '_gh'); } catch {} },
+  async req(method, ruta, body, accept) {
+    let r;
+    try { r = await fetch(`https://api.github.com/repos/${this.cfg.repo}${ruta}`, {method, cache: 'no-store', headers: {Authorization: 'Bearer ' + this.cfg.token, Accept: accept || 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', ...(body ? {'Content-Type': 'application/json'} : {})}, body: body ? JSON.stringify(body) : undefined}); }
+    catch { throw new Error('No hay conexión con GitHub.'); }
+    if (!r.ok) throw ghErr(r.status, await r.text());
+    if (accept && accept.includes('raw')) return r.text();
+    return r.status === 204 ? null : r.json();
+  },
+  ruta(p) { return `/contents/${p}`; },
+  raw(p) { return this.req('GET', `${this.ruta(p)}?ref=${encodeURIComponent(this.cfg.rama)}`, null, 'application/vnd.github.raw+json'); },
+  async sha(p) { try { return (await this.req('GET', `${this.ruta(p)}?ref=${encodeURIComponent(this.cfg.rama)}`)).sha; } catch (e) { if (e.status === 404) return null; throw e; } },
+  async sube(p, texto, msg) {
+    for (let k = 0; k < 3; k++) {
+      const sha = await this.sha(p);
+      try { return await this.req('PUT', this.ruta(p), {message: msg, content: b64(texto), branch: this.cfg.rama, ...(sha ? {sha} : {})}); }
+      catch (e) { if ((e.status === 409 || e.status === 422) && k < 2) { await sleep(600); continue; } throw e; }
+    }
+  },
+  async borra(p, msg) {
+    for (let k = 0; k < 3; k++) {
+      const sha = await this.sha(p); if (!sha) return;
+      try { return await this.req('DELETE', this.ruta(p), {message: msg, sha, branch: this.cfg.rama}); }
+      catch (e) { if ((e.status === 409 || e.status === 422) && k < 2) { await sleep(600); continue; } throw e; }
+    }
+  },
+  async catalogo() {
+    try { const r = await this.req('GET', `${this.ruta('bancos/index.json')}?ref=${encodeURIComponent(this.cfg.rama)}`); return {sha: r.sha, bancos: JSON.parse(unb64(r.content)).bancos || []}; }
+    catch (e) { if (e.status === 404) return {sha: null, bancos: []}; throw e; }
+  },
+  /* lee el catálogo, lo modifica y lo guarda; si otro cambio se ha cruzado, lo vuelve a intentar con la versión nueva */
+  async cambiaCatalogo(fn, msg) {
+    for (let k = 0; k < 3; k++) {
+      const c = await this.catalogo(), bancos = fn(c.bancos.map(b => ({...b})));
+      try { return await this.req('PUT', this.ruta('bancos/index.json'), {message: msg, content: b64(JSON.stringify({bancos}, null, 2) + '\n'), branch: this.cfg.rama, ...(c.sha ? {sha: c.sha} : {})}); }
+      catch (e) { if ((e.status === 409 || e.status === 422) && k < 2) { await sleep(600); continue; } throw e; }
+    }
+  }
+};
+GH.carga();
+async function remotos() {
+  if (!GH.cfg) {
+    try { const r = await fetch(new URL('../bancos/index.json', location.href), {cache: 'no-cache'}); if (!r.ok) return {lista: [], soloLectura: true};
+      return {soloLectura: true, lista: ((await r.json()).bancos || []).filter(b => b && b.archivo).map(e => ({archivo: e.archivo, entry: e, fichero: true}))}; }
+    catch { return {lista: [], soloLectura: true, error: 'No se pudo leer el catálogo publicado.'}; }
+  }
+  let dir = []; try { dir = await GH.req('GET', `${GH.ruta('bancos')}?ref=${encodeURIComponent(GH.cfg.rama)}`); } catch (e) { if (e.status !== 404) throw e; }
+  const files = (Array.isArray(dir) ? dir : []).filter(f => f.type === 'file' && /\.json$/i.test(f.name) && f.name !== 'index.json'), cat = await GH.catalogo();
+  const lista = files.map(f => { const archivo = f.name.replace(/\.json$/i, ''); return {archivo, fichero: true, size: f.size, entry: cat.bancos.find(b => b.archivo === archivo) || null}; });
+  cat.bancos.filter(b => b.archivo && !lista.some(x => x.archivo === b.archivo)).forEach(b => lista.push({archivo: b.archivo, fichero: false, entry: b}));
+  await Promise.all(lista.filter(x => x.fichero && !(x.entry && x.entry.preguntas != null)).map(async x => { try { x.info = infoBanco(JSON.parse(await GH.raw(`bancos/${x.archivo}.json`))); } catch {} }));
+  return {lista, soloLectura: false};
+}
+
+/* publicación: sube el banco sin citas, actualiza el catálogo y marca la copia local como publicada */
+async function publica(json, archivo, visible, origen) {
+  const limpio = JSON.parse(JSON.stringify(json)); limpio.archivo = archivo;
+  (limpio.temas || []).forEach(t => ejerciciosDe(t).forEach(e => { delete e.cita; delete e.avisos; }));
+  await GH.sube(`bancos/${archivo}.json`, JSON.stringify(limpio), `Preguntas Test: publica el banco ${archivo}`);
+  const inf = infoBanco(limpio);
+  await GH.cambiaCatalogo(bs => { const i = bs.findIndex(b => b.archivo === archivo), e = {...(i >= 0 ? bs[i] : {}), archivo, titulo: inf.titulo, descripcion: inf.descripcion, icono: inf.icono, color: inf.color, visible, temas: inf.temas, preguntas: inf.preguntas, actualizado: new Date().toISOString()}; if (i >= 0) bs[i] = e; else bs.push(e); return bs; }, `Catálogo: ${archivo} ${visible ? 'visible' : 'oculto'}`);
+  const copia = JSON.parse(JSON.stringify(json)); copia.archivo = archivo; const h = huella(copia);
+  if (origen && origen !== archivo) await localBorra(origen);
+  await localGuarda({archivo, json: copia, hash: h, guardado: Date.now(), publicado: h});
+  if (S.preguntas.length && origen && origen === archivoPub() && origen !== archivo) { S.pub.archivo = archivo; guarda(); }
+}
+let PUB_CTX = null;
+function abrePublicar(json, archivo, origen) {
+  if (!GH.cfg) { toast('Conecta antes tu cuenta de GitHub en «Mis bancos».', 5000); showView('bancos'); return; }
+  const inf = infoBanco(json); PUB_CTX = {json, origen};
+  $('mpTit').innerHTML = `<b>${esc(inf.icono)} ${esc(inf.titulo || 'Banco sin título')}</b> · ${inf.temas} temas · ${inf.preguntas} preguntas`;
+  $('mpArch').value = slugify(archivo) || slugify(inf.titulo) || 'banco'; $('mpVis').checked = true; $('mPub').hidden = false; pintaPubModal(); $('mpArch').focus();
+}
+function pintaPubModal() {
+  const a = $('mpArch').value.trim(), ok = ARCH_RE.test(a), r = (BK.remotos || []).find(x => x.archivo === a && x.fichero), av = $('mpAviso');
+  $('mpUrl').textContent = ok ? urlPracticaDe(a) : '—';
+  av.hidden = !(r || !ok);
+  av.textContent = !ok ? 'El nombre solo puede tener letras minúsculas sin tilde, números y guiones (de 2 a 60).' : r ? `Ya hay un banco publicado con este nombre («${r.entry?.titulo || r.info?.titulo || a}»): se sustituirá. Tus alumnos conservan su progreso en las preguntas que no cambien.` : '';
+  $('mpOk').disabled = !ok;
+}
+$('mpArch').oninput = pintaPubModal;
+$('mpOk').onclick = async () => {
+  const a = $('mpArch').value.trim(); if (!ARCH_RE.test(a) || !PUB_CTX) return;
+  const vis = $('mpVis').checked, {json, origen} = PUB_CTX; $('mpOk').disabled = true;
+  try { await publica(json, a, vis, origen); $('mPub').hidden = true; toast(`Publicado como «${a}». Llegará a la app en uno o dos minutos.`, 6000); if (VIEW === 'bancos') renderBancos(); else if (VIEW === 'banco') renderBanco(); }
+  catch (e) { toast(e.message, 7000); $('mpOk').disabled = false; }
+};
+function pintaPubAccion() {
+  const box = $('pubAccion'); if (!box) return;
+  box.innerHTML = GH.cfg ? `<div class="row"><button class="btn primary" id="btnPublicar" type="button"><svg class="i"><use href="#i-cloud"/></svg> Publicar en la app</button><span class="hint">Se sube a tu repositorio (${esc(GH.cfg.repo)}) y aparece en la biblioteca en uno o dos minutos.</span></div>`
+    : `<p class="note">Conecta tu cuenta de GitHub en <button class="btn small tab" data-v="bancos" type="button">Mis bancos</button> para publicar con un clic, o publica a mano con los pasos de abajo.</p>`;
+  const b = $('btnPublicar'); if (b) b.onclick = async () => { if (!S.preguntas.length) return toast('No hay ejercicios que publicar.'); await guardaLocal(); if (!BK.remotos) { try { BK.remotos = (await remotos()).lista; } catch {} } abrePublicar(bancoJSON(), archivoPub(), archivoPub()); };
+}
+
+/* vista Mis bancos */
+const BK = {filas: [], remotos: null, soloLectura: true, ocupado: false};
+function pintaGH() {
+  const box = $('ghBox');
+  if (GH.cfg) { box.innerHTML = `<div class="ghok"><span class="pill ok">Conectado a GitHub</span><b class="mono">${esc(GH.cfg.repo)}</b><span class="hint">rama ${esc(GH.cfg.rama)}</span><span class="spacer"></span><button class="btn small" id="ghOff" type="button">Desconectar</button></div>`; $('ghOff').onclick = () => { if (!confirm('¿Desconectar? Se olvidará el token en este navegador.')) return; GH.olvida(); renderBancos(); }; return; }
+  box.innerHTML = `<h3>Conectar con GitHub</h3>
+    <p class="hint">Para publicar, ocultar o eliminar bancos desde aquí, la app necesita permiso para escribir en tu repositorio. Sin conectar puedes ver lo publicado y gestionar las copias de este navegador.</p>
+    <div class="grid3"><div class="field" style="grid-column:span 2"><label for="ghRepo">Repositorio</label><input type="text" id="ghRepo" value="${esc(repoPorDefecto())}"></div><div class="field"><label for="ghRama">Rama</label><input type="text" id="ghRama" value="main"></div></div>
+    <div class="field"><label for="ghTok">Token de acceso</label><input type="password" id="ghTok" autocomplete="off" placeholder="github_pat_…"><span class="hint">Solo se guarda en este navegador y solo se envía a GitHub.</span></div>
+    <label class="chk"><input type="checkbox" id="ghRec" checked> <span>Recordar en este navegador (desmárcalo en un ordenador compartido)</span></label>
+    <details class="ayuda"><summary>Cómo crear el token (2 minutos)</summary><ol>
+      <li>Abre <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a>.</li>
+      <li>Nombre: «Preguntas Test». Caducidad: la que prefieras (por ejemplo, un año).</li>
+      <li>En <b>Repository access</b>, elige <b>Only select repositories</b> y marca solo este repositorio.</li>
+      <li>En <b>Permissions → Repository permissions</b>, pon <b>Contents</b> en <b>Read and write</b>. No hace falta ningún otro permiso.</li>
+      <li>Pulsa <b>Generate token</b>, cópialo y pégalo aquí.</li></ol></details>
+    <div class="row"><button class="btn primary" id="ghOn" type="button">Conectar</button><span class="hint" id="ghEst"></span></div>`;
+  $('ghOn').onclick = async () => {
+    const repo = $('ghRepo').value.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$|\/$/g, ''), rama = $('ghRama').value.trim() || 'main', token = $('ghTok').value.trim();
+    if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return toast('Escribe el repositorio como usuario/nombre.');
+    if (!token) return toast('Pega el token de acceso.');
+    $('ghEst').textContent = 'Comprobando…'; const prev = GH.cfg; GH.cfg = {repo, rama, token};
+    try { await GH.req('GET', ''); GH.guarda({repo, rama, token}, $('ghRec').checked); toast('Conectado a GitHub'); renderBancos(); }
+    catch (e) { GH.cfg = prev; $('ghEst').textContent = e.message; }
+  };
+}
+async function renderBancos() {
+  pintaGH();
+  const tb = $('tbBancos'); tb.innerHTML = '<tr><td colspan="5" class="hint">Cargando…</td></tr>';
+  await guardaLocal();
+  let loc = [], rem = {lista: [], soloLectura: true}, err = '';
+  try { loc = await localesLista(); } catch {}
+  try { rem = await remotos(); if (rem.error) err = rem.error; } catch (e) { err = e.message; }
+  BK.remotos = rem.lista; BK.soloLectura = rem.soloLectura;
+  const m = new Map();
+  rem.lista.forEach(r => m.set(r.archivo, {archivo: r.archivo, remoto: r}));
+  loc.forEach(l => { const f = m.get(l.archivo) || {archivo: l.archivo}; f.local = l; m.set(l.archivo, f); });
+  BK.filas = [...m.values()].sort((a, b) => (b.local?.guardado || Date.parse(b.remoto?.entry?.actualizado || 0) || 0) - (a.local?.guardado || Date.parse(a.remoto?.entry?.actualizado || 0) || 0) || a.archivo.localeCompare(b.archivo));
+  pintaFilas(err);
+}
+function pintaFilas(err) {
+  const tb = $('tbBancos'), con = !!GH.cfg, act = S.preguntas.length ? archivoPub() : null;
+  if (!BK.filas.length) { tb.innerHTML = `<tr><td colspan="5" class="hint">${err ? esc(err) + ' ' : ''}Todavía no hay bancos. Genera uno o añade los archivos JSON que descargaste.</td></tr>`; return; }
+  tb.innerHTML = (err ? `<tr><td colspan="5"><span class="pill bad">${esc(err)}</span></td></tr>` : '') + BK.filas.map(f => {
+    const r = f.remoto, e = r?.entry, l = f.local, inf = l ? infoBanco(l.json) : {...(r?.info || {}), ...(e || {})}, est = [], acc = [], A = esc(f.archivo);
+    if (r && r.fichero && e && e.visible !== false) est.push(pill('ok', 'Visible para los alumnos'));
+    else if (r && r.fichero && e) est.push(pill('warn', 'Oculto'));
+    else if (r && r.fichero) est.push(pill('neu', 'Subido, fuera de la app'));
+    else if (r) est.push(pill('bad', 'En el catálogo, falta el archivo'));
+    if (l && !r) est.push(pill('neu', 'Solo en este navegador'));
+    if (l && r?.fichero && l.publicado && l.hash !== l.publicado) est.push(pill('warn', 'Cambios sin publicar'));
+    if (l && r?.fichero && !l.publicado) est.push(pill('neu', 'Copia en este navegador'));
+    if (act === f.archivo) est.push(pill('neu', 'Abierto en el generador'));
+    const b = (accion, txt, cls = '') => `<button class="btn small ${cls}" data-bk="${A}" data-acc="${accion}" type="button" ${BK.ocupado ? 'disabled' : ''}>${txt}</button>`;
+    if (l && con) acc.push(b('publicar', r?.fichero ? 'Publicar esta versión' : 'Publicar en la app', 'primary'));
+    if (r?.fichero && e && con) acc.push(b('visible', e.visible === false ? 'Mostrar' : 'Ocultar'));
+    if (r?.fichero && !e && con) acc.push(b('meter', 'Meter en la app', 'primary'));
+    if (r && !r.fichero && con) acc.push(b('quitar', 'Quitar del catálogo'));
+    if (r?.fichero && e && e.visible !== false) acc.push(`<a class="btn small" href="${esc(urlPracticaDe(f.archivo))}" target="_blank" rel="noopener">Abrir en la app</a>`);
+    if (l || r?.fichero) acc.push(b('editar', 'Editar'), b('descargar', 'Descargar'));
+    if (l || (r && con)) acc.push(b('eliminar', 'Eliminar', 'danger'));
+    return `<tr><td><div class="bkban" style="--bc:${esc(inf.color || '#00A499')}"><span class="bi">${esc(inf.icono || '📘')}</span><span><b>${esc(inf.titulo || f.archivo)}</b><small>${A}${l ? ' · guardado ' + new Date(l.guardado).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'}) : ''}</small></span></div></td>
+      <td class="num">${inf.temas ?? '—'}</td><td class="num">${inf.preguntas ?? '—'}</td><td><div class="bkest">${est.join('')}</div></td><td><div class="bkacc">${acc.join('')}</div></td></tr>`;
+  }).join('');
+}
+async function jsonDeFila(f) {
+  if (f.local) return f.local.json;
+  if (GH.cfg) return JSON.parse(await GH.raw(`bancos/${f.archivo}.json`));
+  const r = await fetch(new URL(`../bancos/${f.archivo}.json`, location.href), {cache: 'no-cache'}); if (!r.ok) throw new Error('No se pudo descargar el banco.'); return r.json();
+}
+async function accionBanco(accion, archivo) {
+  const f = BK.filas.find(x => x.archivo === archivo); if (!f || BK.ocupado) return;
+  const tit = f.local ? infoBanco(f.local.json).titulo : f.remoto?.entry?.titulo || f.remoto?.info?.titulo || archivo;
+  if (accion === 'publicar') return abrePublicar(f.local.json, archivo, archivo);
+  if (accion === 'editar') { try { const j = await jsonDeFila(f); if (importaBanco(j)) { S.pub.archivo = archivo; guarda(); toast(`«${tit}» abierto en el generador`); showView('banco'); } } catch (e) { toast(e.message, 6000); } return; }
+  if (accion === 'descargar') { try { dl(`${archivo}.json`, JSON.stringify(await jsonDeFila(f)), 'application/json'); } catch (e) { toast(e.message, 6000); } return; }
+  let msg = '';
+  if (accion === 'eliminar') {
+    const que = [f.remoto && GH.cfg ? 'se borra de tu repositorio y deja de estar disponible para los alumnos (el progreso que tengan se pierde de la app)' : '', f.local ? 'se borra la copia de este navegador' : ''].filter(Boolean);
+    if (f.remoto && !GH.cfg) que.push('la versión publicada no se toca (conecta GitHub para borrarla)');
+    if (!confirm(`¿Eliminar «${tit}»?\n\n– ${que.join('\n– ')}\n\nEn GitHub queda en el historial del repositorio, por si hiciera falta recuperarlo.`)) return;
+  }
+  BK.ocupado = true; pintaFilas();
+  try {
+    if (accion === 'visible') { const vis = f.remoto.entry.visible === false; await GH.cambiaCatalogo(bs => bs.map(b => b.archivo === archivo ? {...b, visible: vis} : b), `Catálogo: ${archivo} ${vis ? 'visible' : 'oculto'}`); msg = vis ? `«${tit}» vuelve a estar visible.` : `«${tit}» queda oculto para los alumnos.`; }
+    else if (accion === 'meter') { const inf = infoBanco(JSON.parse(await GH.raw(`bancos/${archivo}.json`))); await GH.cambiaCatalogo(bs => [...bs.filter(b => b.archivo !== archivo), {archivo, titulo: inf.titulo, descripcion: inf.descripcion, icono: inf.icono, color: inf.color, visible: true, temas: inf.temas, preguntas: inf.preguntas, actualizado: new Date().toISOString()}], `Catálogo: añade ${archivo}`); msg = `«${inf.titulo || archivo}» ya está en la app.`; }
+    else if (accion === 'quitar') { await GH.cambiaCatalogo(bs => bs.filter(b => b.archivo !== archivo), `Catálogo: quita ${archivo}`); msg = 'Quitado del catálogo.'; }
+    else if (accion === 'eliminar') {
+      if (f.remoto && GH.cfg) { if (f.remoto.entry) await GH.cambiaCatalogo(bs => bs.filter(b => b.archivo !== archivo), `Catálogo: quita ${archivo}`); if (f.remoto.fichero) await GH.borra(`bancos/${archivo}.json`, `Preguntas Test: elimina el banco ${archivo}`); }
+      if (f.local) await localBorra(archivo);
+      msg = `«${tit}» eliminado.`;
+    }
+    toast(msg + (accion !== 'eliminar' || (f.remoto && GH.cfg) ? ' La app se actualiza en uno o dos minutos.' : ''), 6000);
+  } catch (e) { toast(e.message, 7000); }
+  finally { BK.ocupado = false; await renderBancos(); }
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-acc][data-bk]'); if (b) accionBanco(b.dataset.acc, b.dataset.bk); });
+$('bkRefresh').onclick = () => renderBancos();
+$('bkImport').onclick = () => $('fileBancos').click();
+$('fileBancos').onchange = async e => {
+  const fs = [...e.target.files]; e.target.value = ''; let n = 0; const malos = [];
+  for (const f of fs) {
+    try {
+      const j = JSON.parse(await f.text()); if (j?.formato !== 'banco-preguntas' || !Array.isArray(j.temas)) throw 0;
+      const archivo = (ARCH_RE.test(j.archivo || '') && j.archivo) || slugify(j.presentacion?.titulo || j.libro?.titulo || f.name.replace(/\.json$/i, '')) || 'banco', prev = await localLee(archivo);
+      j.archivo = archivo; await localGuarda({archivo, json: j, hash: huella(j), guardado: Date.now(), publicado: prev?.publicado || null}); n++;
+    } catch { malos.push(f.name); }
+  }
+  toast(`${n} banco${n === 1 ? '' : 's'} añadido${n === 1 ? '' : 's'}${malos.length ? ` · no son bancos válidos: ${malos.join(', ')}` : ''}`, 6000);
+  renderBancos();
+};
+
 /* ══ Interfaz ══ */
-const VIEWS = ['inicio', 'libro', 'temas', 'gen', 'banco', 'ag'], PASOS = ['libro', 'temas', 'gen'];
+const VIEWS = ['inicio', 'libro', 'temas', 'gen', 'banco', 'bancos', 'ag'], PASOS = ['libro', 'temas', 'gen'];
 const NAV = {
   inicio: ['Empezar', 'libro', ''], libro: ['Siguiente: temas', 'temas', 'Sube el libro'], temas: ['Siguiente: generar', 'gen', 'Elige cuántos ejercicios quieres en cada tema'],
-  gen: ['Ver el banco', 'banco', 'Genera y revisa el registro'], banco: ['Generar más', 'gen', 'Revisa, edita y publica'], ag: ['Volver al inicio', 'inicio', 'Prompts de cada agente']
+  gen: ['Ver el banco', 'banco', 'Genera y revisa el registro'], banco: ['Generar más', 'gen', 'Revisa, edita y publica'], bancos: ['Volver al inicio', 'inicio', 'Publica, oculta o elimina tus bancos'], ag: ['Volver al inicio', 'inicio', 'Prompts de cada agente']
 };
-const PREV = {libro: 'inicio', temas: 'libro', gen: 'temas', banco: 'gen', ag: 'inicio'};
+const PREV = {libro: 'inicio', temas: 'libro', gen: 'temas', banco: 'gen', bancos: 'inicio', ag: 'inicio'};
 let VIEW = 'inicio';
-const RENDER = {inicio: renderInicio, libro: renderLibro, temas: renderTemas, gen: renderGen, banco: renderBanco, ag: renderAg};
+const RENDER = {inicio: renderInicio, libro: renderLibro, temas: renderTemas, gen: renderGen, banco: renderBanco, bancos: renderBancos, ag: renderAg};
 function showView(v) {
   if (!VIEWS.includes(v)) v = 'inicio'; VIEW = v;
   VIEWS.forEach(x => { $('v-' + x).hidden = x !== v; }); $$('.tb-btn.tab').forEach(t => { if (t.dataset.v === v) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current'); });
@@ -1425,7 +1701,7 @@ function renderBanco() {
   selT.innerHTML = '<option value="">Todos los tipos</option>' + TIPOS.filter(([k]) => qs.some(q => q.tipo === k)).map(([k, n]) => `<option value="${k}">${n} (${qs.filter(q => q.tipo === k).length})</option>`).join('');
   selT.value = [...selT.options].some(o => o.value === prevT) ? prevT : '';
   if (!S.pub.titulo && S.libro) S.pub.titulo = nombreLibro();
-  pintaBinds(); $('pubUrl').textContent = urlPractica();
+  pintaBinds(); $('pubUrl').textContent = urlPractica(); pintaPubAccion();
   const op = qs.filter(q => ['mc', 'imagen', 'completar'].includes(q.tipo)), nmax = Math.max(0, ...op.map(q => q.opciones.length));
   const dist = LET.slice(0, nmax).map((l, i) => `${l} ${op.length ? pct(op.filter(q => q.correcta === i).length / op.length) : '—'}`).join(' · ');
   const conAv = qs.filter(q => q.avisos.length).length, verif = qs.filter(q => q.verificada).length, tipos = TIPOS.filter(([k]) => qs.some(q => q.tipo === k)).map(([k, n]) => `${qs.filter(q => q.tipo === k).length} ${n.toLowerCase()}`).join(' · ');
@@ -1557,7 +1833,7 @@ $('aplicaTodos').onclick = () => { const n = Math.max(0, Math.round(numIn($('nTo
 $('reparte').onclick = () => { const act = S.temas.filter(t => t.activo); if (!act.length) return; const tot = Math.max(0, Math.round(numIn($('nTotal').value))), ks = reparto(act.map(t => S.libro?.paginas ? palabrasTema(t) : 1), tot, 1); act.forEach((t, i) => t.n = ks[i]); guarda(); renderTemas(); pintaDots(); };
 $('galTodas').onclick = () => { (S.libro?.imagenes || []).forEach(i => i.usar = true); guarda(); pintaGaleria(); };
 $('galNinguna').onclick = () => { (S.libro?.imagenes || []).forEach(i => i.usar = false); guarda(); pintaGaleria(); };
-$('exJson').onclick = () => { if (!S.preguntas.length) return toast('No hay ejercicios que exportar.'); dl(`${archivoPub()}.json`, JSON.stringify(bancoJSON()), 'application/json'); };
+$('exJson').onclick = () => { if (!S.preguntas.length) return toast('No hay ejercicios que exportar.'); dl(`${archivoPub()}.json`, JSON.stringify(bancoJSON()), 'application/json'); guardaLocal(); };
 $('exCsv').onclick = () => { if (!S.preguntas.length) return toast('No hay ejercicios que exportar.'); dl(`${archivoPub()}.csv`, bancoCSV(), 'text/csv;charset=utf-8'); };
 $('exGift').onclick = () => { if (!S.preguntas.length) return toast('No hay ejercicios que exportar.'); const g = bancoGIFT(); dl(`${archivoPub()}_moodle.gift.txt`, g, 'text/plain;charset=utf-8'); if (GIFT_OMITIDOS) toast(`${GIFT_OMITIDOS} ejercicios de ordenar o con imagen no caben en GIFT y se han omitido.`, 6000); };
 $('btnPrevia').onclick = vistaPrevia;
