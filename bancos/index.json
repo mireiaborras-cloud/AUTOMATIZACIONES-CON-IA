@@ -6,7 +6,7 @@
       "descripcion": "Ejemplo · FOL · Formación Profesional",
       "icono": "🦺",
       "color": "#00A499",
-      "visible": true,
+      "visible": false,
       "temas": 3,
       "preguntas": 23
     },
