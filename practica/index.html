@@ -285,18 +285,18 @@ function verBanco() {
   const total = todos().length, nf = fallosVivos().length, tams = tamExamenes(total);
   if (!tams.includes(PROG.examenN)) PROG.examenN = tams.includes(40) ? 40 : tams.at(-1);
   const temas = B.temas.map((t, i) => {
-    const st = PROG.temas[t.id] || {}, dom = dominadas(t), n = Math.min(B.porTest, t.ej.length);
+    const st = PROG.temas[t.id] || {}, pdom = Math.round(dominadas(t) / t.ej.length * 100);
     return `<article class="card tema"><span class="num">TEMA ${i + 1}</span><h3>${esc(t.titulo)}</h3>
-      <div class="barrap" role="progressbar" aria-label="Preguntas dominadas" aria-valuenow="${dom}" aria-valuemax="${t.ej.length}"><span style="width:${Math.round(dom / t.ej.length * 100)}%"></span></div>
-      <div class="meta"><span>${dom} de ${t.ej.length} preguntas dominadas</span><span>${st.tests ? `Mejor nota: <b>${fmtNota(st.mejor)}</b> · ${st.tests} test${st.tests > 1 ? 's' : ''}` : 'Sin tests todavía'}</span></div>
-      <button class="btn" data-tema="${i}" type="button">Test de ${n} preguntas</button></article>`;
+      <div class="barrap" role="progressbar" aria-label="Tema dominado" aria-valuenow="${pdom}" aria-valuemin="0" aria-valuemax="100"><span style="width:${pdom}%"></span></div>
+      <div class="meta"><span>${pdom} % dominado</span><span>${st.tests ? `Mejor nota: <b>${fmtNota(st.mejor)}</b> · ${st.tests} test${st.tests > 1 ? 's' : ''}` : 'Sin tests todavía'}</span></div>
+      <button class="btn" data-tema="${i}" type="button">Empezar test</button></article>`;
   }).join('');
   const hist = PROG.historial.slice(-6).reverse().map(h => `<div class="hfila"><span class="nota ${h.nota >= 5 ? 'ap' : 'su'}">${fmtNota(h.nota)}</span><span class="q">${esc(h.titulo)}<small>${h.aciertos} de ${h.n} · ${new Date(h.fecha).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})} ${new Date(h.fecha).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</small></span></div>`).join('');
   $('app').innerHTML = `<div class="wrap">${PREVIA ? '<p class="aviso">Vista previa: así verán el banco tus alumnos. Todavía no está publicado.</p>' : ''}
-    <div class="cabeza"><span class="bi">${esc(B.icono)}</span><div class="txt"><h1>${esc(B.titulo)}</h1>${B.descripcion ? `<p>${esc(B.descripcion)}</p>` : ''}<div class="resumen"><span>📚 ${B.temas.length} temas</span><span>❓ ${total} preguntas</span><span>🔥 ${racha()} día${racha() === 1 ? '' : 's'}</span></div></div></div>
+    <div class="cabeza"><span class="bi">${esc(B.icono)}</span><div class="txt"><h1>${esc(B.titulo)}</h1>${B.descripcion ? `<p>${esc(B.descripcion)}</p>` : ''}<div class="resumen"><span>📚 ${B.temas.length} temas</span><span>🎯 ${Math.round(B.temas.reduce((a, t) => a + dominadas(t), 0) / total * 100)} % dominado</span><span>🔥 ${racha()} día${racha() === 1 ? '' : 's'}</span></div></div></div>
     <div class="acciones">
       <article class="card examen"><div class="ct"><span class="e">📝</span><div><h3>Modelo de examen</h3><p>Preguntas al azar de todos los temas, en proporción a cada uno.</p></div></div>
-        <div class="segs" role="group" aria-label="Número de preguntas">${tams.map(n => `<button class="seg" data-n="${n}" aria-pressed="${n === PROG.examenN}" type="button">${n === total && n > 60 ? 'Todas' : n}</button>`).join('')}</div>
+        <div class="segs" role="group" aria-label="Número de preguntas">${tams.map(n => `<button class="seg" data-n="${n}" aria-pressed="${n === PROG.examenN}" type="button">${n === total ? 'Todas' : n}</button>`).join('')}</div>
         <label class="chk"><input type="checkbox" id="alFinal" ${PROG.alFinal ? 'checked' : ''}> <span>Corregir al final, como en un examen real</span></label>
         <button class="btn" id="bExamen" type="button">Empezar examen</button></article>
       ${nf ? `<article class="card fallos"><div class="ct"><span class="e">💪</span><div><h3>Repasa tus fallos</h3><p>${nf} pregunta${nf > 1 ? 's' : ''} que has fallado. Salen de esta lista cuando las aciertas a la primera.</p></div></div><button class="btn rojo" id="bFallos" type="button">Repasar ${Math.min(15, nf)} fallos</button></article>` : ''}
