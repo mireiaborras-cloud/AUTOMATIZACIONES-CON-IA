@@ -18,7 +18,7 @@ Lo más cómodo es hacerlo desde la sección **Mis bancos** del generador, que s
 
 3. Comparte con los alumnos el enlace `https://mireiaborras-cloud.github.io/AUTOMATIZACIONES-CON-IA/practica/?banco=NOMBRE`.
 
-El nombre del archivo solo puede llevar letras sin tilde, números y guiones. Si no añades el banco a `index.json`, el enlace directo funciona igualmente, pero no aparecerá en la biblioteca.
+El nombre del archivo solo puede llevar letras sin tilde, números y guiones. Si no añades el banco a `index.json`, la app no lo abre: ni aparece en la biblioteca ni funciona su enlace.
 
 Para corregir un banco ya publicado, súbelo de nuevo con el mismo nombre. El progreso de los alumnos se conserva mientras no cambien los identificadores de los ejercicios, que el generador mantiene al editar.
 
