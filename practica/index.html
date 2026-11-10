@@ -66,7 +66,6 @@ h2.sec{font-size:22px;font-weight:900;margin:30px 0 12px}
 .banco b{display:block;font-size:18px;line-height:1.25}
 .banco span{display:block;color:var(--tx2);font-size:14.5px;font-weight:700}
 .vacio{color:var(--tx2);text-align:center;padding:24px 0;grid-column:1/-1}
-.subir{display:block;text-align:center;color:var(--azul);font-weight:800;padding:8px;cursor:pointer}
 
 /* pantalla del banco */
 .aviso{margin:16px 0 0;padding:12px 14px;border-radius:14px;background:var(--azul-suave);color:#1172A6;font-size:15px}
@@ -197,7 +196,6 @@ h2.sec{font-size:22px;font-weight:900;margin:30px 0 12px}
   <button class="btn ancho" id="okNombre" type="button">Continuar</button>
 </div></div>
 <div class="toast" id="toast" hidden></div>
-<input type="file" id="fBanco" accept=".json" hidden>
 
 <script>
 'use strict';
@@ -262,7 +260,7 @@ $('bSonido').onclick = () => { LSS('sonido', LSG('sonido', true) === false); pin
 /* ══ Biblioteca ══ */
 async function verBiblioteca() {
   $('barra').hidden = true; document.title = 'Práctica'; L = null;
-  $('app').innerHTML = `<div class="wrap"><div class="hero"><h1>¿Qué quieres practicar?</h1><p>Elige un banco de ejercicios.</p></div><div class="lista" id="lista"><p class="vacio">Cargando…</p></div><label class="subir" for="fBanco">Abrir un banco desde un archivo (.json)</label><p class="pieweb">Tu progreso se guarda en este navegador.</p></div>`;
+  $('app').innerHTML = `<div class="wrap"><div class="hero"><h1>¿Qué quieres practicar?</h1><p>Elige un banco de ejercicios.</p></div><div class="lista" id="lista"><p class="vacio">Cargando…</p></div><p class="pieweb">Tu progreso se guarda en este navegador.</p></div>`;
   let cat = [];
   try { const r = await fetch(fresco(new URL('../bancos/index.json', location.href)), {cache: 'no-store'}); if (r.ok) cat = (await r.json()).bancos || []; } catch {}
   cat = cat.filter(b => b && /^[\w-]+$/.test(b.archivo || '') && b.visible !== false);
@@ -270,10 +268,6 @@ async function verBiblioteca() {
     return `<a class="b3 banco" href="?banco=${encodeURIComponent(b.archivo)}" style="--bc-s:color-mix(in srgb,${col} 18%,#fff)"><span class="bi">${esc(b.icono || '📘')}</span><span><b>${esc(b.titulo || b.archivo)}</b><span>${esc(b.descripcion || '')}${n ? `${b.descripcion ? ' · ' : ''}${n} test${n > 1 ? 's' : ''} hecho${n > 1 ? 's' : ''}` : ''}</span></span></a>`; }).join('')
     : '<p class="vacio">No hay bancos publicados todavía. Abre el enlace que te ha dado tu profesor.</p>';
 }
-$('fBanco').onchange = async e => {
-  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-  try { const j = normaliza(JSON.parse(await f.text())); abreBanco(j, 'local-' + slug(j.titulo), null); } catch (err) { toast(err.message, 4000); }
-};
 $('aBiblio').onclick = () => { if (PREVIA) { window.close(); return; } history.pushState(null, '', location.pathname); verBiblioteca(); };
 
 /* ══ Pantalla del banco: examen general, fallos y tests por tema ══ */
