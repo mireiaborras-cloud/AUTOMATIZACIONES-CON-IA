@@ -273,7 +273,7 @@ $('bSonido').onclick = () => { LSS('sonido', LSG('sonido', true) === false); pin
 /* ══ Biblioteca ══ */
 async function verBiblioteca() {
   $('barra').hidden = true; document.title = 'Práctica'; L = null;
-  $('app').innerHTML = `<div class="wrap"><div class="hero"><h1>¿Qué quieres practicar?</h1><p>Elige un banco de ejercicios.</p></div><div class="lista" id="lista"><p class="vacio">Cargando…</p></div><p class="pieweb">Tu progreso se guarda en este navegador.</p></div>`;
+  $('app').innerHTML = `<div class="wrap"><div class="hero"><h1>¿Qué quieres practicar?</h1><p>Elige un banco de ejercicios.</p></div><div class="lista" id="lista"><p class="vacio">Cargando…</p></div><p class="pieweb">Tu progreso se guarda en este navegador.<br>Creado por M. Borrás, la hija del profe.</p></div>`;
   let cat = [];
   try { const r = await fetch(fresco(new URL('../bancos/index.json', location.href)), {cache: 'no-store'}); if (r.ok) cat = (await r.json()).bancos || []; } catch {}
   cat = cat.filter(b => b && /^[\w-]+$/.test(b.archivo || '') && b.visible !== false);
@@ -316,7 +316,7 @@ function verBanco() {
     </div>
     <h2 class="sec">Tests por tema</h2><div class="temas">${temas}</div>
     ${hist ? `<h2 class="sec">Últimos resultados</h2><div class="historial">${hist}</div>` : ''}
-    <p class="pieweb">Cada test elige preguntas al azar, empezando por las que aún no te han salido. Tu progreso se guarda en este navegador.</p></div>`;
+    <p class="pieweb">Cada test elige preguntas al azar, empezando por las que aún no te han salido. Tu progreso se guarda en este navegador.<br>Creado por M. Borrás, la hija del profe.</p></div>`;
   $('app').querySelectorAll('[data-tema]').forEach(b => b.onclick = () => empieza('tema', +b.dataset.tema));
   $('app').querySelectorAll('[data-n]').forEach(b => b.onclick = () => { PROG.examenN = +b.dataset.n; guardaProg(); $('app').querySelectorAll('[data-n]').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.n === PROG.examenN))); });
   $('alFinal').onchange = e => { PROG.alFinal = e.target.checked; guardaProg(); };
