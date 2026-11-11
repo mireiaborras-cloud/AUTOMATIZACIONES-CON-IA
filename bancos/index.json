@@ -19,6 +19,17 @@
       "visible": true,
       "temas": 5,
       "preguntas": 81
+    },
+    {
+      "archivo": "guia-en-el-medio-natural-acuatico",
+      "titulo": "GUIA EN EL MEDIO NATURAL ACUÁTICO",
+      "descripcion": "",
+      "icono": "📘",
+      "color": "#00A499",
+      "visible": true,
+      "temas": 6,
+      "preguntas": 251,
+      "actualizado": "2026-11-11T08:44:45.077Z"
     }
   ]
 }
