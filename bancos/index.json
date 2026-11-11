@@ -16,7 +16,7 @@
       "descripcion": "",
       "icono": "📘",
       "color": "#9a19be",
-      "visible": true,
+      "visible": false,
       "temas": 5,
       "preguntas": 81
     },
